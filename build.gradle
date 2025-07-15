@@ -38,7 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'// 컴파일·런타임 전반
 
 
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'io.micrometer:micrometer-registry-prometheus' // 메트릭 수집용
 
     testRuntimeOnly 'org.postgresql:postgresql'
@@ -50,7 +50,12 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Swagger/OpenAPI 의존성 추가
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+
+    // Redis 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // SMTP 이메일 전송 (같이 추가)
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
