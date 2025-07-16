@@ -95,13 +95,6 @@ public class User {
     private List<Plan> plans = new ArrayList<>();
 
     /**
-     * 비밀번호 변경
-     */
-    public void changePassword(String newPassword) {
-        this.password = newPassword;
-    }
-
-    /**
      * 개인정보 수정
      */
     public void updateProfile(String name, String phoneNumber) {

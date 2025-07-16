@@ -3,6 +3,7 @@ package org.example.calendar.user.service;
 import org.example.calendar.user.exception.EmailVerificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -37,12 +38,13 @@ public class EmailVerificationService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final RedisTemplate<String, String> redisTemplate;
+
     private final JavaMailSender mailSender;
 
-    @Value("${app.email.verification.expiration-minutes:5}")
+    @Value("${app.email.verification.expiration-minutes:3}")
     private int expirationMinutes;
 
-    @Value("${app.email.verification.code-length:6}")
+    @Value("${app.email.verification.code-length:4}")
     private int codeLength;
 
     @Value("${spring.mail.username}")
@@ -64,10 +66,10 @@ public class EmailVerificationService {
         logger.info("이메일 인증번호 발송 요청: email={}", email);
 
         try {
-            // 1. 6자리 랜덤 인증번호 생성
+            // 1. 4자리 랜덤 인증번호 생성
             String verificationCode = generateVerificationCode();
 
-            // 2. Redis에 저장 (TTL: 5분)
+            // 2. Redis에 저장 (TTL: 3분)
             String redisKey = REDIS_KEY_PREFIX + email;
             redisTemplate.opsForValue().set(redisKey, verificationCode, expirationMinutes, TimeUnit.MINUTES);
 
@@ -118,7 +120,7 @@ public class EmailVerificationService {
     }
 
     /**
-     * 6자리 랜덤 인증번호 생성
+     * 4자리 랜덤 인증번호 생성
      *
      * @return String 6자리 숫자 문자열
      */

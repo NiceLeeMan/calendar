@@ -1,63 +1,66 @@
 package org.example.calendar.user.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.calendar.common.security.jwt.JwtTokenProvider;
 import org.example.calendar.user.dto.request.SigninReq;
 import org.example.calendar.user.dto.response.UserResponse;
 import org.example.calendar.user.entity.User;
 import org.example.calendar.user.exception.InvalidPasswordException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.example.calendar.user.exception.UserNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.example.calendar.user.exception.UserNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 인증 관련 서비스
+ * 인증 관련 서비스 (JWT 통합)
  *
  * <h3>주요 책임</h3>
  * <ul>
- *   <li>로그인 인증 처리</li>
+ *   <li>로그인 인증 처리 및 JWT 토큰 생성</li>
  *   <li>비밀번호 검증</li>
  *   <li>로그아웃 처리</li>
+ *   <li>JWT 기반 사용자 정보 조회</li>
  * </ul>
  *
- * <h3>로그인 플로우</h3>
+ * <h3>실무 기준 인증 플로우</h3>
  * <ol>
  *   <li>사용자 ID로 사용자 조회</li>
  *   <li>비밀번호 검증</li>
+ *   <li>JWT 토큰 생성</li>
  *   <li>인증 성공 시 사용자 정보 반환</li>
  * </ol>
  *
- * <h3>현재 단계</h3>
- * JWT 토큰 생성은 추후 구현하며, 현재는 순수 인증 로직만 처리
+ * <h3>JWT 통합 기능</h3>
+ * <ul>
+ *   <li>로그인 시 JWT 토큰 자동 생성</li>
+ *   <li>토큰 기반 사용자 정보 조회</li>
+ *   <li>로그아웃 시 토큰 관련 처리 (향후 확장)</li>
+ * </ul>
  *
  * @author Calendar Team
- * @since 2025-07-14
+ * @since 2025-07-15
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-
-    public AuthService(UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * 로그인 인증 처리
+     * 로그인 인증 처리 (UserController.login에서 호출)
      *
-     * @param request 로그인 요청 정보
+     * @param request 로그인 요청 정보 (userId, password)
      * @return UserResponse 인증된 사용자 정보 (비밀번호 제외)
      * @throws UserNotFoundException    사용자를 찾을 수 없는 경우
      * @throws InvalidPasswordException 비밀번호가 일치하지 않는 경우
      */
-    public UserResponse login(SigninReq request) {
-        logger.info("로그인 시도: userId={}", request.getUserId());
+    public UserResponse authenticateUser(SigninReq request) {
+        log.info("로그인 인증 시도: userId={}", request.getUserId());
 
         // 1. 사용자 존재 여부 확인 (UserService 위임)
         User user = userService.getUserByUserId(request.getUserId());
@@ -66,43 +69,104 @@ public class AuthService {
         validatePassword(request.getUserPassword(), user.getPassword(), request.getUserId());
 
         // 3. 로그인 성공 로깅
-        logger.info("로그인 성공: userId={}, name={}", user.getUserId(), user.getName());
+        log.info("로그인 인증 성공: userId={}, name={}", user.getUserId(), user.getName());
 
         // 4. 사용자 정보 반환 (비밀번호 제외)
         return convertToUserResponse(user);
     }
 
     /**
-     * 로그아웃 처리
+     * JWT 토큰 생성 (UserController.login에서 호출)
      *
-     * <p>현재는 단순 로깅만 처리</p>
-     * <p>추후 JWT 구현 시 토큰 무효화, 블랙리스트 등 확장 예정</p>
+     * @param request 로그인 요청 정보
+     * @return String 생성된 JWT 토큰
+     */
+    public String generateJwtToken(SigninReq request) {
+        log.debug("JWT 토큰 생성 요청: userId={}", request.getUserId());
+
+        // 사용자 정보 조회 (토큰 생성을 위해 필요)
+        User user = userService.getUserByUserId(request.getUserId());
+
+        // JWT 토큰 생성
+        String token = jwtTokenProvider.generateToken(user);
+
+        log.info("JWT 토큰 생성 완료: userId={}, tokenLength={}",
+                user.getUserId(), token.length());
+
+        return token;
+    }
+
+    /**
+     * 로그아웃 처리 (UserController.logout에서 호출)
+     *
+     * <p>현재는 단순 로깅 처리, 실제 토큰 무효화는 쿠키 삭제로 처리</p>
+     * <p>향후 확장 가능: 토큰 블랙리스트, 리프레시 토큰 무효화 등</p>
      *
      * @param userId 로그아웃할 사용자 ID
      * @return String 로그아웃 완료 메시지
      */
-    public String logout(String userId) {
-        logger.info("로그아웃 처리: userId={}", userId);
+    public String logoutUser(String userId) {
+        log.info("로그아웃 처리 시작: userId={}", userId);
 
-        // TODO: 추후 JWT 구현 시 확장 가능
+        // 현재는 서버 측에서 특별한 처리 없음
+        // JWT는 Stateless하므로 쿠키 삭제만으로 로그아웃 처리
+        // 필요 시 향후 확장:
         // - JWT 토큰 블랙리스트 추가
         // - 리프레시 토큰 무효화
         // - 로그아웃 이력 저장
         // - 다중 디바이스 로그아웃 처리
 
-        logger.info("로그아웃 완료: userId={}", userId);
+        log.info("로그아웃 처리 완료: userId={}", userId);
         return "로그아웃이 완료되었습니다.";
     }
 
     /**
-     * 인증된 사용자 정보 조회 (JWT 토큰에서 사용자 ID 추출 후 사용 예정)
+     * JWT 기반 사용자 정보 조회 (UserController.getMyInfo에서 호출)
      *
-     * @param userId 조회할 사용자 ID
-     * @return UserResponse 사용자 정보
+     * @param userId JWT에서 추출된 사용자 ID
+     * @return UserResponse 사용자 정보 (비밀번호 제외)
+     * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
      */
-    public UserResponse getAuthenticatedUser(String userId) {
-        logger.debug("인증된 사용자 정보 조회: userId={}", userId);
+    public UserResponse getUserInfo(String userId) {
+        log.debug("JWT 기반 사용자 정보 조회: userId={}", userId);
+
+        // UserService를 통해 사용자 정보 조회
         return userService.findByUserId(userId);
+    }
+
+    // ==================== Legacy Methods (기존 호환성) ====================
+
+    /**
+     * 레거시 로그인 메서드 (기존 코드 호환성)
+     *
+     * @deprecated authenticateUser() 사용 권장
+     */
+    @Deprecated
+    public UserResponse signIn(SigninReq request) {
+        log.warn("Deprecated method signIn() called. Use authenticateUser() instead.");
+        return authenticateUser(request);
+    }
+
+    /**
+     * 레거시 로그아웃 메서드 (기존 코드 호환성)
+     *
+     * @deprecated logoutUser() 사용 권장
+     */
+    @Deprecated
+    public String logout(String userId) {
+        log.warn("Deprecated method logout() called. Use logoutUser() instead.");
+        return logoutUser(userId);
+    }
+
+    /**
+     * 레거시 사용자 조회 메서드 (기존 코드 호환성)
+     *
+     * @deprecated getUserInfo() 사용 권장
+     */
+    @Deprecated
+    public UserResponse getAuthenticatedUser(String userId) {
+        log.warn("Deprecated method getAuthenticatedUser() called. Use getUserInfo() instead.");
+        return getUserInfo(userId);
     }
 
     // ==================== Private Helper Methods ====================
@@ -117,10 +181,10 @@ public class AuthService {
      */
     private void validatePassword(String rawPassword, String encodedPassword, String userId) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            logger.warn("비밀번호 불일치: userId={}", userId);
+            log.warn("비밀번호 불일치: userId={}", userId);
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다");
         }
-        logger.debug("비밀번호 검증 성공: userId={}", userId);
+        log.debug("비밀번호 검증 성공: userId={}", userId);
     }
 
     /**
@@ -137,31 +201,5 @@ public class AuthService {
         response.setUserPhoneNumber(user.getPhoneNumber());
         response.setCreatedAt(user.getCreatedAt());
         return response;
-    }
-
-    /**
-     * 비밀번호 변경 (추후 확장용)
-     *
-     * @param userId          사용자 ID
-     * @param currentPassword 현재 비밀번호
-     * @param newPassword     새 비밀번호
-     * @return String 성공 메시지
-     */
-    @Transactional
-    public String changePassword(String userId, String currentPassword, String newPassword) {
-        logger.info("비밀번호 변경 요청: userId={}", userId);
-
-        // 1. 사용자 조회
-        User user = userService.getUserByUserId(userId);
-
-        // 2. 현재 비밀번호 검증
-        validatePassword(currentPassword, user.getPassword(), userId);
-
-        // 3. 새 비밀번호 암호화 및 변경
-        String encodedNewPassword = passwordEncoder.encode(newPassword);
-        user.changePassword(encodedNewPassword);
-
-        logger.info("비밀번호 변경 완료: userId={}", userId);
-        return "비밀번호가 성공적으로 변경되었습니다.";
     }
 }
