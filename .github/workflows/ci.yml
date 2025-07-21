@@ -20,8 +20,8 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_DB: calendar_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
+          POSTGRES_USER: postgers
+          POSTGRES_PASSWORD: dlrlqor256
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
