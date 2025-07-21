@@ -68,8 +68,8 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
           DB_URL: jdbc:postgresql://localhost:5432/calendar_test
-          DB_USERNAME: test_user
-          DB_PASSWORD: test_password
+          DB_USERNAME: postgres
+          DB_PASSWORD: dlrlqor256
           JWT_SECRET: test-jwt-secret-for-ci
           REDIS_HOST: localhost
           REDIS_PORT: 6379
