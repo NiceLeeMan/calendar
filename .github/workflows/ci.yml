@@ -6,10 +6,39 @@ on:
   pull_request:
     branches: [ main, master ]
 
+env:
+  JAR_NAME: calendar-0.0.1-SNAPSHOT.jar
+
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+
+    # 테스트용 PostgreSQL 서비스 추가
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: calendar_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout code
@@ -34,8 +63,96 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # 테스트용 환경변수 설정
       - name: Run tests
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          DB_URL: jdbc:postgresql://localhost:5432/calendar_test
+          DB_USERNAME: test_user
+          DB_PASSWORD: test_password
+          JWT_SECRET: test-jwt-secret-for-ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: ./gradlew test
 
       - name: Build JAR
         run: ./gradlew build -x test
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: calendar-jar
+          path: build/libs/${{ env.JAR_NAME }}
+
+  deploy:
+    name: Deploy to EC2
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: calendar-jar
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 기존 애플리케이션 종료
+            pkill -f "calendar-0.0.1-SNAPSHOT.jar" || true
+            
+            # 잠시 대기
+            sleep 5
+            
+            # 백업 디렉토리 생성
+            mkdir -p /home/github-actions/calendar-backup
+            
+            # 기존 JAR 백업
+            if [ -f "/home/github-actions/calendar-0.0.1-SNAPSHOT.jar" ]; then
+              cp /home/github-actions/calendar-0.0.1-SNAPSHOT.jar /home/github-actions/calendar-backup/calendar-$(date +%Y%m%d-%H%M%S).jar
+            fi
+
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ${{ env.JAR_NAME }}
+          target: /home/github-actions/
+
+      - name: Start Application
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 환경변수 설정
+            export SPRING_PROFILES_ACTIVE=prod
+            export DB_URL=jdbc:postgresql://localhost:5432/calendar_prod
+            export DB_USERNAME=calendar_user
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export JWT_SECRET=${{ secrets.JWT_SECRET }}
+            export SPRINGDOC_SWAGGER_UI_ENABLED=true
+            export SPRINGDOC_API_DOCS_ENABLED=true
+            
+            # 로그 디렉토리 생성
+            mkdir -p /home/github-actions/logs
+            
+            # 애플리케이션 백그라운드 실행
+            cd /home/github-actions
+            nohup java -jar calendar-0.0.1-SNAPSHOT.jar > logs/app.log 2>&1 &
+            
+            # 애플리케이션 시작 대기
+            sleep 10
+            
+            # 헬스체크
+            curl -f http://localhost:8080/api/actuator/health || exit 1
+            
+            echo "Deployment completed successfully!"
