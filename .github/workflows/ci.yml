@@ -73,6 +73,8 @@ jobs:
           JWT_SECRET: test-jwt-secret-for-ci
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          SPRING_FLYWAY_ENABLED: false
         run: ./gradlew test
 
       - name: Build JAR
