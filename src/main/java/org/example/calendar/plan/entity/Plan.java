@@ -1,20 +1,17 @@
 package org.example.calendar.plan.entity;
 
-import jakarta.persistence.Entity;
-
-
-import org.example.calendar.user.entity.User;
-import org.example.calendar.plan.enums.PlanType;
-import org.example.calendar.plan.enums.RepeatUnit;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import lombok.*;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+import org.example.calendar.plan.enums.PlanType;
+import org.example.calendar.plan.enums.RepeatUnit;
+import org.example.calendar.user.entity.User;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,229 +19,143 @@ import java.util.Set;
 /**
  * 일정(계획) 엔티티
  *
- * <h3>주요 기능</h3>
- * <ul>
- *   <li>단일/반복 일정 관리</li>
- *   <li>다양한 반복 패턴 지원 (주간, 월간, 연간)</li>
- *   <li>예외 날짜 관리</li>
- *   <li>알림 시간 설정</li>
- *   <li>위치 정보 저장</li>
- * </ul>
- *
- * <h3>반복 일정 로직</h3>
- * <ul>
- *   <li><strong>SINGLE</strong>: 단일 일정</li>
- *   <li><strong>RECURRING</strong>: 반복 일정 (repeatUnit, repeatInterval 필수)</li>
- * </ul>
- *
  * @author Calendar Team
- * @since 2025-07-14
+ * @since 2025-07-21
  */
 @Entity
 @Table(name = "plans", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
         @Index(name = "idx_start_date", columnList = "start_date"),
-        @Index(name = "idx_plan_type", columnList = "plan_type")
+        @Index(name = "idx_end_date", columnList = "end_date"),
+        @Index(name = "idx_plan_type", columnList = "plan_type"),
+        @Index(name = "idx_user_date_range", columnList = "user_id, start_date, end_date")
 })
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Plan {
 
-    private static final Logger log = LoggerFactory.getLogger(Plan.class);
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * 일정 제목
-     */
     @NotBlank(message = "일정 제목은 필수입니다")
-    @Column(name = "plan_name", nullable = false, length = 50)
+    @Size(max = 30, message = "일정 제목은 30자 이하여야 합니다")
+    @Column(name = "plan_name", nullable = false, length = 30)
     private String planName;
 
-    /**
-     * 일정 내용
-     */
-    @Column(name = "plan_content", columnDefinition = "TEXT", length = 1000)
+    @Size(max = 100, message = "일정 내용은 300자 이하여야 합니다")
+    @Column(name = "plan_content", length = 300)
     private String planContent;
 
-    /**
-     * 시작 날짜
-     */
     @NotNull(message = "시작 날짜는 필수입니다")
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    /**
-     * 종료 날짜
-     */
     @NotNull(message = "종료 날짜는 필수입니다")
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    /**
-     * 시작 시간
-     */
     @NotNull(message = "시작 시간은 필수입니다")
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
-    /**
-     * 종료 시간
-     */
     @NotNull(message = "종료 시간은 필수입니다")
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    /**
-     * 위치 정보
-     */
     @Column(name = "location", length = 200)
     private String location;
 
-    /**
-     * 알림 시간
-     */
-    @Column(name = "alarm_time")
-    private LocalTime alarmTime;
-
-    /**
-     * 일정 생성 일시
-     */
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    /**
-     * 일정 수정 일시
-     */
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    /**
-     * 일정 유형: SINGLE(단일) 또는 RECURRING(반복)
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_type", nullable = false, length = 20)
     private PlanType planType;
 
-    /**
-     * 반복 단위: WEEKLY, MONTHLY, YEARLY (반복 일정인 경우에만 사용)
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "repeat_unit", length = 20)
     private RepeatUnit repeatUnit;
 
-    /**
-     * 반복 간격: N주, N개월, N년 간격
-     */
     @Column(name = "repeat_interval")
     private Integer repeatInterval;
 
-    /**
-     * 월 단위 반복 시 특정 일자 (예: 매월 15일)
-     */
     @Column(name = "repeat_day_of_month")
     private Integer repeatDayOfMonth;
 
-    /**
-     * 반복되는 요일들 (주간 반복 시 사용)
-     */
+    // "매월 첫째/둘째/셋째/넷째/마지막 주" 표현용
+    // 값: 1(첫째주), 2(둘째주), 3(셋째주), 4(넷째주), -1(마지막주)
+    @Column(name = "repeat_week_of_month")
+    private Integer repeatWeekOfMonth;
+
+    // "매년 특정 월" 표현용 (1~12)
+    @Column(name = "repeat_month")
+    private Integer repeatMonth;
+
+    // "매년 특정 일" 표현용 (1~31)
+    @Column(name = "repeat_day_of_year")
+    private Integer repeatDayOfYear;
+
+    // 복수의 주차 선택 가능 (예: "매월 둘째, 넷째 화요일")
+    @ElementCollection
+    @CollectionTable(name = "plan_repeat_weeks_of_month",
+            joinColumns = @JoinColumn(name = "plan_id"),
+            foreignKey = @ForeignKey(name = "fk_plan_week_of_month"))
+    @Column(name = "week_of_month")
+    @BatchSize(size = 10)
+    @Builder.Default
+    private Set<Integer> repeatWeeksOfMonth = new HashSet<>();
+
     @ElementCollection(targetClass = DayOfWeek.class)
     @CollectionTable(name = "plan_repeat_weekdays",
-            joinColumns = @JoinColumn(name = "plan_id"))
+            joinColumns = @JoinColumn(name = "plan_id"),
+            foreignKey = @ForeignKey(name = "fk_plan_weekday"))
     @Enumerated(EnumType.STRING)
     @Column(name = "repeat_weekday")
+    @BatchSize(size = 10)
     @Builder.Default
     private Set<DayOfWeek> repeatWeekdays = new HashSet<>();
 
-    /**
-     * 반복 일정 중 제외할 날짜들
-     */
     @ElementCollection
     @CollectionTable(name = "plan_exceptions",
-            joinColumns = @JoinColumn(name = "plan_id"))
+            joinColumns = @JoinColumn(name = "plan_id"),
+            foreignKey = @ForeignKey(name = "fk_plan_exception"))
     @Column(name = "exception_date")
+    @BatchSize(size = 10)
     @Builder.Default
     private Set<LocalDate> exceptionDates = new HashSet<>();
 
-    /**
-     * 일정 소유자 (N:1 관계)
-     */
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 10)
+    @Builder.Default
+    private Set<PlanAlarm> alarms = new HashSet<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_plan_user"))
     private User user;
 
-    /**
-     * 낙관적 락을 위한 버전 필드
-     */
     @Version
     @Column(name = "version")
     private Long version;
 
-    // 비즈니스 메서드
-
-    /**
-     * 단일 일정인지 확인
-     */
+    // 간단한 편의 메서드만 유지
     public boolean isSinglePlan() {
         return PlanType.SINGLE.equals(this.planType);
     }
 
-    /**
-     * 반복 일정인지 확인
-     */
     public boolean isRecurringPlan() {
         return PlanType.RECURRING.equals(this.planType);
     }
 
-    /**
-     * 특정 날짜가 예외 날짜인지 확인
-     */
-    public boolean isExceptionDate(LocalDate date) {
-        return exceptionDates.contains(date);
+    public boolean isMultiDayPlan() {
+        return !startDate.equals(endDate);
     }
 
-    /**
-     * 예외 날짜 추가
-     */
-    public void addExceptionDate(LocalDate date) {
-        this.exceptionDates.add(date);
-    }
-
-    /**
-     * 반복 요일 추가
-     */
-    public void addRepeatWeekday(DayOfWeek dayOfWeek) {
-        this.repeatWeekdays.add(dayOfWeek);
-    }
-
-    // equals and hashCode (ID 기반)
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Plan)) return false;
-        Plan plan = (Plan) o;
-        return id != null && id.equals(plan.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Plan{" +
-                "id=" + id +
-                ", planName='" + planName + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", planType=" + planType +
-                '}';
-    }
 }

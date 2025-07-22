@@ -1,6 +1,7 @@
 package org.example.calendar.plan.enums;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 반복 단위 열거형
