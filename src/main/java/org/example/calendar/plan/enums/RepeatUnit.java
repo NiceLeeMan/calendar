@@ -49,6 +49,8 @@ public enum RepeatUnit {
      *   <li>3주마다 금요일 정기 점검</li>
      * </ul>
      */
+
+
     WEEKLY("주간"),
 
     /**
