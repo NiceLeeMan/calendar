@@ -50,9 +50,7 @@ public class PlanAlarm {
     @Builder.Default
     private AlarmStatus alarmStatus = AlarmStatus.PENDING;
 
-    @Size(max = 200, message = "알림 메시지는 200자 이하여야 합니다")
-    @Column(name = "alarm_message", length = 200)
-    private String alarmMessage;
+
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

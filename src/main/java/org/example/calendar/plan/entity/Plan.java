@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.example.calendar.plan.enums.PlanType;
-import org.example.calendar.plan.enums.RepeatUnit;
 import org.example.calendar.user.entity.User;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +16,7 @@ import java.util.Set;
 
 /**
  * 일정(계획) 엔티티
- *
+ *sd
  * @author Calendar Team
  * @since 2025-07-21
  */
@@ -27,7 +25,7 @@ import java.util.Set;
         @Index(name = "idx_user_id", columnList = "user_id"),
         @Index(name = "idx_start_date", columnList = "start_date"),
         @Index(name = "idx_end_date", columnList = "end_date"),
-        @Index(name = "idx_plan_type", columnList = "plan_type"),
+        @Index(name = "idx_is_recurring", columnList = "is_recurring"),
         @Index(name = "idx_user_date_range", columnList = "user_id, start_date, end_date")
 })
 @Getter @Setter
@@ -75,61 +73,14 @@ public class Plan {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "plan_type", nullable = false, length = 20)
-    private PlanType planType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "repeat_unit", length = 20)
-    private RepeatUnit repeatUnit;
-
-    @Column(name = "repeat_interval")
-    private Integer repeatInterval;
-
-    @Column(name = "repeat_day_of_month")
-    private Integer repeatDayOfMonth;
-
-    // "매월 첫째/둘째/셋째/넷째/마지막 주" 표현용
-    // 값: 1(첫째주), 2(둘째주), 3(셋째주), 4(넷째주), -1(마지막주)
-    @Column(name = "repeat_week_of_month")
-    private Integer repeatWeekOfMonth;
-
-    // "매년 특정 월" 표현용 (1~12)
-    @Column(name = "repeat_month")
-    private Integer repeatMonth;
-
-    // "매년 특정 일" 표현용 (1~31)
-    @Column(name = "repeat_day_of_year")
-    private Integer repeatDayOfYear;
-
-    // 복수의 주차 선택 가능 (예: "매월 둘째, 넷째 화요일")
-    @ElementCollection
-    @CollectionTable(name = "plan_repeat_weeks_of_month",
-            joinColumns = @JoinColumn(name = "plan_id"),
-            foreignKey = @ForeignKey(name = "fk_plan_week_of_month"))
-    @Column(name = "week_of_month")
-    @BatchSize(size = 10)
+    @Column(name = "is_recurring", nullable = false)
     @Builder.Default
-    private Set<Integer> repeatWeeksOfMonth = new HashSet<>();
+    private Boolean isRecurring = false;
 
-    @ElementCollection(targetClass = DayOfWeek.class)
-    @CollectionTable(name = "plan_repeat_weekdays",
-            joinColumns = @JoinColumn(name = "plan_id"),
-            foreignKey = @ForeignKey(name = "fk_plan_weekday"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "repeat_weekday")
-    @BatchSize(size = 10)
-    @Builder.Default
-    private Set<DayOfWeek> repeatWeekdays = new HashSet<>();
-
-    @ElementCollection
-    @CollectionTable(name = "plan_exceptions",
-            joinColumns = @JoinColumn(name = "plan_id"),
-            foreignKey = @ForeignKey(name = "fk_plan_exception"))
-    @Column(name = "exception_date")
-    @BatchSize(size = 10)
-    @Builder.Default
-    private Set<LocalDate> exceptionDates = new HashSet<>();
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "recurring_info_id", 
+               foreignKey = @ForeignKey(name = "fk_plan_recurring_info"))
+    private RecurringInfo recurringInfo;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 10)
@@ -147,11 +98,11 @@ public class Plan {
 
     // 간단한 편의 메서드만 유지
     public boolean isSinglePlan() {
-        return PlanType.SINGLE.equals(this.planType);
+        return !Boolean.TRUE.equals(this.isRecurring);
     }
 
     public boolean isRecurringPlan() {
-        return PlanType.RECURRING.equals(this.planType);
+        return Boolean.TRUE.equals(this.isRecurring);
     }
 
     public boolean isMultiDayPlan() {
