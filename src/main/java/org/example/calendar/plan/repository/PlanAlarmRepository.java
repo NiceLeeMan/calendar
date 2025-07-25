@@ -1,4 +1,3 @@
-
 package org.example.calendar.plan.repository;
 
 import org.example.calendar.plan.entity.PlanAlarm;
@@ -13,8 +12,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+
 /**
  * PlanAlarm 엔티티에 대한 데이터 접근 계층
+ * 
+ * 핵심 기능:
+ * - 알람 발송 처리 (배치/스케줄러용)
+ * - 기본 CRUD (Plan과 함께 자동 처리)
  *
  * @author Calendar Team
  * @since 2025-07-22
@@ -22,101 +26,58 @@ import java.util.List;
 @Repository
 public interface PlanAlarmRepository extends JpaRepository<PlanAlarm, Long> {
 
+    // ========== 알람 발송용 (배치/스케줄러) ==========
+    
     /**
-     * 특정 계획의 모든 알람 조회
-     */
-    List<PlanAlarm> findByPlanId(Long planId);
-
-    /**
-     * 특정 계획의 대기중인 알람 조회
-     */
-    List<PlanAlarm> findByPlanIdAndAlarmStatus(Long planId, AlarmStatus alarmStatus);
-
-    /**
-     * 발송 예정인 알람 조회
-     * 현재 시간부터 지정된 시간까지의 대기중인 알람
+     * 발송 대상 알람 조회 (배치 처리용)
+     * 현재 시간 기준으로 발송해야 할 대기중인 알람
      */
     @Query("SELECT a FROM PlanAlarm a " +
-            "WHERE a.alarmStatus = 'PENDING' " +
-            "AND a.alarmDate = :date " +
-            "AND a.alarmTime BETWEEN :startTime AND :endTime " +
-            "ORDER BY a.alarmTime")
-    List<PlanAlarm> findPendingAlarmsByDateTimeRange(@Param("date") LocalDate date,
-                                                     @Param("startTime") LocalTime startTime,
-                                                     @Param("endTime") LocalTime endTime);
+           "JOIN FETCH a.plan p " +
+           "JOIN FETCH p.user u " +
+           "WHERE a.alarmStatus = 'PENDING' " +
+           "AND a.alarmDate = :currentDate " +
+           "AND a.alarmTime <= :currentTime " +
+           "ORDER BY a.alarmTime")
+    List<PlanAlarm> findReadyToSendAlarms(@Param("currentDate") LocalDate currentDate,
+                                          @Param("currentTime") LocalTime currentTime);
 
+    // ========== 상태 업데이트 ==========
+    
     /**
-     * 오늘 발송 예정인 모든 알람 조회
-     */
-    @Query("SELECT a FROM PlanAlarm a " +
-            "JOIN FETCH a.plan p " +
-            "JOIN FETCH p.user " +
-            "WHERE a.alarmStatus = 'PENDING' " +
-            "AND a.alarmDate = :today " +
-            "ORDER BY a.alarmTime")
-    List<PlanAlarm> findTodayPendingAlarms(@Param("today") LocalDate today);
-
-    /**
-     * 특정 시간 이전의 대기중인 알람 조회
-     * 놓친 알람 처리용
-     */
-    @Query("SELECT a FROM PlanAlarm a " +
-            "WHERE a.alarmStatus = 'PENDING' " +
-            "AND ((a.alarmDate < :date) OR (a.alarmDate = :date AND a.alarmTime < :time))")
-    List<PlanAlarm> findOverdueAlarms(@Param("date") LocalDate date,
-                                      @Param("time") LocalTime time);
-
-    /**
-     * 사용자의 특정 날짜 알람 개수 조회
-     */
-    @Query("SELECT COUNT(a) FROM PlanAlarm a " +
-            "JOIN a.plan p " +
-            "WHERE p.user.id = :userId " +
-            "AND a.alarmDate = :date " +
-            "AND a.alarmStatus = 'PENDING'")
-    Long countUserAlarmsByDate(@Param("userId") Long userId,
-                               @Param("date") LocalDate date);
-
-    /**
-     * 실패한 알람 중 재시도 가능한 알람 조회
-     */
-    @Query("SELECT a FROM PlanAlarm a " +
-            "WHERE a.alarmStatus = 'FAILED' " +
-            "AND a.retryCount < :maxRetry " +
-            "ORDER BY a.alarmDate, a.alarmTime")
-    List<PlanAlarm> findRetryableAlarms(@Param("maxRetry") int maxRetry);
-
-    /**
-     * 특정 기간의 알람 통계 조회
-     */
-    @Query("SELECT a.alarmStatus, COUNT(a) FROM PlanAlarm a " +
-            "JOIN a.plan p " +
-            "WHERE p.user.id = :userId " +
-            "AND a.alarmDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY a.alarmStatus")
-    List<Object[]> getAlarmStatisticsByDateRange(@Param("userId") Long userId,
-                                                 @Param("startDate") LocalDate startDate,
-                                                 @Param("endDate") LocalDate endDate);
-
-    /**
-     * 알람 상태 일괄 업데이트
+     * 알람 발송 완료 처리
      */
     @Modifying
-    @Query("UPDATE PlanAlarm a SET a.alarmStatus = :newStatus " +
-            "WHERE a.id IN :alarmIds AND a.alarmStatus = :currentStatus")
-    int updateAlarmStatus(@Param("alarmIds") List<Long> alarmIds,
-                          @Param("currentStatus") AlarmStatus currentStatus,
-                          @Param("newStatus") AlarmStatus newStatus);
+    @Query("UPDATE PlanAlarm a SET a.alarmStatus = 'SENT', a.sentAt = :sentAt " +
+           "WHERE a.id = :alarmId")
+    int markAsSent(@Param("alarmId") Long alarmId, @Param("sentAt") LocalDateTime sentAt);
 
     /**
-     * 특정 계획의 미래 알람 모두 취소
+     * 알람 발송 실패 처리
+     */
+    @Modifying
+    @Query("UPDATE PlanAlarm a SET a.alarmStatus = 'FAILED', " +
+           "a.failureReason = :failureReason " +
+           "WHERE a.id = :alarmId")
+    int markAsFailed(@Param("alarmId") Long alarmId, 
+                     @Param("failureReason") String failureReason);
+
+    /**
+     * 특정 계획의 모든 알람 취소
      */
     @Modifying
     @Query("UPDATE PlanAlarm a SET a.alarmStatus = 'CANCELLED' " +
-            "WHERE a.plan.id = :planId " +
-            "AND a.alarmStatus = 'PENDING' " +
-            "AND (a.alarmDate > :date OR (a.alarmDate = :date AND a.alarmTime > :time))")
-    int cancelFutureAlarms(@Param("planId") Long planId,
-                           @Param("date") LocalDate date,
-                           @Param("time") LocalTime time);
+           "WHERE a.plan.id = :planId AND a.alarmStatus = 'PENDING'")
+    int cancelAlarmsByPlan(@Param("planId") Long planId);
+
+    /*
+     * 기본 CRUD 메서드는 JpaRepository가 자동 제공:
+     * - save(PlanAlarm)         : 저장/수정 (실제로는 Plan과 함께 처리)
+     * - findById(Long id)       : ID로 조회
+     * - deleteById(Long id)     : 삭제 (실제로는 Plan과 함께 처리)
+     * 
+     * 나머지 복잡한 조회 기능들은 필요할 때 추가
+     * Plan 엔티티의 cascade 설정으로 대부분 작업이 자동 처리됨
+     */
+
 }
