@@ -38,7 +38,6 @@ public class PlanUpdateHelper {
         if (request.getEndDate() != null) plan.setEndDate(request.getEndDate());
         if (request.getStartTime() != null) plan.setStartTime(request.getStartTime());
         if (request.getEndTime() != null) plan.setEndTime(request.getEndTime());
-        if (request.getLocation() != null) plan.setLocation(request.getLocation());
         if (request.getIsRecurring() != null) plan.setIsRecurring(request.getIsRecurring());
     }
 

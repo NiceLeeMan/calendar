@@ -56,7 +56,6 @@ public class PlanUpdateReq {
     private LocalDate endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private String location;
 
     // 반복 여부 변경
     private Boolean isRecurring;

@@ -45,7 +45,6 @@ public class PlanMapper {
                 .endDate(plan.getEndDate())
                 .startTime(plan.getStartTime())
                 .endTime(plan.getEndTime())
-                .location(plan.getLocation())
                 .isRecurring(plan.getIsRecurring())
                 .recurringResInfo(toRecurringResInfo(plan.getRecurringInfo()))
                 .alarms(toAlarmResInfos(plan.getAlarms()))

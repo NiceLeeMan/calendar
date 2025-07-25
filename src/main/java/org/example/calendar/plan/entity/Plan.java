@@ -62,9 +62,6 @@ public class Plan {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @Column(name = "location", length = 200)
-    private String location;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

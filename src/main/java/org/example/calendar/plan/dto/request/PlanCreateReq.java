@@ -60,8 +60,6 @@ public class PlanCreateReq {
     @NotNull(message = "종료 시간은 필수입니다")
     private LocalTime endTime;
 
-    private String location;
-
     @NotNull(message = "반복 여부는 필수입니다")
     private Boolean isRecurring;
 

@@ -70,7 +70,6 @@ public class PlanResponse {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
-    private String location;
     private Boolean isRecurring;
 
     // 반복 정보 (isRecurring이 true인 경우만)

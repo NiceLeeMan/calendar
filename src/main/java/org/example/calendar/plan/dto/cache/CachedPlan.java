@@ -61,7 +61,6 @@ public class CachedPlan implements Serializable {
     private LocalDate endDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private String location;
     private Boolean isRecurring;
 
     // 반복 정보 ID (RecurringInfo와의 관계)

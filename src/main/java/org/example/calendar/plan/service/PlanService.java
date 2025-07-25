@@ -108,7 +108,6 @@ public class PlanService {
                 .endDate(request.getEndDate())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
-                .location(request.getLocation())
                 .isRecurring(request.getIsRecurring())
                 .user(user)
                 .build();
