@@ -82,9 +82,8 @@ public class RecurringReqInfo {
     @Min(1) @Max(31)
     private Integer repeatDayOfMonth;
 
-    // 방식 2: N번째 주의 특정 요일 (예: 매월 둘째 화요일)
-    @Min(-1) @Max(4)
-    private Integer repeatWeekOfMonth;  // -1(마지막), 1~4(첫째~넷째)
+    // 방식 2: 주차 선택 (예: 매월 둘째 화요일=[2], 매월 둘째,넷째 화요일=[2,4])
+    private Set<Integer> repeatWeeksOfMonth;
 
     // === 연간 반복 ===
     @Min(1) @Max(12)
@@ -102,7 +101,7 @@ public class RecurringReqInfo {
         // 요일은 필수, 다른 설정은 불필요
         return repeatWeekdays != null && !repeatWeekdays.isEmpty() &&
                repeatDayOfMonth == null && 
-               repeatWeekOfMonth == null && 
+               repeatWeeksOfMonth == null &&
                repeatMonth == null && 
                repeatDayOfYear == null;
     }
@@ -115,12 +114,13 @@ public class RecurringReqInfo {
         boolean hasDayOfMonth = repeatDayOfMonth != null;
         
         // 방식 2: 주차 + 요일
-        boolean hasWeekAndDay = repeatWeekOfMonth != null && 
-                               repeatWeekdays != null && 
-                               !repeatWeekdays.isEmpty();
+        boolean hasWeeksAndDay = repeatWeeksOfMonth != null && 
+                                !repeatWeeksOfMonth.isEmpty() &&
+                                repeatWeekdays != null && 
+                                !repeatWeekdays.isEmpty();
         
         // 정확히 하나만 선택, 연간 설정은 불필요
-        return (hasDayOfMonth ^ hasWeekAndDay) &&  // XOR: 둘 중 정확히 하나만
+        return (hasDayOfMonth ^ hasWeeksAndDay) &&  // XOR: 둘 중 정확히 하나만
                repeatMonth == null && 
                repeatDayOfYear == null;
     }
@@ -134,6 +134,6 @@ public class RecurringReqInfo {
                repeatDayOfYear != null &&
                repeatWeekdays == null && 
                repeatDayOfMonth == null && 
-               repeatWeekOfMonth == null;
+               repeatWeeksOfMonth == null;
     }
 }
