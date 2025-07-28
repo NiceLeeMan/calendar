@@ -55,7 +55,6 @@ CREATE TABLE plans (
     end_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    location VARCHAR(200),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_recurring BOOLEAN NOT NULL DEFAULT false,
