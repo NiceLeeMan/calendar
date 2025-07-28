@@ -1,5 +1,6 @@
 package org.example.calendar.plan.dto.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.example.calendar.plan.enums.RepeatUnit;
@@ -67,6 +68,7 @@ import java.util.Set;
 @Builder
 public class RecurringReqInfo {
 
+    @JsonProperty("type")  // JSON의 "type" 필드를 repeatUnit에 매핑
     @NotNull(message = "반복 단위는 필수입니다")
     private RepeatUnit repeatUnit;
 
@@ -75,20 +77,25 @@ public class RecurringReqInfo {
     private Integer repeatInterval = 1;
 
     // === 주간 반복 ===
+    @JsonProperty("daysOfWeek")  // JSON의 "daysOfWeek" 필드를 repeatWeekdays에 매핑
     private Set<DayOfWeek> repeatWeekdays;
 
     // === 월간 반복 ===
     // 방식 1: 특정 날짜 (예: 매월 15일)
+    @JsonProperty("dayOfMonth")  // JSON의 "dayOfMonth" 필드 매핑
     @Min(1) @Max(31)
     private Integer repeatDayOfMonth;
 
     // 방식 2: 주차 선택 (예: 매월 둘째 화요일=[2], 매월 둘째,넷째 화요일=[2,4])
+    @JsonProperty("weeksOfMonth")  // JSON의 "weeksOfMonth" 필드 매핑
     private Set<Integer> repeatWeeksOfMonth;
 
     // === 연간 반복 ===
+    @JsonProperty("month")  // JSON의 "month" 필드 매핑
     @Min(1) @Max(12)
     private Integer repeatMonth;
 
+    @JsonProperty("dayOfYear")  // JSON의 "dayOfYear" 필드 매핑
     @Min(1) @Max(366)  // 윤년 고려
     private Integer repeatDayOfYear;
 
