@@ -74,6 +74,10 @@ public class RecurringInfo {
     @Builder.Default
     private Set<LocalDate> exceptionDates = new HashSet<>();
 
+    // 반복 종료 날짜
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
     @OneToOne(mappedBy = "recurringInfo")
     private Plan plan;
 }

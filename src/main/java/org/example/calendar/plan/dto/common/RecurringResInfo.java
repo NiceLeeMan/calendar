@@ -52,5 +52,6 @@ public class RecurringResInfo {
     private Integer repeatMonth;
     private Integer repeatDayOfYear;
     private List<String> exceptionDates; // 예외 날짜들
+    private String endDate; // 반복 종료 날짜 (ISO 형식: "2025-12-31")
     private String repeatDescription; // "매주 월,수,금" 같은 설명
 }

@@ -47,9 +47,9 @@ public class PlanUpdateHelper {
     public void updateRecurringInfo(Plan plan, PlanUpdateReq request) {
         if (Boolean.TRUE.equals(request.getIsRecurring()) && request.getRecurringPlan() != null) {
             if (plan.getRecurringInfo() == null) {
-                plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan()));
+                plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), request.getEndDate()));
             } else {
-                planMapper.updateRecurringInfo(plan.getRecurringInfo(), request.getRecurringPlan());
+                planMapper.updateRecurringInfo(plan.getRecurringInfo(), request.getRecurringPlan(), request.getEndDate());
             }
         } else if (Boolean.FALSE.equals(request.getIsRecurring())) {
             plan.setRecurringInfo(null);
