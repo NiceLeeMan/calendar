@@ -106,4 +106,13 @@ public class Plan {
         return !startDate.equals(endDate);
     }
 
+    // 알람 업데이트 메서드 (orphanRemoval 문제 해결)
+    public void updateAlarms(Set<PlanAlarm> newAlarms) {
+        this.alarms.clear();
+        if (newAlarms != null) {
+            newAlarms.forEach(alarm -> alarm.setPlan(this));
+            this.alarms.addAll(newAlarms);
+        }
+    }
+
 }

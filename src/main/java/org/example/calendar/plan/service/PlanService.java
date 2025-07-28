@@ -118,10 +118,10 @@ public class PlanService {
             plan.setRecurringInfo(recurringInfo);
         }
         
-        // 알람 설정 처리
+        // 알람 설정 처리 (orphanRemoval 문제 해결)
         if (request.getAlarms() != null && !request.getAlarms().isEmpty()) {
             Set<PlanAlarm> alarms = planMapper.toPlanAlarms(plan, request.getAlarms());
-            plan.setAlarms(alarms);
+            plan.updateAlarms(alarms);
         }
         
         // DB 저장

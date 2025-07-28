@@ -57,15 +57,12 @@ public class PlanUpdateHelper {
     }
 
     /**
-     * 알람 업데이트
+     * 알람 업데이트 (orphanRemoval 문제 해결)
      */
     public void updateAlarms(Plan plan, PlanUpdateReq request) {
         if (request.getAlarms() != null) {
-            plan.getAlarms().clear();
-            if (!request.getAlarms().isEmpty()) {
-                Set<PlanAlarm> newAlarms = planMapper.toPlanAlarms(plan, request.getAlarms());
-                plan.setAlarms(newAlarms);
-            }
+            Set<PlanAlarm> newAlarms = planMapper.toPlanAlarms(plan, request.getAlarms());
+            plan.updateAlarms(newAlarms);
         }
     }
 }
