@@ -41,7 +41,7 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
      * 1. 해당 월에 시작하는 계획
      * 2. 해당 월에 종료하는 계획  
      * 3. 해당 월을 걸쳐가는 장기 계획
-     * 4. 해당 월에 발생하는 반복 계획
+     * 4. 해당 월에 발생하는 반복 계획 (반복 종료일까지)
      */
     @Query(value = """
         SELECT DISTINCT p.* FROM plans p 
@@ -51,8 +51,9 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             -- 일반 계획: 해당 월과 겹치는 모든 계획
             (p.start_date <= :monthEnd AND p.end_date >= :monthStart)
             OR 
-            -- 반복 계획: 시작일이 해당 월 이전이고 아직 유효한 계획
-            (p.is_recurring = true AND p.start_date <= :monthEnd)
+            -- 반복 계획: 시작일이 해당 월 이전이고 반복 종료일이 해당 월 이후인 계획
+            (p.is_recurring = true AND p.start_date <= :monthEnd AND 
+             (ri.end_date IS NULL OR ri.end_date >= :monthStart))
         )
         ORDER BY p.start_date, p.start_time
         """, nativeQuery = true)
