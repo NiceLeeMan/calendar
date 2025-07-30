@@ -60,6 +60,7 @@ public class RecurringPlanGenerator {
     private void generateWeeklyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
         RecurringInfo recurring = plan.getRecurringInfo();
         LocalDate planStart = plan.getStartDate();
+        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
         
         for (DayOfWeek targetDayOfWeek : recurring.getRepeatWeekdays()) {
             LocalDate current = monthStart.with(TemporalAdjusters.firstInMonth(targetDayOfWeek));
@@ -69,7 +70,7 @@ public class RecurringPlanGenerator {
                 current = current.plusWeeks(1);
             }
             
-            while (!current.isAfter(monthEnd)) {
+            while (!current.isAfter(monthEnd) && (recurringEnd == null || !current.isAfter(recurringEnd))) {
                 // 예외 날짜가 아닌 경우만 추가
                 if (!recurring.getExceptionDates().contains(current)) {
                     PlanResponse instance = planMapper.toPlanResponse(plan);
@@ -88,12 +89,14 @@ public class RecurringPlanGenerator {
      */
     private void generateMonthlyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
         RecurringInfo recurring = plan.getRecurringInfo();
+        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
         
         if (recurring.getRepeatDayOfMonth() != null) {
             // 매월 특정 일 (예: 매월 15일)
             LocalDate current = monthStart.withDayOfMonth(Math.min(recurring.getRepeatDayOfMonth(), monthStart.lengthOfMonth()));
             
             if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
+                (recurringEnd == null || !current.isAfter(recurringEnd)) &&
                 !recurring.getExceptionDates().contains(current)) {
                 
                 PlanResponse instance = planMapper.toPlanResponse(plan);
@@ -109,6 +112,7 @@ public class RecurringPlanGenerator {
      */
     private void generateYearlyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
         RecurringInfo recurring = plan.getRecurringInfo();
+        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
         
         if (recurring.getRepeatMonth() != null && recurring.getRepeatDayOfYear() != null) {
             if (monthStart.getMonthValue() == recurring.getRepeatMonth()) {
@@ -116,6 +120,7 @@ public class RecurringPlanGenerator {
                         Math.min(recurring.getRepeatDayOfYear(), monthStart.lengthOfMonth()));
                 
                 if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
+                    (recurringEnd == null || !current.isAfter(recurringEnd)) &&
                     !recurring.getExceptionDates().contains(current)) {
                     
                     PlanResponse instance = planMapper.toPlanResponse(plan);
