@@ -1,19 +1,69 @@
 import { useState } from 'react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
+import { login } from '../../api'
+import type { LoginFormData, FormSubmissionState, SigninRequest } from '../../types'
 
 interface LoginFormProps {
   onNavigateToSignUp: () => void
 }
 
 const LoginForm = ({ onNavigateToSignUp }: LoginFormProps) => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [formData, setFormData] = useState<LoginFormData>({
+    id: '',
+    password: ''
+  })
+  
+  const [submissionState, setSubmissionState] = useState<FormSubmissionState>({
+    isSubmitting: false,
+    error: null,
+    success: false
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (field: keyof LoginFormData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }))
+    
+    // 에러 상태 초기화
+    if (submissionState.error) {
+      setSubmissionState(prev => ({ ...prev, error: null }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Login attempt:', { email, password })
-    // TODO: 실제 로그인 API 호출
+    
+    setSubmissionState(prev => ({ ...prev, isSubmitting: true }))
+    
+    try {
+      // 폼 데이터를 API 요청 형식으로 변환
+      const loginData: SigninRequest = {
+        userId: formData.id, // 현재 UI에서는 email 필드를 userId로 사용
+        userPassword: formData.password
+      }
+
+      const userResponse = await login(loginData)
+      
+      setSubmissionState({
+        isSubmitting: false,
+        error: null,
+        success: true
+      })
+
+      console.log('로그인 성공:', userResponse)
+      // TODO: 메인 페이지로 리다이렉트 또는 사용자 상태 업데이트
+      
+    } catch (error) {
+      setSubmissionState({
+        isSubmitting: false,
+        error: error instanceof Error ? error.message : '로그인에 실패했습니다',
+        success: false
+      })
+    }
   }
 
   return (
@@ -23,25 +73,41 @@ const LoginForm = ({ onNavigateToSignUp }: LoginFormProps) => {
       </h1>
       
       <form onSubmit={handleSubmit} className="space-y-0">
+        {submissionState.error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+            {submissionState.error}
+          </div>
+        )}
+
+        {submissionState.success && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm">
+            로그인에 성공했습니다!
+          </div>
+        )}
+        
         <Input
-          type="email"
+          type="text"
           placeholder="아이디를 입력하세요"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.id}
+          onChange={handleInputChange('id')}
           required
         />
         
         <Input
           type="password"
           placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleInputChange('password')}
           required
         />
         
         <div className="pt-4">
-          <Button type="submit">
-            Sign In
+          <Button 
+            type="submit"
+            variant="primary"
+            disabled={submissionState.isSubmitting}
+          >
+            {submissionState.isSubmitting ? '로그인 중...' : 'Sign In'}
           </Button>
         </div>
       </form>

@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 @Tag(name = "User", description = "사용자 관리 API")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     private final UserService userService;
