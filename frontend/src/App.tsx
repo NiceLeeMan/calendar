@@ -1,9 +1,22 @@
-
+import { useState } from 'react'
+import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 
+type Page = 'login' | 'signup'
+
 function App() {
-  // 임시로 SignUpPage 표시 (나중에 라우팅 추가)
-  return <SignUpPage />
+  const [currentPage, setCurrentPage] = useState<Page>('login')
+
+  return (
+    <>
+      {currentPage === 'login' && (
+        <LoginPage onNavigateToSignUp={() => setCurrentPage('signup')} />
+      )}
+      {currentPage === 'signup' && (
+        <SignUpPage onNavigateToLogin={() => setCurrentPage('login')} />
+      )}
+    </>
+  )
 }
 
 export default App

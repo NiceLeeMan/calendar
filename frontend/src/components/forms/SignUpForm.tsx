@@ -2,7 +2,11 @@ import { useState } from 'react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 
-const SignUpForm = () => {
+interface SignUpFormProps {
+  onNavigateToLogin: () => void
+}
+
+const SignUpForm = ({ onNavigateToLogin }: SignUpFormProps) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -46,7 +50,7 @@ const SignUpForm = () => {
 
   return (
     <div className="bg-white p-12 rounded-xl shadow-lg border border-gray-200 w-full max-w-lg">
-      <h1 className="text-2xl font-semibold text-gray-900 text-center mb-10">
+      <h1 className="text-3xl font-bold text-blue-600 text-center mb-10">
         Sign Up
       </h1>
       
@@ -84,19 +88,21 @@ const SignUpForm = () => {
         />
         
         {/* 이메일 인증 섹션 */}
-        <div className="w-full mb-6">
-          <div className="flex gap-3">
-            <div className="flex-1">
+        <div className="w-full mb-8">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1 relative">
               <input 
                 type="email"
                 placeholder="이메일 주소를 입력하세요"
                 value={formData.email}
                 onChange={handleInputChange('email')}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md text-base 
+                className="w-full px-0 py-3 text-base bg-transparent
+                         border-0 border-b-2 border-gray-300
                          transition-all duration-200 outline-none placeholder:text-gray-400
-                         focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                         focus:border-blue-500"
                 required
               />
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 focus-within:w-full"></div>
             </div>
             <Button
               type="button"
@@ -113,19 +119,21 @@ const SignUpForm = () => {
         
         {/* 인증번호 입력 섹션 */}
         {verificationSent && (
-          <div className="w-full mb-6">
-            <div className="flex gap-3">
-              <div className="flex-1">
+          <div className="w-full mb-8">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative">
                 <input
                   type="text"
                   placeholder="인증번호를 입력하세요"
                   value={formData.verificationCode}
                   onChange={handleInputChange('verificationCode')}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md text-base 
+                  className="w-full px-0 py-3 text-base bg-transparent
+                           border-0 border-b-2 border-gray-300
                            transition-all duration-200 outline-none placeholder:text-gray-400
-                           focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                           focus:border-blue-500"
                   required
                 />
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-200 focus-within:w-full"></div>
               </div>
               <Button
                 type="button"
@@ -139,7 +147,7 @@ const SignUpForm = () => {
               </Button>
             </div>
             {emailVerified && (
-              <p className="text-sm text-green-600 mt-2">
+              <p className="text-sm text-green-600 mt-3">
                 ✓ 이메일 인증이 완료되었습니다.
               </p>
             )}
@@ -152,6 +160,15 @@ const SignUpForm = () => {
           </Button>
         </div>
       </form>
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={onNavigateToLogin}
+          className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
+        >
+          이미 계정이 있나요? 로그인
+        </button>
+      </div>
     </div>
   )
 }
