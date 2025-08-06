@@ -38,3 +38,8 @@ out/
 
 # 민감 정보가 담긴 로컬 프로파일은 버전 관리에서 제외
 /src/main/resources/application-local.properties
+
+# Frontend
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
