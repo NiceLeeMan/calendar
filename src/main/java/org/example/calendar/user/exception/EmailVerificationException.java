@@ -20,15 +20,8 @@ import org.example.calendar.common.exception.BusinessException;
  */
 public class EmailVerificationException extends BusinessException {
 
-    public EmailVerificationException() {
-        super("이메일 인증에 실패했습니다");
-    }
-
     public EmailVerificationException(String message) {
         super(message);
     }
 
-    public EmailVerificationException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

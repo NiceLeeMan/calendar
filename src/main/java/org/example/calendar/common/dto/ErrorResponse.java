@@ -2,6 +2,8 @@ package org.example.calendar.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,17 +29,23 @@ import java.util.List;
  * @since 2025-07-14
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Getter @Setter
 public class ErrorResponse {
+
+    /**
+     * 에러 코드 (구체적인 에러 유형 식별용)
+     */
+    private String errorCode;
+
+    /**
+     * 에러 발생 필드명 (중복 검사 등에서 사용)
+     */
+    private String field;
 
     /**
      * HTTP 상태 코드 (예: 400, 404, 500)
      */
     private int status;
-
-    /**
-     * 에러 메시지 (사용자에게 표시될 내용)
-     */
-    private String message;
 
     /**
      * 에러 발생 시간
@@ -65,72 +73,33 @@ public class ErrorResponse {
         this.timestamp = LocalDateTime.now();
     }
 
-    // 기본 에러 응답 생성자
-    public ErrorResponse(int status, String message, String path) {
+    // 에러 코드와 필드 포함 생성자 (중복 에러용)
+    public ErrorResponse(int status, String path, String errorCode, String field) {
         this();
         this.status = status;
-        this.message = message;
+        this.path = path;
+        this.errorCode = errorCode;
+        this.field = field;
+    }
+
+    // 에러 코드만 포함 생성자
+
+    // 기본 에러 응답 생성자
+    public ErrorResponse(int status, String path) {
+        this();
+        this.status = status;
         this.path = path;
     }
 
-    // 상세 에러 포함 생성자
-    public ErrorResponse(int status, String message, String path, List<String> errors) {
-        this(status, message, path);
+    // 상세 에러 포함 생성자 (유효성 검증용)
+    public ErrorResponse(int status, String path, String errorCode, List<String> errors) {
+        this(status, path, errorCode);
         this.errors = errors;
     }
 
     // 개발용 디버그 정보 포함 생성자
-    public ErrorResponse(int status, String message, String path, String debugMessage) {
-        this(status, message, path);
-        this.debugMessage = debugMessage;
-    }
-
-    // Getter and Setter
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(List<String> errors) {
-        this.errors = errors;
-    }
-
-    public String getDebugMessage() {
-        return debugMessage;
-    }
-
-    public void setDebugMessage(String debugMessage) {
+    public ErrorResponse(int status, String path, String debugMessage) {
+        this(status, path);
         this.debugMessage = debugMessage;
     }
 }

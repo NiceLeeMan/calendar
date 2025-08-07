@@ -17,15 +17,8 @@ import org.example.calendar.common.exception.BusinessException;
  */
 public class DuplicateUserIdException extends BusinessException {
 
-  public DuplicateUserIdException() {
-    super("이미 사용 중인 아이디입니다");
-  }
-
   public DuplicateUserIdException(String message) {
     super(message);
   }
 
-  public DuplicateUserIdException(String message, Throwable cause) {
-    super(message, cause);
-  }
 }
