@@ -49,6 +49,7 @@ public class UserController {
     private final AuthService authService;
     private final JwtProperties jwtProperties;
 
+
     /**
      * 이메일 인증번호 발송 (회원가입 1단계)
      */

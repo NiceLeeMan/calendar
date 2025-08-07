@@ -40,6 +40,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     boolean existsByUserId(String userId);
 
+    /**
+     * 이메일 존재 여부 확인 (회원가입 시 중복 검증용)
+     *
+     * @param email 확인할 이메일
+     * @return boolean 존재하면 true, 없으면 false
+     */
+    boolean existsByEmail(String email);
+
+    /**
+     * 전화번호 존재 여부 확인 (회원가입 시 중복 검증용)
+     *
+     * @param phoneNumber 확인할 전화번호
+     * @return boolean 존재하면 true, 없으면 false
+     */
+    boolean existsByPhoneNumber(String phoneNumber);
+
     /*
      * 기본 CRUD 메서드는 JpaRepository가 자동 제공:
      * - save(User user)           : 사용자 저장/수정

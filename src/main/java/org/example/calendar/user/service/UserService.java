@@ -6,6 +6,7 @@ import org.example.calendar.user.entity.User;
 import org.example.calendar.user.repository.UserRepository;
 import org.example.calendar.user.exception.DuplicateUserIdException;
 import org.example.calendar.user.exception.DuplicateEmailException;
+import org.example.calendar.user.exception.DuplicatePhoneException;
 import org.example.calendar.user.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
         this.emailVerificationService = emailVerificationService;
     }
+
 
     /**
      * 이메일 인증번호 발송 (회원가입 1단계)
@@ -104,6 +106,7 @@ public class UserService {
         // 1. 중복 검증 (이중 체크)
         validateUserIdNotDuplicate(req.getUserId());
         validateEmailNotDuplicate(req.getUserEmail());
+        validatePhoneNotDuplicate(req.getUserPhoneNumber());
 
         // 2. 비밀번호 암호화
         String encodedPassword = encodePassword(req.getUserPassword());
@@ -166,10 +169,23 @@ public class UserService {
      * @throws DuplicateEmailException 중복 시 예외 발생
      */
     private void validateEmailNotDuplicate(String email) {
-        // UserRepository에 existsByEmail이 없으므로 다른 방법 사용
-        // 실제로는 이메일 인증 단계에서 중복을 체크하는 것이 일반적
-        logger.debug("이메일 중복 검증: {}", email);
-        // TODO: 필요 시 existsByEmail 메서드 추가하거나 다른 검증 방식 구현
+        if (userRepository.existsByEmail(email)) {
+            logger.warn("이메일 중복: {}", email);
+            throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + email);
+        }
+    }
+
+    /**
+     * 전화번호 중복 검증
+     *
+     * @param phoneNumber 검증할 전화번호
+     * @throws DuplicatePhoneException 중복 시 예외 발생
+     */
+    private void validatePhoneNotDuplicate(String phoneNumber) {
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            logger.warn("전화번호 중복: {}", phoneNumber);
+            throw new DuplicatePhoneException("이미 사용 중인 전화번호입니다: " + phoneNumber);
+        }
     }
 
     /**

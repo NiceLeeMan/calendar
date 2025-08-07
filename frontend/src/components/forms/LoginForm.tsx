@@ -6,9 +6,10 @@ import type { LoginFormData, FormSubmissionState, SigninRequest } from '../../ty
 
 interface LoginFormProps {
   onNavigateToSignUp: () => void
+  onNavigateToMain: () => void
 }
 
-const LoginForm = ({ onNavigateToSignUp }: LoginFormProps) => {
+const LoginForm = ({ onNavigateToSignUp, onNavigateToMain }: LoginFormProps) => {
   const [formData, setFormData] = useState<LoginFormData>({
     id: '',
     password: ''
@@ -55,7 +56,11 @@ const LoginForm = ({ onNavigateToSignUp }: LoginFormProps) => {
       })
 
       console.log('로그인 성공:', userResponse)
-      // TODO: 메인 페이지로 리다이렉트 또는 사용자 상태 업데이트
+      
+      // 메인 페이지로 이동
+      setTimeout(() => {
+        onNavigateToMain()
+      }, 1000)
       
     } catch (error) {
       setSubmissionState({
