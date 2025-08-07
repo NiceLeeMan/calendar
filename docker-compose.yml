@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:16
+    container_name: calendar-postgres
+    environment:
+      POSTGRES_DB: calendar_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dlrlqor256
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      # 데이터 영구 저장
+      - postgres_data:/var/lib/postgresql/data
+      # 초기화 스크립트 (옵션)
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - calendar-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    container_name: calendar-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      # Redis 설정 파일 (옵션)
+      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - calendar-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    # Redis 설정으로 실행 (옵션)
+    # command: redis-server /usr/local/etc/redis/redis.conf
+
+  # Spring Boot 애플리케이션
+  calendar-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: calendar-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # 데이터베이스 연결 (Docker 네트워크 사용)
+      DB_URL: jdbc:postgresql://postgres:5432/calendar_dev
+      DB_USERNAME: postgres
+      DB_PASSWORD: dlrlqor256
+      
+      # Redis 연결
+      REDIS_HOST: postgres
+      REDIS_PORT: 6379
+      
+      # JWT 설정
+      JWT_SECRET: calendar-project-jwt-secret-key-2025-spring-boot-very-secure-and-long-docker
+      JWT_EXPIRATION: 86400000
+      
+      # 이메일 설정 (기존 값 사용)
+      MAIL_USERNAME: leegeebark@gmail.com
+      MAIL_PASSWORD: "etet iwwp tgis wjla"
+      
+      # JVM 옵션
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - calendar-network
+    volumes:
+      # 로그 파일 외부 저장
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# 네트워크 정의
+networks:
+  calendar-network:
+    driver: bridge
+    name: calendar-network
+
+# 볼륨 정의 (데이터 영구 저장)
+volumes:
+  postgres_data:
+    name: calendar-postgres-data
