@@ -1,6 +1,9 @@
 package org.example.calendar.common.exception;
 
 import org.example.calendar.common.dto.ErrorResponse;
+import org.example.calendar.user.exception.DuplicateEmailException;
+import org.example.calendar.user.exception.DuplicateUserIdException;
+import org.example.calendar.user.exception.DuplicatePhoneException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,8 +61,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
-                "요청한 페이지를 찾을 수 없습니다.",
-                request.getRequestURI()
+                request.getRequestURI(),
+                "NOT_FOUND"
         );
 
         // 개발환경에서는 추가 디버그 정보 제공
@@ -91,8 +94,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "입력값이 올바르지 않습니다.",
                 request.getRequestURI(),
+                "VALIDATION_FAILED",
                 errors
         );
 
@@ -110,8 +113,8 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "서버에 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-                request.getRequestURI()
+                request.getRequestURI(),
+                "INTERNAL_SERVER_ERROR"
         );
 
         // 개발환경에서는 상세한 에러 메시지 제공
@@ -120,6 +123,75 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    /**
+     * DuplicateEmailException 처리 - 이메일 중복
+     */
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEmailException(
+            DuplicateEmailException ex, HttpServletRequest request) {
+
+        logger.warn("Duplicate email: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                request.getRequestURI(),
+                "DUPLICATE_EMAIL",
+                "email"
+        );
+
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * DuplicateUserIdException 처리 - 사용자 ID 중복
+     */
+    @ExceptionHandler(DuplicateUserIdException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUserIdException(
+            DuplicateUserIdException ex, HttpServletRequest request) {
+
+        logger.warn("Duplicate user ID: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                request.getRequestURI(),
+                "DUPLICATE_USER_ID",
+                "userId"
+        );
+
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * DuplicatePhoneException 처리 - 전화번호 중복
+     */
+    @ExceptionHandler(DuplicatePhoneException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePhoneException(
+            DuplicatePhoneException ex, HttpServletRequest request) {
+
+        logger.warn("Duplicate phone: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                request.getRequestURI(),
+                "DUPLICATE_PHONE",
+                "phoneNumber"
+        );
+
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     /**
@@ -133,7 +205,6 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "잘못된 요청입니다.",
                 request.getRequestURI()
         );
 
