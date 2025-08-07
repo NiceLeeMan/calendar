@@ -3,8 +3,9 @@
  */
 
 // API 관련 타입들
-export type { HttpError, ErrorResponse, ErrorCode } from './api/common'
+export type { HttpError, ErrorResponse, ErrorCode } from './api'
 
+// 사용자 도메인 관련 타입들 (API + 폼)
 export type {
   SignupRequest,
   SigninRequest,
@@ -14,26 +15,23 @@ export type {
   EmailVerifyCodeRequest,
   EmailVerifyCodeResponse,
   LoginResponse,
-  LogoutResponse
-} from './api/auth'
-
-// 폼 관련 타입들
-export type {
+  LogoutResponse,
   LoginFormData,
   SignupFormData,
   EmailVerificationState,
   FormValidation,
   FormSubmissionState
-} from './forms/auth'
+} from './user'
 
+// 유효성 검사 관련 타입들
 export type {
   ValidationResult,
   ValidatorFunction,
   FormFieldName,
   ValidationErrors
-} from './forms/validation'
+} from './validation'
 
-export { ValidationRules } from './forms/validation'
+export { ValidationRules } from './validation'
 
 // 유틸리티 타입들
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

@@ -1,4 +1,4 @@
-import type { ErrorCode, ErrorResponse } from '../types/api/common'
+import type { ErrorCode, ErrorResponse } from '../types/api'
 
 /**
  * 에러 코드별 메시지 매핑
