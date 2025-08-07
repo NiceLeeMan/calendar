@@ -4,9 +4,10 @@ import { logout } from '../api'
 
 interface MainPageProps {
   onNavigateToLogin: () => void
+  onNavigateToCalendar: () => void
 }
 
-const MainPage = ({ onNavigateToLogin }: MainPageProps) => {
+const MainPage = ({ onNavigateToLogin, onNavigateToCalendar }: MainPageProps) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
@@ -43,7 +44,14 @@ const MainPage = ({ onNavigateToLogin }: MainPageProps) => {
               </p>
             </div>
             
-            <div>
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                size="small"
+                onClick={onNavigateToCalendar}
+              >
+                캘린더
+              </Button>
               <Button
                 variant="secondary"
                 size="small"

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import MainPage from './pages/MainPage'
+import CalendarPage from './pages/CalendarPage'
 import { getMyInfo } from './api'
 
-type Page = 'login' | 'signup' | 'main'
+type Page = 'login' | 'signup' | 'main' | 'calendar'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('login')
@@ -58,7 +59,13 @@ function App() {
         <SignUpPage onNavigateToLogin={() => setCurrentPage('login')} />
       )}
       {currentPage === 'main' && (
-        <MainPage onNavigateToLogin={() => setCurrentPage('login')} />
+        <MainPage 
+          onNavigateToLogin={() => setCurrentPage('login')}
+          onNavigateToCalendar={() => setCurrentPage('calendar')}
+        />
+      )}
+      {currentPage === 'calendar' && (
+        <CalendarPage onNavigateToMain={() => setCurrentPage('main')} />
       )}
     </>
   )
