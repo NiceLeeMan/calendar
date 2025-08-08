@@ -28,7 +28,13 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
     { id: 10, title: "Lunch with Olivia", date: "2025-08-07", startTime: "12:00", endTime: "13:30" }
   ]
 
-  // 선택된 날짜의 이벤트 가져오기
+  // 현재 날짜의 이벤트 가져오기 (DayView용)
+  const getCurrentDateEvents = () => {
+    const dateString = currentDate.toISOString().split('T')[0]
+    return dummyEvents.filter(event => event.date === dateString)
+  }
+
+  // 선택된 날짜의 이벤트 가져오기 (Month/Week View용)
   const getSelectedDateEvents = () => {
     if (!selectedDate) return []
     const dateString = selectedDate.toISOString().split('T')[0]
@@ -36,6 +42,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
   }
 
   const selectedEvents = getSelectedDateEvents()
+  const currentDateEvents = getCurrentDateEvents()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,16 +80,22 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
               <DayView
                 currentDate={currentDate}
                 selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
+                onDateSelect={(date) => {
+                  setCurrentDate(date)
+                  setSelectedDate(date)
+                }}
+                events={currentDateEvents}
               />
             )}
           </div>
 
-          {/* 사이드바 영역 */}
-          <CalendarSidebar
-            selectedDate={selectedDate}
-            events={selectedEvents}
-          />
+          {/* 사이드바 영역 - DayView가 아닐 때만 표시 */}
+          {currentView !== 'day' && (
+            <CalendarSidebar
+              selectedDate={selectedDate}
+              events={selectedEvents}
+            />
+          )}
         </div>
       </div>
     </div>
