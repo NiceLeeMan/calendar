@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import MiniCalendar from './MiniCalendar'
+import PlanCreateModal from './PlanCreateModal'
 
 interface Event {
   id: number
@@ -18,6 +19,20 @@ interface DayViewProps {
 }
 
 const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayViewProps) => {
+  // 모달 상태 관리
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // 일정 추가 버튼 클릭 핸들러
+  const handleAddPlan = () => {
+    console.log('일정 추가 버튼 클릭!')
+    setIsModalOpen(true)
+    console.log('모달 상태:', true)
+  }
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+  }
   // 더미 이벤트 데이터
   const dummyEvents: Event[] = [
     { id: 1, title: "Morning standup", date: "2025-08-06", startTime: "09:00", endTime: "09:30", color: "bg-blue-500" },
@@ -355,7 +370,10 @@ const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayVi
                   <p className="text-gray-500 text-sm">
                     이 날에는 일정이 없습니다.
                   </p>
-                  <button className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                  <button 
+                    onClick={handleAddPlan}
+                    className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
                     + 일정 추가
                   </button>
                 </div>
@@ -397,6 +415,27 @@ const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayVi
           </div>
         </div>
       </div>
+
+      {/* 일정 추가 모달 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2>테스트 모달</h2>
+            <p>모달이 정상적으로 열렸습니다!</p>
+            <button 
+              onClick={handleCloseModal}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+      <PlanCreateModal 
+        isOpen={false}
+        onClose={handleCloseModal}
+        selectedDate={currentDate}
+      />
     </div>
   )
 }

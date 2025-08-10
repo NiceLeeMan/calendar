@@ -4,6 +4,7 @@ import MonthView from '../components/calendar/MonthView'
 import WeekView from '../components/calendar/WeekView'
 import DayView from '../components/calendar/DayView'
 import CalendarSidebar from '../components/calendar/CalendarSidebar'
+import PlanCreateModal from '../components/calendar/PlanCreateModal'
 
 interface CalendarPageProps {
   onNavigateToMain: () => void
@@ -13,6 +14,19 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
   const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
+  
+  // 모달 상태 관리
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // 일정 추가 버튼 클릭 핸들러
+  const handleAddPlan = () => {
+    setIsModalOpen(true)
+  }
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+  }
 
   // 더미 이벤트 데이터 (MonthView와 동일)
   const dummyEvents = [
@@ -94,10 +108,20 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
             <CalendarSidebar
               selectedDate={selectedDate}
               events={selectedEvents}
+              onAddPlan={handleAddPlan}
             />
           )}
         </div>
       </div>
+
+      {/* 일정 추가 모달 - Month와 Week 뷰용 */}
+      {currentView !== 'day' && (
+        <PlanCreateModal 
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          selectedDate={selectedDate || currentDate}
+        />
+      )}
     </div>
   )
 }

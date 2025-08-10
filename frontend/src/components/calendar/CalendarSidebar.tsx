@@ -9,9 +9,10 @@ interface Event {
 interface CalendarSidebarProps {
   selectedDate: Date | null
   events: Event[]
+  onAddPlan?: () => void
 }
 
-const CalendarSidebar = ({ selectedDate, events }: CalendarSidebarProps) => {
+const CalendarSidebar = ({ selectedDate, events, onAddPlan }: CalendarSidebarProps) => {
   return (
     <div className="w-80 flex-shrink-0">
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
@@ -85,7 +86,10 @@ const CalendarSidebar = ({ selectedDate, events }: CalendarSidebarProps) => {
                 <p className="text-gray-500 text-sm">
                   이 날에는 일정이 없습니다.
                 </p>
-                <button className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <button 
+                  onClick={onAddPlan}
+                  className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
                   + 일정 추가
                 </button>
               </div>
