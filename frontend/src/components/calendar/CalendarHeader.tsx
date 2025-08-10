@@ -1,3 +1,6 @@
+import React, { useState } from 'react'
+import DatePicker from '../ui/DatePicker'
+
 interface CalendarHeaderProps {
   currentView: 'month' | 'week' | 'day'
   currentDate: Date
@@ -13,6 +16,7 @@ const CalendarHeader = ({
   onDateChange,
   onNavigateToMain
 }: CalendarHeaderProps) => {
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   
   const navigatePrevious = () => {
     const newDate = new Date(currentDate)
@@ -40,6 +44,16 @@ const CalendarHeader = ({
 
   const goToToday = () => {
     onDateChange(new Date())
+  }
+
+  // 날짜 선택기 열기/닫기
+  const toggleDatePicker = () => {
+    setIsDatePickerOpen(!isDatePickerOpen)
+  }
+
+  const handleDatePickerChange = (date: Date) => {
+    onDateChange(date)
+    setIsDatePickerOpen(false)
   }
 
   const getDateDisplayText = () => {
@@ -138,13 +152,25 @@ const CalendarHeader = ({
                 이전
               </button>
               
-              <div className="text-center min-w-[200px]">
-                <h2 className="text-xl font-bold text-gray-800">
+              <div className="text-center min-w-[200px] relative">
+                <button
+                  onClick={toggleDatePicker}
+                  className="text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors cursor-pointer"
+                >
                   {dateDisplay.primary}
-                </h2>
+                </button>
                 <p className="text-sm text-gray-500 mt-1">
                   {dateDisplay.secondary}
                 </p>
+                
+                {/* 날짜 선택기 */}
+                {isDatePickerOpen && (
+                  <DatePicker
+                    currentDate={currentDate}
+                    onDateChange={handleDatePickerChange}
+                    onClose={() => setIsDatePickerOpen(false)}
+                  />
+                )}
               </div>
 
               <button
