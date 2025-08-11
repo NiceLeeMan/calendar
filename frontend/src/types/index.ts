@@ -33,6 +33,23 @@ export type {
 
 export { ValidationRules } from './validation'
 
+// Plan 도메인 관련 타입들
+export type {
+  RepeatUnit,
+  DayOfWeek,
+  AlarmReqInfo,
+  RecurringReqInfo,
+  PlanCreateRequest,
+  PlanUpdateRequest,
+  AlarmResInfo,
+  RecurringResInfo,
+  PlanResponse,
+  MonthlyPlanParams,
+  PlanFilterOptions,
+  PlanFormData,
+  MonthlyPlanCache
+} from './plan'
+
 // 유틸리티 타입들
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>
