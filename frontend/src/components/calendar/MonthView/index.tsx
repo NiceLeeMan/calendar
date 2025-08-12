@@ -2,6 +2,12 @@
  * MonthView 메인 컴포넌트 (분할된 버전)
  * 월별 캘린더 표시 및 일정 관리
  * 
+ * @features
+ * - 실시간 계획 추가 지원 (newPlan prop)
+ * - 애니메이션 효과
+ * - 일정 색상 자동 할당
+ * - 로딩 및 에러 상태 처리
+ * 
  * @author Calendar Team
  * @since 2025-08-11
  */
@@ -14,7 +20,7 @@ interface MonthViewProps {
   currentDate: Date
   selectedDate: Date | null
   onDateSelect: (date: Date) => void
-  newPlan?: PlanResponse | null
+  newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
 const MonthView = ({ currentDate, selectedDate, onDateSelect, newPlan }: MonthViewProps) => {

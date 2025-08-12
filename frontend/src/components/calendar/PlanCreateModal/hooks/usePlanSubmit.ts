@@ -19,8 +19,9 @@ export const usePlanSubmit = () => {
       const requestData = convertFormDataToCreateRequest(formData)
       const createdPlan = await createPlan(requestData)
       
-      console.log('일정 생성 성공:', createdPlan)
+      console.log('일정 생성 성공 - 실시간 UI 업데이트:', createdPlan)
       
+      // 생성된 계획을 부모 컴포넌트에 전달하여 실시간 UI 업데이트
       if (onPlanCreated) {
         onPlanCreated(createdPlan)
       }

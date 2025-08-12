@@ -1,10 +1,26 @@
-import { useState } from 'react'
+/**
+ * CalendarPage - 메인 캘린더 페이지
+ * 
+ * @features
+ * - 실시간 계획 추가 및 UI 업데이트
+ * - Month/Week/Day 뷰 지원
+ * - 계획 데이터와 사이드바 연동
+ * - 상태 관리 최적화 (메모이제이션)
+ * 
+ * @author Calendar Team
+ * @since 2025-08-11
+ * @updated 2025-08-12 - 실시간 UI 업데이트 기능 추가
+ */
+
+import { useState, useMemo } from 'react'
 import CalendarHeader from '../components/calendar/CalendarHeader'
 import MonthView from '../components/calendar/MonthView'
 import WeekView from '../components/calendar/WeekView'
 import DayView from '../components/calendar/DayView'
 import CalendarSidebar from '../components/calendar/CalendarSidebar'
 import PlanCreateModal from '../components/calendar/PlanCreateModal'
+import { PlanResponse } from '../types/plan'
+import { useMonthlyPlans } from '../components/calendar/MonthView/hooks'
 
 interface CalendarPageProps {
   onNavigateToMain: () => void
@@ -17,6 +33,9 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
   
   // 모달 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  // 새로 생성된 계획 상태 - 실시간 UI 업데이트용
+  const [newCreatedPlan, setNewCreatedPlan] = useState<PlanResponse | null>(null)
 
   // 일정 추가 버튼 클릭 핸들러
   const handleAddPlan = () => {
@@ -28,7 +47,28 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
     setIsModalOpen(false)
   }
 
-  // 더미 이벤트 데이터 (MonthView와 동일)
+  // 계획 생성 성공 핸들러 - 실시간 UI 업데이트
+  const handlePlanCreated = (createdPlan: PlanResponse) => {
+    setNewCreatedPlan(createdPlan)
+    
+    // 일정 시간 후 상태 초기화 (다음 생성을 위해)
+    setTimeout(() => {
+      setNewCreatedPlan(null)
+    }, 1000)
+  }
+
+  // 월별 계획 데이터 가져오기 (사이드바용)
+  const { getPlansForDate } = useMonthlyPlans({ 
+    currentDate, 
+    newPlan: newCreatedPlan 
+  })
+
+  // 선택된 날짜의 계획 가져오기 (메모이제이션)
+  const selectedDatePlans = useMemo(() => {
+    return selectedDate ? getPlansForDate(selectedDate) : []
+  }, [selectedDate, getPlansForDate])
+
+  // 더미 이벤트 데이터 (DayView용 - 추후 실제 API로 교체 예정)
   const dummyEvents = [
     { id: 1, title: "All-hands meeting", date: "2025-08-01", startTime: "09:00", endTime: "10:00" },
     { id: 2, title: "Dinner with Candice", date: "2025-08-01", startTime: "19:00", endTime: "21:00" },
@@ -48,14 +88,6 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
     return dummyEvents.filter(event => event.date === dateString)
   }
 
-  // 선택된 날짜의 이벤트 가져오기 (Month/Week View용)
-  const getSelectedDateEvents = () => {
-    if (!selectedDate) return []
-    const dateString = selectedDate.toISOString().split('T')[0]
-    return dummyEvents.filter(event => event.date === dateString)
-  }
-
-  const selectedEvents = getSelectedDateEvents()
   const currentDateEvents = getCurrentDateEvents()
 
   return (
@@ -79,6 +111,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                newPlan={newCreatedPlan}
               />
             )}
             
@@ -107,7 +140,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
           {currentView !== 'day' && (
             <CalendarSidebar
               selectedDate={selectedDate}
-              events={selectedEvents}
+              plans={selectedDatePlans}
               onAddPlan={handleAddPlan}
             />
           )}
@@ -120,6 +153,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           selectedDate={selectedDate || currentDate}
+          onPlanCreated={handlePlanCreated}
         />
       )}
     </div>

@@ -103,10 +103,21 @@ export const useMonthlyPlans = ({
         if (exists) {
           return prevPlans
         }
-        return [...prevPlans, newPlan]
+        
+        // 새 일정이 현재 월에 속하는지 확인
+        const planDate = new Date(newPlan.startDate)
+        const currentYear = currentDate.getFullYear()
+        const currentMonth = currentDate.getMonth()
+        
+        if (planDate.getFullYear() === currentYear && planDate.getMonth() === currentMonth) {
+          console.log('새 일정 실시간 추가:', newPlan)
+          return [...prevPlans, newPlan]
+        }
+        
+        return prevPlans
       })
     }
-  }, [newPlan])
+  }, [newPlan, currentDate])
 
   // 특정 날짜의 일정 가져오기
   const getPlansForDate = (date: Date): PlanResponse[] => {

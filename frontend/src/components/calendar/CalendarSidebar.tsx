@@ -1,18 +1,12 @@
-interface Event {
-  id: number
-  title: string
-  date: string
-  startTime: string
-  endTime: string
-}
+import { PlanResponse } from '../../../types/plan'
 
 interface CalendarSidebarProps {
   selectedDate: Date | null
-  events: Event[]
+  plans: PlanResponse[]
   onAddPlan?: () => void
 }
 
-const CalendarSidebar = ({ selectedDate, events, onAddPlan }: CalendarSidebarProps) => {
+const CalendarSidebar = ({ selectedDate, plans, onAddPlan }: CalendarSidebarProps) => {
   return (
     <div className="w-80 flex-shrink-0">
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
@@ -35,31 +29,36 @@ const CalendarSidebar = ({ selectedDate, events, onAddPlan }: CalendarSidebarPro
         
         {selectedDate ? (
           <div className="space-y-3">
-            {events.length > 0 ? (
-              events.map((event) => (
+            {plans.length > 0 ? (
+              plans.map((plan) => (
                 <div 
-                  key={event.id}
+                  key={plan.id}
                   className="p-4 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer group"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-blue-800 group-hover:text-blue-900 truncate">
-                        {event.title}
+                        {plan.planName}
                       </div>
-                      {event.startTime && (
+                      {plan.startTime && (
                         <div className="text-sm text-blue-600 mt-1">
-                          {event.startTime} - {event.endTime}
+                          {plan.startTime} - {plan.endTime}
+                        </div>
+                      )}
+                      {plan.planContent && (
+                        <div className="text-sm text-gray-600 mt-1 truncate">
+                          {plan.planContent}
                         </div>
                       )}
                     </div>
                     
-                    {/* 이벤트 지속 시간 표시 */}
-                    {event.startTime && event.endTime && (
+                    {/* 일정 지속 시간 표시 */}
+                    {plan.startTime && plan.endTime && (
                       <div className="ml-3 flex-shrink-0">
                         <span className="text-xs bg-blue-200 text-blue-700 px-2 py-1 rounded-full">
                           {(() => {
-                            const start = parseInt(event.startTime.split(':')[0]) * 60 + parseInt(event.startTime.split(':')[1])
-                            const end = parseInt(event.endTime.split(':')[0]) * 60 + parseInt(event.endTime.split(':')[1])
+                            const start = parseInt(plan.startTime.split(':')[0]) * 60 + parseInt(plan.startTime.split(':')[1])
+                            const end = parseInt(plan.endTime.split(':')[0]) * 60 + parseInt(plan.endTime.split(':')[1])
                             const duration = end - start
                             
                             if (duration >= 60) {
@@ -95,16 +94,16 @@ const CalendarSidebar = ({ selectedDate, events, onAddPlan }: CalendarSidebarPro
               </div>
             )}
             
-            {events.length > 0 && (
+            {plans.length > 0 && (
               <div className="pt-4 border-t border-gray-100">
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>{events.length}개의 일정</span>
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                  <span>{plans.length}개의 일정</span>
                   <span>
                     총 {(() => {
-                      const totalMinutes = events.reduce((acc, event) => {
-                        if (!event.startTime || !event.endTime) return acc
-                        const start = parseInt(event.startTime.split(':')[0]) * 60 + parseInt(event.startTime.split(':')[1])
-                        const end = parseInt(event.endTime.split(':')[0]) * 60 + parseInt(event.endTime.split(':')[1])
+                      const totalMinutes = plans.reduce((acc, plan) => {
+                        if (!plan.startTime || !plan.endTime) return acc
+                        const start = parseInt(plan.startTime.split(':')[0]) * 60 + parseInt(plan.startTime.split(':')[1])
+                        const end = parseInt(plan.endTime.split(':')[0]) * 60 + parseInt(plan.endTime.split(':')[1])
                         return acc + (end - start)
                       }, 0)
                       
@@ -119,6 +118,14 @@ const CalendarSidebar = ({ selectedDate, events, onAddPlan }: CalendarSidebarPro
                     })()}
                   </span>
                 </div>
+                
+                {/* 일정이 있어도 추가 버튼 표시 */}
+                <button 
+                  onClick={onAddPlan}
+                  className="w-full py-2 text-blue-600 hover:text-blue-800 text-sm font-medium border border-blue-200 hover:border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
+                >
+                  + 일정 추가
+                </button>
               </div>
             )}
           </div>
