@@ -11,7 +11,8 @@ import {
   PlanUpdateRequest,
   PlanResponse,
   MonthlyPlanParams,
-  PlanFilterOptions
+  PlanFilterOptions,
+  DayOfWeek,
 } from '../types/plan'
 import apiClient from './httpClient'
 
@@ -311,7 +312,7 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
     switch (recurring.repeatUnit) {
       case 'WEEKLY':
         if (recurring.repeatWeekdays?.length > 0) {
-          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays
+          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
         }
         break
       case 'MONTHLY':
@@ -352,7 +353,8 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
  * @returns 폼용 데이터
  */
 export const convertResponseToFormData = (planResponse: PlanResponse): any => {
-  const formData = {
+
+  const formData: any = {
     planName: planResponse.planName,
     planContent: planResponse.planContent || '',
     startDate: planResponse.startDate,
@@ -387,7 +389,7 @@ export const convertResponseToFormData = (planResponse: PlanResponse): any => {
   }
 
   // 알람 설정 변환
-  if (planResponse.alarms?.length > 0) {
+  if (planResponse.alarms && planResponse.alarms.length > 0) {
     formData.alarms = planResponse.alarms.map(alarm => ({
       alarmDate: alarm.alarmDate,
       alarmTime: alarm.alarmTime

@@ -5,8 +5,6 @@
  * @since 2025-08-11
  */
 
-import { RepeatUnit, DayOfWeek } from './enums'
-
 /**
  * 알람 응답 정보 (간소화됨 - 날짜/시간만)
  */
@@ -21,22 +19,22 @@ export interface AlarmResInfo {
  * 반복 일정 응답 정보 (백엔드 RecurringResInfo 매핑)
  */
 export interface RecurringResInfo {
-  /** 반복 ID */
-  id: number
-  /** 반복 단위 */
-  repeatUnit: RepeatUnit
+  /** 반복 단위 (문자열로 전달됨) */
+  repeatUnit: string
   /** 반복 간격 */
   repeatInterval: number
   
   // 주간 반복
-  /** 반복 요일들 */
-  repeatWeekdays?: DayOfWeek[]
+  /** 반복 요일들 (문자열 배열로 전달됨) */
+  repeatWeekdays?: string[]
   
   // 월간 반복
   /** 매월 반복할 날짜 */
   repeatDayOfMonth?: number | null
   /** 반복할 주차들 */
   repeatWeeksOfMonth?: number[]
+  /** 반복할 주차 (단수) */
+  repeatWeekOfMonth?: number | null
   
   // 연간 반복
   /** 월 */
@@ -48,6 +46,8 @@ export interface RecurringResInfo {
   exceptionDates?: string[]
   /** 반복 종료 날짜 */
   endDate?: string | null
+  /** 반복 설명 (예: "매주 월,수,금") */
+  repeatDescription?: string
 }
 
 /**
