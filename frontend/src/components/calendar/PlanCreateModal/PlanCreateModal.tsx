@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { PlanResponse } from '../../../types/plan'
 import { usePlanForm, usePlanSubmit } from './hooks'
 import { BasicInfoSection, DateTimeSection, RecurringSection, AlarmSection, ErrorMessage } from './components'

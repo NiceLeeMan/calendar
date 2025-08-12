@@ -18,7 +18,7 @@ import {
   PlanDeleteModal, 
   usePlanContextMenu, 
   usePlanDelete 
-} from './PlanDelete'
+} from '../PlanDelete'
 
 interface CalendarSidebarProps {
   selectedDate: Date | null

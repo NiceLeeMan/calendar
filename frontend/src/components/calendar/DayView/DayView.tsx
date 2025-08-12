@@ -17,7 +17,7 @@
 import React from 'react'
 import { PlanResponse } from '../../../types/plan'
 import { useMonthlyPlans } from '../MonthView/hooks'
-import { useCalendarColors } from '../hooks/useCalendarColors'
+import { useCalendarColors } from '../hooks/UseCalendarColors.ts'
 import PlanCreateModal from '../PlanCreateModal'
 import { useDayEvents, useTimeSlots, usePlanModal } from './hooks'
 import { TimeGrid, EventOverlay, DayHeader, DaySidebar } from './components'

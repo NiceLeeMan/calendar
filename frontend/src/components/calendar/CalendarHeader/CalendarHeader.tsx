@@ -6,7 +6,6 @@
  * @since 2025-08-11
  */
 
-import React from 'react'
 import DatePicker from '../../ui/DatePicker'
 import { useDateNavigation, useDateDisplay, useDatePicker } from './hooks'
 
@@ -86,6 +85,7 @@ const CalendarHeader = ({
                 </button>
               ))}
             </div>
+
           </div>
         </div>
       </div>

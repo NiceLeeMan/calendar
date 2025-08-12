@@ -17,7 +17,7 @@ import React from 'react'
 import { PlanResponse } from '../../../types/plan'
 import { useWeekEvents, useWeekDays } from './hooks'
 import { useMonthlyPlans } from '../MonthView/hooks'
-import { useCalendarColors } from '../hooks/useCalendarColors'
+import { useCalendarColors } from '../hooks'
 import { WeekHeader, WeekGrid, CurrentTimeLine } from './components'
 import { 
   PlanContextMenu, 
