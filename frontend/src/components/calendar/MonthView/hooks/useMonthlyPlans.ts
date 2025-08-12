@@ -76,7 +76,10 @@ export const useMonthlyPlans = ({
           { id: 15, planName: "Monday standup", planContent: "", startDate: "2025-08-11", endDate: "2025-08-11", startTime: "09:00", endTime: "09:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
           { id: 16, planName: "Content planning", planContent: "", startDate: "2025-08-11", endDate: "2025-08-11", startTime: "14:00", endTime: "15:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
           { id: 17, planName: "Product demo", planContent: "", startDate: "2025-08-12", endDate: "2025-08-12", startTime: "10:00", endTime: "11:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 18, planName: "Catch up w/ Alex", planContent: "", startDate: "2025-08-12", endDate: "2025-08-12", startTime: "16:00", endTime: "17:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" }
+          { id: 18, planName: "Catch up w/ Alex", planContent: "", startDate: "2025-08-12", endDate: "2025-08-12", startTime: "16:00", endTime: "17:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
+          // 다중 날짜 계획 테스트용 추가
+          { id: 19, planName: "Summer Vacation 🏖️", planContent: "Family trip to Jeju Island", startDate: "2025-08-13", endDate: "2025-08-15", startTime: "00:00", endTime: "23:59", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
+          { id: 20, planName: "Conference Week", planContent: "Tech conference attendance", startDate: "2025-08-20", endDate: "2025-08-22", startTime: "09:00", endTime: "18:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" }
         ]
         setPlans(dummyPlans)
       } else {

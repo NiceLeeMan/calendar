@@ -2,11 +2,21 @@
  * DayView 메인 컴포넌트 (분할된 버전)
  * 일별 캘린더 뷰 및 일정 관리
  * 
+ * @features
+ * - 실시간 계획 업데이트 지원 (newPlan prop)
+ * - 시간대별 일정 표시
+ * - 일정 겹침 처리
+ * - 현재 시간 표시선
+ * 
  * @author Calendar Team
  * @since 2025-08-11
+ * @updated 2025-08-12 - 실시간 UI 업데이트 기능 추가
  */
 
 import React from 'react'
+import { PlanResponse } from '../../../types/plan'
+import { useMonthlyPlans } from '../MonthView/hooks'
+import { useCalendarColors } from '../hooks/useCalendarColors'
 import PlanCreateModal from '../PlanCreateModal'
 import { useDayEvents, useTimeSlots, usePlanModal } from './hooks'
 import { TimeGrid, EventOverlay, DayHeader, DaySidebar } from './components'
@@ -25,16 +35,23 @@ interface DayViewProps {
   selectedDate: Date | null
   onDateSelect: (date: Date) => void
   events?: Event[]
+  newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
-const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayViewProps) => {
+const DayView = ({ currentDate, selectedDate, onDateSelect, events = [], newPlan }: DayViewProps) => {
+  // 월별 계획 데이터 가져오기 (실시간 업데이트 포함)
+  const { plans } = useMonthlyPlans({ currentDate, newPlan })
+  
+  // 공통 색상 관리 (더 연한 투명도)
+  const { getColorForPlanWithOpacity } = useCalendarColors()
+  
   // 커스텀 훅들로 로직 분리
   const { 
     getDayEvents, 
     getEventsForHour, 
     getEventStyle, 
     getOverlappingEvents 
-  } = useDayEvents({ currentDate, events })
+  } = useDayEvents({ currentDate, events, plans, getColorForPlan: getColorForPlanWithOpacity })
   
   const { 
     timeSlots, 
@@ -45,7 +62,8 @@ const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayVi
   const { 
     isModalOpen, 
     handleAddPlan, 
-    handleCloseModal 
+    handleCloseModal,
+    handlePlanCreated 
   } = usePlanModal()
 
   const eventsWithPositions = getOverlappingEvents()
@@ -83,24 +101,11 @@ const DayView = ({ currentDate, selectedDate, onDateSelect, events = [] }: DayVi
       />
 
       {/* 일정 추가 모달 */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg">
-            <h2>테스트 모달</h2>
-            <p>모달이 정상적으로 열렸습니다!</p>
-            <button 
-              onClick={handleCloseModal}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
       <PlanCreateModal 
-        isOpen={false}
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
         selectedDate={currentDate}
+        onPlanCreated={handlePlanCreated}
       />
     </div>
   )

@@ -29,14 +29,14 @@ interface WeekGridProps {
   onDateSelect: (date: Date) => void
   getEventsForDateTime: (date: Date, hour: number) => Event[]
   getEventStyle: (event: Event, hour: number) => React.CSSProperties | null
+  getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<Event & { style: React.CSSProperties }>
 }
 
 const WeekGrid = ({ 
   timeSlots, 
   weekDays, 
-  onDateSelect, 
-  getEventsForDateTime, 
-  getEventStyle 
+  onDateSelect,
+  getOverlappingEventsForDateTime 
 }: WeekGridProps) => {
   
   return (
@@ -51,7 +51,7 @@ const WeekGrid = ({
             
             {/* 각 요일별 시간 슬롯 */}
             {weekDays.map((date) => {
-              const events = getEventsForDateTime(date, slot.hour)
+              const overlappingEvents = getOverlappingEventsForDateTime(date, slot.hour)
               
               return (
                 <div
@@ -59,27 +59,17 @@ const WeekGrid = ({
                   className="h-16 border-r border-b border-gray-100 last:border-r-0 relative hover:bg-blue-25 cursor-pointer"
                   onClick={() => onDateSelect(date)}
                 >
-                  {/* 이벤트 표시 */}
-                  {events.map((event) => {
-                    const eventStyle = getEventStyle(event, slot.hour)
-                    if (!eventStyle) return null
-                    
-                    return (
-                      <div
-                        key={event.id}
-                        style={eventStyle}
-                        className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-20`}
-                        title={`${event.title} (${event.startTime} - ${event.endTime})`}
-                      >
-                        <div className="font-semibold truncate leading-tight">{event.title}</div>
-                        {event.startTime && (
-                          <div className="text-xs opacity-90 mt-0.5">
-                            {event.startTime} - {event.endTime}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+                  {/* 겹침 처리된 이벤트 표시 */}
+                  {overlappingEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      style={event.style}
+                      className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-30`}
+                      title={`${event.title} (${event.startTime} - ${event.endTime})`}
+                    >
+                      <div className="font-medium truncate leading-tight">{event.title}</div>
+                    </div>
+                  ))}
                 </div>
               )
             })}

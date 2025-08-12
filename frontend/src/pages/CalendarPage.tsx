@@ -120,6 +120,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                newPlan={newCreatedPlan}
               />
             )}
             
@@ -132,6 +133,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
                   setSelectedDate(date)
                 }}
                 events={currentDateEvents}
+                newPlan={newCreatedPlan}
               />
             )}
           </div>
@@ -147,7 +149,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
         </div>
       </div>
 
-      {/* 일정 추가 모달 - Month와 Week 뷰용 */}
+      {/* 일정 추가 모달 - Month와 Week 뷰용 (Day는 자체 모달 사용) */}
       {currentView !== 'day' && (
         <PlanCreateModal 
           isOpen={isModalOpen}

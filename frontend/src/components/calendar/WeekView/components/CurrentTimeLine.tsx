@@ -6,7 +6,6 @@
  * @since 2025-08-11
  */
 
-import React from 'react'
 
 interface CurrentTimeLineProps {
   timeLine: { topPosition: number; leftPosition: string; width: string } | null
