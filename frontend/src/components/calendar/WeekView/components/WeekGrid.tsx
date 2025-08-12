@@ -2,11 +2,16 @@
  * WeekView 그리드 컴포넌트
  * 시간 슬롯과 일정 표시
  * 
+ * @features
+ * - 우클릭 컨텍스트 메뉴 지원
+ * - 일정 삭제/수정 기능
+ * 
  * @author Calendar Team
  * @since 2025-08-11
  */
 
 import React from 'react'
+import { PlanResponse } from '../../../../types/plan'
 
 interface TimeSlot {
   hour: number
@@ -21,6 +26,7 @@ interface Event {
   startTime: string
   endTime: string
   color?: string
+  originalPlan?: PlanResponse  // 원본 계획 데이터 추가
 }
 
 interface WeekGridProps {
@@ -30,15 +36,24 @@ interface WeekGridProps {
   getEventsForDateTime: (date: Date, hour: number) => Event[]
   getEventStyle: (event: Event, hour: number) => React.CSSProperties | null
   getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<Event & { style: React.CSSProperties }>
+  onPlanContextMenu?: (event: React.MouseEvent, plan: PlanResponse, targetDate: string) => void
 }
 
 const WeekGrid = ({ 
   timeSlots, 
   weekDays, 
   onDateSelect,
-  getOverlappingEventsForDateTime 
+  getOverlappingEventsForDateTime,
+  onPlanContextMenu 
 }: WeekGridProps) => {
   
+  const handlePlanContextMenu = (event: React.MouseEvent, planEvent: Event & { style: React.CSSProperties }) => {
+    if (onPlanContextMenu && planEvent.originalPlan) {
+      const targetDate = new Date(planEvent.date).toISOString().split('T')[0]
+      onPlanContextMenu(event, planEvent.originalPlan, targetDate)
+    }
+  }
+
   return (
     <div className="max-h-[600px] overflow-y-auto">
       <div className="grid grid-cols-8">
@@ -64,8 +79,16 @@ const WeekGrid = ({
                     <div
                       key={event.id}
                       style={event.style}
-                      className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-30`}
+                      className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-30 cursor-pointer hover:opacity-80 transition-opacity`}
                       title={`${event.title} (${event.startTime} - ${event.endTime})`}
+                      onContextMenu={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handlePlanContextMenu(e, event)
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation() // 날짜 선택 이벤트 방지
+                      }}
                     >
                       <div className="font-medium truncate leading-tight">{event.title}</div>
                     </div>

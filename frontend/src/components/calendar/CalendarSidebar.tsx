@@ -1,12 +1,51 @@
+/**
+ * CalendarSidebar - 선택된 날짜의 일정 표시 사이드바
+ * 
+ * @features
+ * - 선택된 날짜의 일정 목록 표시
+ * - 일정 추가 버튼
+ * - 우클릭 삭제/수정 컨텍스트 메뉴
+ * - 일정 시간 및 통계 표시
+ * 
+ * @author Calendar Team
+ * @since 2025-08-11
+ */
+
+import React from 'react'
 import { PlanResponse } from '../../../types/plan'
+import { 
+  PlanContextMenu, 
+  PlanDeleteModal, 
+  usePlanContextMenu, 
+  usePlanDelete 
+} from './PlanDelete'
 
 interface CalendarSidebarProps {
   selectedDate: Date | null
   plans: PlanResponse[]
   onAddPlan?: () => void
+  onEditPlan?: (plan: PlanResponse) => void
 }
 
-const CalendarSidebar = ({ selectedDate, plans, onAddPlan }: CalendarSidebarProps) => {
+const CalendarSidebar = ({ selectedDate, plans, onAddPlan, onEditPlan }: CalendarSidebarProps) => {
+  // 컨텍스트 메뉴 및 삭제 훅
+  const { contextMenu, handleContextMenu, closeContextMenu } = usePlanContextMenu()
+  const { deleteModal, openDeleteModal, closeDeleteModal, handleDeleteConfirm } = usePlanDelete()
+
+  // 계획 수정 핸들러
+  const handleEditPlan = (plan: PlanResponse) => {
+    if (onEditPlan) {
+      onEditPlan(plan)
+    } else {
+      console.log('수정 기능이 연결되지 않았습니다:', plan.planName)
+    }
+  }
+
+  // 계획 삭제 핸들러
+  const handleDeletePlan = (plan: PlanResponse) => {
+    openDeleteModal(plan)
+  }
+
   return (
     <div className="w-80 flex-shrink-0">
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
@@ -34,11 +73,17 @@ const CalendarSidebar = ({ selectedDate, plans, onAddPlan }: CalendarSidebarProp
                 <div 
                   key={plan.id}
                   className="p-4 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer group"
+                  onContextMenu={(e) => handleContextMenu(e, plan, selectedDate.toISOString().split('T')[0])}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-blue-800 group-hover:text-blue-900 truncate">
                         {plan.planName}
+                        {plan.isRecurring && (
+                          <svg className="inline w-3 h-3 ml-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                          </svg>
+                        )}
                       </div>
                       {plan.startTime && (
                         <div className="text-sm text-blue-600 mt-1">
@@ -143,6 +188,27 @@ const CalendarSidebar = ({ selectedDate, plans, onAddPlan }: CalendarSidebarProp
           </div>
         )}
       </div>
+
+      {/* 컨텍스트 메뉴 */}
+      {contextMenu.isOpen && contextMenu.plan && (
+        <PlanContextMenu
+          plan={contextMenu.plan}
+          position={contextMenu.position}
+          onEdit={handleEditPlan}
+          onDelete={handleDeletePlan}
+          onClose={closeContextMenu}
+        />
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {deleteModal.isOpen && deleteModal.plan && (
+        <PlanDeleteModal
+          plan={deleteModal.plan}
+          isOpen={deleteModal.isOpen}
+          onConfirm={handleDeleteConfirm}
+          onCancel={closeDeleteModal}
+        />
+      )}
     </div>
   )
 }

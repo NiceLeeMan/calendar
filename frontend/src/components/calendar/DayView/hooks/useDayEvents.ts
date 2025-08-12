@@ -18,6 +18,7 @@ interface Event {
   endTime: string
   color?: string
   originalPlanId?: number  // 원본 계획 ID (다중 날짜 이벤트 추적용)
+  originalPlan?: PlanResponse  // 원본 계획 데이터
 }
 
 interface UseDayEventsProps {
@@ -74,7 +75,8 @@ export const useDayEvents = ({
           startTime: plan.startTime || '00:00',
           endTime: plan.endTime || '23:59',
           color: getEventColor(plan.id),
-          originalPlanId: plan.id // 원본 계획 ID 추가
+          originalPlanId: plan.id, // 원본 계획 ID 추가
+          originalPlan: plan // 원본 계획 데이터 추가
         })
         currentDate.setDate(currentDate.getDate() + 1)
       }
