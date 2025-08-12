@@ -16,6 +16,7 @@ interface UseDatePickerReturn {
   isDatePickerOpen: boolean
   toggleDatePicker: () => void
   handleDatePickerChange: (date: Date) => void
+  setIsDatePickerOpen: (open: boolean) => void
 }
 
 export const useDatePicker = ({
@@ -36,6 +37,7 @@ export const useDatePicker = ({
   return {
     isDatePickerOpen,
     toggleDatePicker,
-    handleDatePickerChange
+    handleDatePickerChange,
+    setIsDatePickerOpen
   }
 }

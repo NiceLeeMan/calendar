@@ -9,7 +9,6 @@
 import {
   PlanCreateRequest,
   PlanUpdateRequest,
-  PlanDeleteRequest,
   PlanResponse,
   MonthlyPlanParams,
   PlanFilterOptions

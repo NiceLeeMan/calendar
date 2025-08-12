@@ -1,73 +1,98 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import MainPage from './pages/MainPage'
 import CalendarPage from './pages/CalendarPage'
 import { getMyInfo } from './api'
 
-type Page = 'login' | 'signup' | 'main' | 'calendar'
+// 인증 상태를 확인하는 컴포넌트
+function AuthWrapper({ children, requireAuth = true }: { children: React.ReactNode, requireAuth?: boolean }) {
+  const navigate = useNavigate()
+  const location = useLocation()
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('login')
-  const [isInitializing, setIsInitializing] = useState(true)
-
-  // 앱 시작 시 로그인 상태 확인
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const checkAuth = async () => {
       try {
-        // JWT 쿠키가 있고 유효하면 사용자 정보를 가져올 수 있음
         await getMyInfo()
         
-        // 성공하면 이미 로그인된 상태
-        console.log('기존 로그인 상태 확인됨 - 메인 페이지로 이동')
-        setCurrentPage('main')
+        // 이미 로그인된 상태
+        if (!requireAuth && (location.pathname === '/signIn' || location.pathname === '/signup')) {
+          // 로그인/회원가입 페이지에 있는데 이미 로그인됨 → 메인으로 이동
+          console.log('이미 로그인됨 - 메인 페이지로 이동')
+          navigate('/', { replace: true })
+        }
         
       } catch (error) {
-        // 실패하면 로그인이 필요한 상태 (쿠키 없음 또는 만료)
-        console.log('로그인이 필요함 - 로그인 페이지 유지')
-        setCurrentPage('login')
-        
-      } finally {
-        setIsInitializing(false)
+        // 로그인 안된 상태
+        if (requireAuth) {
+          // 인증이 필요한 페이지인데 로그인 안됨 → 로그인으로 이동
+          console.log('인증이 필요함 - 로그인 페이지로 이동')
+          navigate('/signIn', { replace: true })
+        }
       }
     }
 
-    checkAuthStatus()
-  }, [])
+    checkAuth()
+  }, [navigate, location, requireAuth])
 
-  // 초기화 중일 때는 로딩 화면 표시
-  if (isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    )
-  }
+  return <>{children}</>
+}
 
+function AppRoutes() {
   return (
-    <>
-      {currentPage === 'login' && (
-        <LoginPage 
-          onNavigateToSignUp={() => setCurrentPage('signup')}
-          onNavigateToMain={() => setCurrentPage('main')}
-        />
-      )}
-      {currentPage === 'signup' && (
-        <SignUpPage onNavigateToLogin={() => setCurrentPage('login')} />
-      )}
-      {currentPage === 'main' && (
-        <MainPage 
-          onNavigateToLogin={() => setCurrentPage('login')}
-          onNavigateToCalendar={() => setCurrentPage('calendar')}
-        />
-      )}
-      {currentPage === 'calendar' && (
-        <CalendarPage onNavigateToMain={() => setCurrentPage('main')} />
-      )}
-    </>
+    <Routes>
+      {/* 로그인 페이지 */}
+      <Route 
+        path="/signIn" 
+        element={
+          <AuthWrapper requireAuth={false}>
+            <LoginPage />
+          </AuthWrapper>
+        } 
+      />
+      
+      {/* 회원가입 페이지 */}
+      <Route 
+        path="/signup" 
+        element={
+          <AuthWrapper requireAuth={false}>
+            <SignUpPage />
+          </AuthWrapper>
+        } 
+      />
+      
+      {/* 메인 페이지 (보호된 라우트) */}
+      <Route 
+        path="/" 
+        element={
+          <AuthWrapper requireAuth={true}>
+            <MainPage />
+          </AuthWrapper>
+        } 
+      />
+      
+      {/* 캘린더 페이지 (보호된 라우트) */}
+      <Route 
+        path="/calendar" 
+        element={
+          <AuthWrapper requireAuth={true}>
+            <CalendarPage />
+          </AuthWrapper>
+        } 
+      />
+      
+      {/* 잘못된 경로는 메인 페이지로 리다이렉트 */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   )
 }
 

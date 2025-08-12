@@ -1,16 +1,22 @@
+import { useNavigate } from 'react-router-dom'
 import LoginForm from '../components/auth/LoginForm'
 
-interface LoginPageProps {
-  onNavigateToSignUp: () => void
-  onNavigateToMain: () => void
-}
+const LoginPage = () => {
+  const navigate = useNavigate()
 
-const LoginPage = ({ onNavigateToSignUp, onNavigateToMain }: LoginPageProps) => {
+  const handleNavigateToSignUp = () => {
+    navigate('/signup')
+  }
+
+  const handleNavigateToMain = () => {
+    navigate('/')
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-5">
       <LoginForm 
-        onNavigateToSignUp={onNavigateToSignUp}
-        onNavigateToMain={onNavigateToMain}
+        onNavigateToSignUp={handleNavigateToSignUp}
+        onNavigateToMain={handleNavigateToMain}
       />
     </div>
   )

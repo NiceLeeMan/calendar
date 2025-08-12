@@ -13,6 +13,7 @@
  */
 
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import CalendarHeader from '../components/calendar/CalendarHeader'
 import MonthView from '../components/calendar/MonthView'
 import WeekView from '../components/calendar/WeekView'
@@ -22,11 +23,8 @@ import PlanCreateModal from '../components/calendar/PlanCreateModal'
 import { PlanResponse } from '../types/plan'
 import { useMonthlyPlans } from '../components/calendar/MonthView/hooks'
 
-interface CalendarPageProps {
-  onNavigateToMain: () => void
-}
-
-const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
+const CalendarPage = () => {
+  const navigate = useNavigate()
   const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month')
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
@@ -36,6 +34,10 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
   
   // 새로 생성된 계획 상태 - 실시간 UI 업데이트용
   const [newCreatedPlan, setNewCreatedPlan] = useState<PlanResponse | null>(null)
+
+  const handleNavigateToMain = () => {
+    navigate('/')
+  }
 
   // 일정 추가 버튼 클릭 핸들러
   const handleAddPlan = () => {
@@ -98,7 +100,7 @@ const CalendarPage = ({ onNavigateToMain }: CalendarPageProps) => {
         currentDate={currentDate}
         onViewChange={setCurrentView}
         onDateChange={setCurrentDate}
-        onNavigateToMain={onNavigateToMain}
+        onNavigateToMain={handleNavigateToMain}
       />
 
       {/* 메인 캘린더 영역 */}

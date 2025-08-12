@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import { logout } from '../api'
 
-interface MainPageProps {
-  onNavigateToLogin: () => void
-  onNavigateToCalendar: () => void
-}
-
-const MainPage = ({ onNavigateToLogin, onNavigateToCalendar }: MainPageProps) => {
+const MainPage = () => {
+  const navigate = useNavigate()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleNavigateToCalendar = () => {
+    navigate('/calendar')
+  }
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -18,12 +19,12 @@ const MainPage = ({ onNavigateToLogin, onNavigateToCalendar }: MainPageProps) =>
       console.log('로그아웃 성공')
       
       // 로그인 페이지로 이동
-      onNavigateToLogin()
+      navigate('/signIn')
       
     } catch (error) {
       console.error('로그아웃 실패:', error)
       // 실패해도 로그인 페이지로 이동 (쿠키는 서버에서 삭제 시도됨)
-      onNavigateToLogin()
+      navigate('/signIn')
     } finally {
       setIsLoggingOut(false)
     }
@@ -48,7 +49,7 @@ const MainPage = ({ onNavigateToLogin, onNavigateToCalendar }: MainPageProps) =>
               <Button
                 variant="primary"
                 size="small"
-                onClick={onNavigateToCalendar}
+                onClick={handleNavigateToCalendar}
               >
                 캘린더
               </Button>

@@ -1,13 +1,16 @@
+import { useNavigate } from 'react-router-dom'
 import SignUpForm from '../components/auth/SignUpForm'
 
-interface SignUpPageProps {
-  onNavigateToLogin: () => void
-}
+const SignUpPage = () => {
+  const navigate = useNavigate()
 
-const SignUpPage = ({ onNavigateToLogin }: SignUpPageProps) => {
+  const handleNavigateToLogin = () => {
+    navigate('/signIn')
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-5">
-      <SignUpForm onNavigateToLogin={onNavigateToLogin} />
+      <SignUpForm onNavigateToLogin={handleNavigateToLogin} />
     </div>
   )
 }

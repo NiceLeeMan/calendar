@@ -41,7 +41,8 @@ const CalendarHeader = ({
   const { 
     isDatePickerOpen, 
     toggleDatePicker, 
-    handleDatePickerChange 
+    handleDatePickerChange,
+    setIsDatePickerOpen
   } = useDatePicker({
     onDateChange
   })

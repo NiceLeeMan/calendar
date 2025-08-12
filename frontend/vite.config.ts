@@ -28,6 +28,8 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true
       }
-    }
+    },
+    // SPA 라우팅을 위한 히스토리 API 폴백
+    historyApiFallback: true
   }
 })
