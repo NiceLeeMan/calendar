@@ -14,8 +14,8 @@
  */
 
 
-import { PlanResponse } from '../../../types/plan'
-import { useMonthlyPlans, useCalendarDays, useCalendarAnimation } from './hooks'
+import { PlanResponse } from '../../../types'
+import { useCalendarDays, useCalendarAnimation } from './hooks'
 import { 
   PlanContextMenu, 
   PlanDeleteModal, 
@@ -28,18 +28,25 @@ interface MonthViewProps {
   selectedDate: Date | null
   onDateSelect: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
+  plans: PlanResponse[]
+  isLoading: boolean
+  error: string | null
+  getPlansForDate: (date: Date) => PlanResponse[]
+  getColorForPlan: (planId: number) => string
   newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
-const MonthView = ({ currentDate, selectedDate, onDateSelect, onEditPlan, newPlan }: MonthViewProps) => {
-  // 커스텀 훅들로 로직 분리
-  const {
-    isLoading, 
-    error, 
-    getPlansForDate, 
-    getColorForPlan 
-  } = useMonthlyPlans({ currentDate, newPlan })
-  
+const MonthView = ({ 
+  currentDate, 
+  selectedDate, 
+  onDateSelect, 
+  onEditPlan,
+  isLoading,
+  error,
+  getPlansForDate,
+  getColorForPlan,
+}: MonthViewProps) => {
+  // 커스텀 훅들로 로직 분리 (데이터 관련 훅 제거, UI 관련 훅만 유지)
   const { 
     calendarDays, 
     isCurrentMonth, 

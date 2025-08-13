@@ -62,16 +62,22 @@ export const useDayEvents = ({
     const events: Event[] = []
     
     plans.forEach(plan => {
-      const startDate = new Date(plan.startDate)
-      const endDate = new Date(plan.endDate)
+      const startDate = new Date(plan.startDate + 'T00:00:00') // 로컬 시간대로 파싱
+      const endDate = new Date(plan.endDate + 'T00:00:00') // 로컬 시간대로 파싱
       
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
       while (currentDate <= endDate) {
+        // 로컬 시간대 유지하여 날짜 문자열 생성
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+        const day = String(currentDate.getDate()).padStart(2, '0')
+        const dateString = `${year}-${month}-${day}`
+        
         events.push({
           id: plan.id + parseInt(currentDate.getTime().toString().slice(-3)), // 고유 ID 생성
           title: plan.planName,
-          date: currentDate.toISOString().split('T')[0],
+          date: dateString,
           startTime: plan.startTime || '00:00',
           endTime: plan.endTime || '23:59',
           color: getEventColor(plan.id),
@@ -92,7 +98,12 @@ export const useDayEvents = ({
 
   // 현재 날짜의 이벤트 가져오기
   const getDayEvents = (): Event[] => {
-    const dateString = currentDate.toISOString().split('T')[0]
+    // 로컬 시간대 유지하여 날짜 문자열 생성 (useMonthlyPlans와 동일한 방식)
+    const year = currentDate.getFullYear()
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+    const day = String(currentDate.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    
     return allEvents.filter(event => event.date === dateString)
       .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }

@@ -24,6 +24,7 @@ import { PlanResponse } from '../types/plan'
 import { useMonthlyPlans } from '../components/calendar/MonthView/hooks'
 
 const CalendarPage = () => {
+
   const navigate = useNavigate()
   const [currentView, setCurrentView] = useState<'month' | 'week' | 'day'>('month')
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -62,10 +63,17 @@ const CalendarPage = () => {
     }, 1000)
   }
 
-  // 월별 계획 데이터 가져오기 (사이드바용)
-  const { getPlansForDate } = useMonthlyPlans({ 
+  // 월별 계획 데이터 가져오기 (모든 View와 사이드바용)
+  const { 
+    plans,
+    isLoading,
+    error,
+    getPlansForDate, 
+    getColorForPlan,
+    refreshCurrentMonth 
+  } = useMonthlyPlans({
     currentDate, 
-    newPlan: newCreatedPlan 
+    newPlan: newCreatedPlan
   })
 
   // 선택된 날짜의 계획 가져오기 (메모이제이션)
@@ -96,6 +104,11 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                plans={plans}
+                isLoading={isLoading}
+                error={error}
+                getPlansForDate={getPlansForDate}
+                getColorForPlan={getColorForPlan}
                 newPlan={newCreatedPlan}
               />
             )}
@@ -105,6 +118,11 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                plans={plans}
+                isLoading={isLoading}
+                error={error}
+                getPlansForDate={getPlansForDate}
+                getColorForPlan={getColorForPlan}
                 newPlan={newCreatedPlan}
               />
             )}
@@ -117,6 +135,11 @@ const CalendarPage = () => {
                   setCurrentDate(date)
                   setSelectedDate(date)
                 }}
+                plans={plans}
+                isLoading={isLoading}
+                error={error}
+                getPlansForDate={getPlansForDate}
+                getColorForPlan={getColorForPlan}
                 newPlan={newCreatedPlan}
               />
             )}
@@ -140,6 +163,8 @@ const CalendarPage = () => {
           onClose={handleCloseModal}
           selectedDate={selectedDate || currentDate}
           onPlanCreated={handlePlanCreated}
+          onRefreshMonth={refreshCurrentMonth}
+          currentDate={currentDate}
         />
       )}
     </div>

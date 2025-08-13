@@ -16,7 +16,6 @@
 import React from 'react'
 import { PlanResponse } from '../../../types/plan'
 import { useWeekEvents, useWeekDays } from './hooks'
-import { useMonthlyPlans } from '../MonthView/hooks'
 import { useCalendarColors } from '../hooks'
 import { WeekHeader, WeekGrid, CurrentTimeLine } from './components'
 import { 
@@ -31,13 +30,26 @@ interface WeekViewProps {
   selectedDate: Date | null
   onDateSelect: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
+  plans: PlanResponse[]
+  isLoading?: boolean
+  error?: string | null
+  getPlansForDate?: (date: Date) => PlanResponse[]
+  getColorForPlan?: (planId: number) => string
   newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
-const WeekView = ({ currentDate, selectedDate, onDateSelect, onEditPlan, newPlan }: WeekViewProps) => {
-  // 월별 계획 데이터 가져오기 (실시간 업데이트 포함)
-  const { plans } = useMonthlyPlans({ currentDate, newPlan })
-  
+const WeekView = ({ 
+  currentDate, 
+  selectedDate, 
+  onDateSelect, 
+  onEditPlan,
+  plans,
+  isLoading,
+  error,
+  getPlansForDate,
+  getColorForPlan,
+  newPlan 
+}: WeekViewProps) => {
   // 공통 색상 관리
   const { getColorForPlanWithOpacity } = useCalendarColors()
   
