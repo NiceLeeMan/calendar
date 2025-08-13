@@ -55,36 +55,7 @@ export const useMonthlyPlans = ({
     } catch (error) {
       console.error('월별 일정 로드 실패:', error)
       setError('일정을 불러오는데 실패했습니다.')
-      
-      // 에러 시 더미 데이터 사용 (8월 데이터)
-      if (year === 2025 && month === 8) {
-        const dummyPlans: PlanResponse[] = [
-          { id: 1, planName: "All-hands meeting", planContent: "", startDate: "2025-08-01", endDate: "2025-08-01", startTime: "09:00", endTime: "10:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 2, planName: "Dinner with Candice", planContent: "", startDate: "2025-08-01", endDate: "2025-08-01", startTime: "19:00", endTime: "21:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 3, planName: "Coffee with Ali", planContent: "", startDate: "2025-08-04", endDate: "2025-08-04", startTime: "10:00", endTime: "11:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 4, planName: "Marketing site kickoff", planContent: "", startDate: "2025-08-04", endDate: "2025-08-04", startTime: "14:00", endTime: "15:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 5, planName: "Deep work", planContent: "", startDate: "2025-08-06", endDate: "2025-08-06", startTime: "09:00", endTime: "11:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 6, planName: "One-on-one w/ Eva", planContent: "", startDate: "2025-08-06", endDate: "2025-08-06", startTime: "14:00", endTime: "15:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 7, planName: "Design sync", planContent: "", startDate: "2025-08-06", endDate: "2025-08-06", startTime: "16:00", endTime: "17:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 8, planName: "2 more...", planContent: "", startDate: "2025-08-06", endDate: "2025-08-06", startTime: "", endTime: "", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 9, planName: "Lunch with Olivia", planContent: "", startDate: "2025-08-07", endDate: "2025-08-07", startTime: "12:00", endTime: "13:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 10, planName: "Friday standup", planContent: "", startDate: "2025-08-08", endDate: "2025-08-08", startTime: "09:00", endTime: "09:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 11, planName: "Olivia x Riley", planContent: "", startDate: "2025-08-08", endDate: "2025-08-08", startTime: "11:00", endTime: "12:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 12, planName: "Product demo", planContent: "", startDate: "2025-08-08", endDate: "2025-08-08", startTime: "15:00", endTime: "16:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 13, planName: "House inspection", planContent: "", startDate: "2025-08-09", endDate: "2025-08-09", startTime: "10:00", endTime: "11:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 14, planName: "Ava's engagement party", planContent: "", startDate: "2025-08-10", endDate: "2025-08-10", startTime: "18:00", endTime: "22:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 15, planName: "Monday standup", planContent: "", startDate: "2025-08-11", endDate: "2025-08-11", startTime: "09:00", endTime: "09:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 16, planName: "Content planning", planContent: "", startDate: "2025-08-11", endDate: "2025-08-11", startTime: "14:00", endTime: "15:30", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 17, planName: "Product demo", planContent: "", startDate: "2025-08-12", endDate: "2025-08-12", startTime: "10:00", endTime: "11:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 18, planName: "Catch up w/ Alex", planContent: "", startDate: "2025-08-12", endDate: "2025-08-12", startTime: "16:00", endTime: "17:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          // 다중 날짜 계획 테스트용 추가
-          { id: 19, planName: "Summer Vacation 🏖️", planContent: "Family trip to Jeju Island", startDate: "2025-08-13", endDate: "2025-08-15", startTime: "00:00", endTime: "23:59", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" },
-          { id: 20, planName: "Conference Week", planContent: "Tech conference attendance", startDate: "2025-08-20", endDate: "2025-08-22", startTime: "09:00", endTime: "18:00", isRecurring: false, createdAt: "", updatedAt: "", userId: 1, userName: "User" }
-        ]
-        setPlans(dummyPlans)
-      } else {
-        setPlans([]) // 다른 월은 빈 배열
-      }
+      setPlans([]) // 에러 시 빈 배열
     } finally {
       setIsLoading(false)
     }

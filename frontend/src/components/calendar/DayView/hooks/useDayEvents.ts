@@ -85,21 +85,9 @@ export const useDayEvents = ({
     return events
   }
 
-  // 더미 이벤트 데이터
-  const dummyEvents: Event[] = [
-    { id: 2001, title: "Morning standup", date: "2025-08-06", startTime: "09:00", endTime: "09:30", color: "bg-blue-500" },
-    { id: 2002, title: "Deep work", date: "2025-08-06", startTime: "10:00", endTime: "12:00", color: "bg-blue-600" },
-    { id: 2003, title: "Lunch break", date: "2025-08-06", startTime: "12:00", endTime: "13:00", color: "bg-green-500" },
-    { id: 2004, title: "One-on-one w/ Eva", date: "2025-08-06", startTime: "14:00", endTime: "15:00", color: "bg-indigo-500" },
-    { id: 2005, title: "Design sync", date: "2025-08-06", startTime: "15:30", endTime: "16:30", color: "bg-purple-500" },
-    { id: 2006, title: "SEO planning", date: "2025-08-06", startTime: "17:00", endTime: "18:00", color: "bg-orange-500" },
-    { id: 2007, title: "Team retrospective", date: "2025-08-06", startTime: "16:00", endTime: "17:00", color: "bg-teal-500" },
-    { id: 2008, title: "Meetup event", date: "2025-08-06", startTime: "19:00", endTime: "21:00", color: "bg-red-500" }
-  ]
-
-  // 모든 이벤트 결합 (실제 계획 + 기존 더미 + 전달받은 이벤트)
+  // 모든 이벤트 결합 (실제 계획 + 전달받은 이벤트)
   const allEvents = useMemo(() => {
-    return [...convertPlansToEvents(plans), ...dummyEvents, ...events]
+    return [...convertPlansToEvents(plans), ...events]
   }, [plans, events])
 
   // 현재 날짜의 이벤트 가져오기
