@@ -40,7 +40,10 @@ const CalendarPage = () => {
   }
 
   // 일정 추가 버튼 클릭 핸들러
-  const handleAddPlan = () => {
+  const handleAddPlan = (date?: Date) => {
+    if (date) {
+      setSelectedDate(date) // 전달받은 날짜로 선택된 날짜 설정
+    }
     setIsModalOpen(true)
   }
 

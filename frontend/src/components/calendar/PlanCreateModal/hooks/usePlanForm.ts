@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AlarmInfo {
   alarmDate: string
@@ -6,11 +6,22 @@ interface AlarmInfo {
 }
 
 export const usePlanForm = (selectedDate?: Date) => {
+  const defaultDate = selectedDate ? (() => {
+    const year = selectedDate.getFullYear()
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+    const day = String(selectedDate.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  })() : ''
+  
+  // 디버깅용 로그
+  console.log('usePlanForm - selectedDate:', selectedDate)
+  console.log('usePlanForm - defaultDate:', defaultDate)
+  
   const [formData, setFormData] = useState({
     planName: '',
     planContent: '',
-    startDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
-    endDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+    startDate: defaultDate,
+    endDate: defaultDate,
     startTime: '09:00',
     endTime: '10:00',
     isRecurring: false,
@@ -25,6 +36,25 @@ export const usePlanForm = (selectedDate?: Date) => {
     },
     alarms: [] as AlarmInfo[]
   })
+
+  // selectedDate가 변경될 때마다 startDate와 endDate 업데이트
+  useEffect(() => {
+    if (selectedDate) {
+      const year = selectedDate.getFullYear()
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+      const day = String(selectedDate.getDate()).padStart(2, '0')
+      const newDate = `${year}-${month}-${day}`
+      
+      console.log('useEffect - selectedDate changed:', selectedDate)
+      console.log('useEffect - updating dates to:', newDate)
+      
+      setFormData(prev => ({
+        ...prev,
+        startDate: newDate,
+        endDate: newDate
+      }))
+    }
+  }, [selectedDate])
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -61,11 +91,22 @@ export const usePlanForm = (selectedDate?: Date) => {
   }
 
   const resetForm = () => {
+    const defaultDate = selectedDate ? (() => {
+      const year = selectedDate.getFullYear()
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+      const day = String(selectedDate.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    })() : ''
+    
+    // 디버깅용 로그
+    console.log('resetForm - selectedDate:', selectedDate)
+    console.log('resetForm - defaultDate:', defaultDate)
+    
     setFormData({
       planName: '',
       planContent: '',
-      startDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
-      endDate: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+      startDate: defaultDate,
+      endDate: defaultDate,
       startTime: '09:00',
       endTime: '10:00',
       isRecurring: false,

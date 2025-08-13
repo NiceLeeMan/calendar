@@ -23,7 +23,7 @@ import {
 interface CalendarSidebarProps {
   selectedDate: Date | null
   plans: PlanResponse[]
-  onAddPlan?: () => void
+  onAddPlan?: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
 }
 
@@ -131,7 +131,7 @@ const CalendarSidebar = ({ selectedDate, plans, onAddPlan, onEditPlan }: Calenda
                   이 날에는 일정이 없습니다.
                 </p>
                 <button 
-                  onClick={onAddPlan}
+                  onClick={() => selectedDate && onAddPlan?.(selectedDate)}
                   className="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
                 >
                   + 일정 추가
@@ -166,7 +166,7 @@ const CalendarSidebar = ({ selectedDate, plans, onAddPlan, onEditPlan }: Calenda
                 
                 {/* 일정이 있어도 추가 버튼 표시 */}
                 <button 
-                  onClick={onAddPlan}
+                  onClick={() => selectedDate && onAddPlan?.(selectedDate)}
                   className="w-full py-2 text-blue-600 hover:text-blue-800 text-sm font-medium border border-blue-200 hover:border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
                 >
                   + 일정 추가
