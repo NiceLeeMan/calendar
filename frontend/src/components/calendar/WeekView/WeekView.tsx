@@ -96,7 +96,7 @@ const WeekView = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
       {/* 헤더: 요일과 날짜 */}
-      <WeekHeader 
+      <WeekHeader
         weekDays={weekDays}
         onDateSelect={onDateSelect}
         isToday={isToday}

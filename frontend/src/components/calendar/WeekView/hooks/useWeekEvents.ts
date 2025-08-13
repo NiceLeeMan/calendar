@@ -53,16 +53,23 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
     const events: CalendarEvent[] = []
 
     plans.forEach(plan => {
-      const startDate = new Date(plan.startDate)
-      const endDate = new Date(plan.endDate)
+      // MonthView/DayView와 동일한 방식으로 로컬 시간대로 파싱
+      const startDate = new Date(plan.startDate + 'T00:00:00')
+      const endDate = new Date(plan.endDate + 'T00:00:00')
 
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
       while (currentDate <= endDate) {
+        // MonthView/DayView와 동일한 방식으로 날짜 문자열 생성
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+        const day = String(currentDate.getDate()).padStart(2, '0')
+        const dateString = `${year}-${month}-${day}`
+        
         events.push({
           id: plan.id + parseInt(currentDate.getTime().toString().slice(-3)), // 고유 ID 생성
           title: plan.planName,
-          date: currentDate.toISOString().split('T')[0],
+          date: dateString,
           startTime: plan.startTime || '00:00',
           endTime: plan.endTime || '23:59',
           color: getEventColor(plan.id),
@@ -81,7 +88,12 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
 
   // 특정 날짜와 시간의 이벤트 가져오기
   const getEventsForDateTime = (date: Date, hour: number): CalendarEvent[] => {
-    const dateString = date.toISOString().split('T')[0]
+    // MonthView/DayView와 동일한 방식으로 날짜 문자열 생성
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    
     return allEvents.filter(event => {
       if (event.date !== dateString) return false
 
@@ -101,7 +113,11 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
 
     // 디버깅용 로그
     if (events.length > 1) {
-      console.log(`겹치는 이벤트 발견 - 날짜: ${date.toISOString().split('T')[0]}, 시간: ${hour}시, 이벤트 수: ${events.length}`)
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const dateString = `${year}-${month}-${day}`
+      console.log(`겹치는 이벤트 발견 - 날짜: ${dateString}, 시간: ${hour}시, 이벤트 수: ${events.length}`)
       console.log('이벤트들:', events.map(e => `${e.title} (${e.startTime}-${e.endTime})`))
     }
 
