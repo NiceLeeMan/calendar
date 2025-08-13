@@ -57,10 +57,12 @@ export const usePlanForm = (selectedDate?: Date) => {
   }, [selectedDate])
 
   const handleInputChange = (field: string, value: any) => {
+    console.log('handleInputChange:', { field, value })
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleRecurringChange = (field: string, value: any) => {
+    console.log('handleRecurringChange:', { field, value })
     setFormData(prev => ({
       ...prev,
       recurringPlan: { ...prev.recurringPlan, [field]: value }

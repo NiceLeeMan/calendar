@@ -52,6 +52,7 @@ export const useMonthlyPlans = ({
     try {
       const monthlyPlans = await getMonthlyPlans({ year, month })
       setPlans(monthlyPlans)
+      console.log(`월별 일정 로드 성공: ${year}년 ${month}월, ${monthlyPlans.length}개`)
     } catch (error) {
       console.error('월별 일정 로드 실패:', error)
       setError('일정을 불러오는데 실패했습니다.')
@@ -83,7 +84,15 @@ export const useMonthlyPlans = ({
         const currentYear = currentDate.getFullYear()
         const currentMonth = currentDate.getMonth()
         
-        if (planDate.getFullYear() === currentYear && planDate.getMonth() === currentMonth) {
+        console.log('새 일정 월 체크:', {
+          planYear: planStartDate.getFullYear(),
+          planMonth: planStartDate.getMonth(),
+          currentYear,
+          currentMonth,
+          planName: newPlan.planName
+        })
+        
+        if (planStartDate.getFullYear() === currentYear && planStartDate.getMonth() === currentMonth) {
           console.log('새 일정 실시간 추가:', newPlan)
           return [...prevPlans, newPlan]
         }
@@ -100,6 +109,11 @@ export const useMonthlyPlans = ({
       // 일정 기간 내에 해당 날짜가 포함되는지 확인
       return dateString >= plan.startDate && dateString <= plan.endDate
     })
+    
+    console.log(`${dateString}의 계획 ${filteredPlans.length}개:`, filteredPlans.map(p => p.planName))
+    return filteredPlans
+  }
+
   }
 
   return {
