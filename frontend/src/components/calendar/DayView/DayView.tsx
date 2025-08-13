@@ -47,7 +47,7 @@ interface DayViewProps {
   newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
-const DayView = ({ currentDate, selectedDate, onDateSelect, onEditPlan, events = [], newPlan }: DayViewProps) => {
+const DayView = ({ currentDate, onDateSelect, onEditPlan, events = [], newPlan }: DayViewProps) => {
   // 월별 계획 데이터 가져오기 (실시간 업데이트 포함)
   const { plans } = useMonthlyPlans({ currentDate, newPlan })
   
@@ -55,10 +55,7 @@ const DayView = ({ currentDate, selectedDate, onDateSelect, onEditPlan, events =
   const { getColorForPlanWithOpacity } = useCalendarColors()
   
   // 커스텀 훅들로 로직 분리
-  const { 
-    getDayEvents, 
-    getEventsForHour, 
-    getEventStyle, 
+  const {
     getOverlappingEvents 
   } = useDayEvents({ currentDate, events, plans, getColorForPlan: getColorForPlanWithOpacity })
   
