@@ -119,28 +119,17 @@ const CalendarPage = () => {
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
                 plans={plans}
-                isLoading={isLoading}
-                error={error}
-                getPlansForDate={getPlansForDate}
-                getColorForPlan={getColorForPlan}
-                newPlan={newCreatedPlan}
               />
             )}
             
             {currentView === 'day' && (
               <DayView
                 currentDate={currentDate}
-                selectedDate={selectedDate}
                 onDateSelect={(date) => {
                   setCurrentDate(date)
                   setSelectedDate(date)
                 }}
                 plans={plans}
-                isLoading={isLoading}
-                error={error}
-                getPlansForDate={getPlansForDate}
-                getColorForPlan={getColorForPlan}
-                newPlan={newCreatedPlan}
               />
             )}
           </div>

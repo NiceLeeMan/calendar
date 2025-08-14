@@ -39,30 +39,18 @@ interface Event {
 
 interface DayViewProps {
   currentDate: Date
-  selectedDate: Date | null
   onDateSelect: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
   plans: PlanResponse[]
-  isLoading?: boolean
-  error?: string | null
-  getPlansForDate?: (date: Date) => PlanResponse[]
-  getColorForPlan?: (planId: number) => string
-  events?: Event[]
-  newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
+  events?: Event[]// 실시간 UI 업데이트용
 }
 
 const DayView = ({ 
-  currentDate, 
-  selectedDate,
+  currentDate,
   onDateSelect, 
   onEditPlan,
   plans,
-  isLoading,
-  error,
-  getPlansForDate,
-  getColorForPlan,
-  events = [], 
-  newPlan 
+  events = [],
 }: DayViewProps) => {
   // 공통 색상 관리 (더 연한 투명도)
   const { getColorForPlanWithOpacity } = useCalendarColors()

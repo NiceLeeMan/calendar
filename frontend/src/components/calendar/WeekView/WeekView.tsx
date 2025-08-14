@@ -31,11 +31,6 @@ interface WeekViewProps {
   onDateSelect: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
   plans: PlanResponse[]
-  isLoading?: boolean
-  error?: string | null
-  getPlansForDate?: (date: Date) => PlanResponse[]
-  getColorForPlan?: (planId: number) => string
-  newPlan?: PlanResponse | null  // 실시간 UI 업데이트용
 }
 
 const WeekView = ({ 
@@ -44,11 +39,6 @@ const WeekView = ({
   onDateSelect, 
   onEditPlan,
   plans,
-  isLoading,
-  error,
-  getPlansForDate,
-  getColorForPlan,
-  newPlan 
 }: WeekViewProps) => {
   // 공통 색상 관리
   const { getColorForPlanWithOpacity } = useCalendarColors()
