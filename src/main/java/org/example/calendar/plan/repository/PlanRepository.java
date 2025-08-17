@@ -51,9 +51,13 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
             -- 일반 계획: 해당 월과 겹치는 모든 계획
             (p.start_date <= :monthEnd AND p.end_date >= :monthStart)
             OR 
-            -- 반복 계획: 시작일이 해당 월 이전이고 반복 종료일이 해당 월 이후인 계획
+            -- 반복 계획: 반복 패턴에 따라 해당 월에 인스턴스가 생성될 수 있는 계획
             (p.is_recurring = true AND p.start_date <= :monthEnd AND 
-             (ri.end_date IS NULL OR ri.end_date >= :monthStart))
+             (ri.end_date IS NULL OR 
+              -- 주간반복: 반복종료일 + 6일(한주)까지 고려 (마지막 인스턴스가 다음주에 올 수 있음)
+              (ri.repeat_unit = 'WEEKLY' AND DATE(ri.end_date + INTERVAL '6 days') >= :monthStart) OR
+              -- 기타 반복: 기존 로직 유지
+              (ri.repeat_unit != 'WEEKLY' AND ri.end_date >= :monthStart)))
         )
         ORDER BY p.start_date, p.start_time
         """, nativeQuery = true)
