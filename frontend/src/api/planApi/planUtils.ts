@@ -33,20 +33,20 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
   if (formData.isRecurring && formData.recurringPlan) {
     console.log('반복 계획 변환 시작:', formData.recurringPlan)
 
+    const recurring = formData.recurringPlan
+    
+    // 백엔드 RecurringReqInfo 형식에 완전히 맞춤
     request.recurringPlan = {
-      type: formData.recurringPlan.repeatUnit,
-      repeatInterval: formData.recurringPlan.repeatInterval || 1
+      type: recurring.repeatUnit || recurring.type, // 백엔드: @JsonProperty("type") → repeatUnit
+      repeatInterval: recurring.repeatInterval || 1
     }
 
     // 반복 유형별 설정 추가
-    const recurring = formData.recurringPlan
-    switch (recurring.repeatUnit) {
+    switch (request.recurringPlan.type) {
       case 'WEEKLY':
         if (recurring.repeatWeekdays?.length > 0) {
-          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays
+          request.recurringPlan.daysOfWeek = recurring.repeatWeekdays
           console.log('주간 반복 - 선택된 요일:', recurring.repeatWeekdays)
-        } else {
-          console.log('주간 반복 - 선택된 요일 없음')
         }
         break
       case 'MONTHLY':
