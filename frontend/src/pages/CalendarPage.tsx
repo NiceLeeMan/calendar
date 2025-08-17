@@ -20,7 +20,7 @@ import WeekView from '../components/calendar/WeekView/WeekView.tsx'
 import DayView from '../components/calendar/DayView/DayView.tsx'
 import CalendarSidebar from '../components/calendar/CalendarSideBar/CalendarSidebar.tsx'
 import PlanCreateModal from '../components/calendar/PlanCreateModal/PlanCreateModal.tsx'
-import { PlanResponse } from '../types/plan'
+import { PlanResponse } from '../types'
 import { useMonthlyPlans } from '../components/calendar/MonthView/hooks'
 
 const CalendarPage = () => {
@@ -41,7 +41,7 @@ const CalendarPage = () => {
   }
 
   // 일정 추가 버튼 클릭 핸들러
-  const handleAddPlan = (date?: Date) => {
+  const handleOpenPlanCreateModal = (date?: Date) => {
     if (date) {
       setSelectedDate(date) // 전달받은 날짜로 선택된 날짜 설정
     }
@@ -49,7 +49,7 @@ const CalendarPage = () => {
   }
 
   // 모달 닫기 핸들러
-  const handleCloseModal = () => {
+  const handleClosePlanCreateModal = () => {
     setIsModalOpen(false)
   }
 
@@ -139,7 +139,7 @@ const CalendarPage = () => {
             <CalendarSidebar
               selectedDate={selectedDate}
               plans={selectedDatePlans}
-              onAddPlan={handleAddPlan}
+              onAddPlan={handleOpenPlanCreateModal}
             />
           )}
         </div>
@@ -149,7 +149,7 @@ const CalendarPage = () => {
       {currentView !== 'day' && (
         <PlanCreateModal 
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
+          onClose={handleClosePlanCreateModal}
           selectedDate={selectedDate || currentDate}
           onPlanCreated={handlePlanCreated}
           onRefreshMonth={refreshCurrentMonth}
