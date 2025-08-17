@@ -50,12 +50,10 @@ const DateTimeSection = ({ formData, handleInputChange }: DateTimeSectionProps) 
           <label className="block text-sm font-medium text-gray-700 mb-2">
             시작 시간 <span className="text-red-500">*</span>
           </label>
-          <input
-            type="time"
+          <TimePicker
             value={formData.startTime}
-            onChange={(e) => handleInputChange('startTime', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            onChange={(time) => handleInputChange('startTime', time)}
+            placeholder="시작 시간"
           />
         </div>
 
@@ -63,12 +61,10 @@ const DateTimeSection = ({ formData, handleInputChange }: DateTimeSectionProps) 
           <label className="block text-sm font-medium text-gray-700 mb-2">
             종료 시간 <span className="text-red-500">*</span>
           </label>
-          <input
-            type="time"
+          <TimePicker
             value={formData.endTime}
-            onChange={(e) => handleInputChange('endTime', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            required
+            onChange={(time) => handleInputChange('endTime', time)}
+            placeholder="종료 시간"
           />
         </div>
       </div>
