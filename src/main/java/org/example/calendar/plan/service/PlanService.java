@@ -198,11 +198,15 @@ public class PlanService {
      * 관련 캐시 무효화
      */
     private void evictRelatedCache(Long userId, LocalDate startDate, LocalDate endDate) {
-        // 시작 월과 종료 월의 캐시 삭제
-        planCacheService.evictMonthlyPlansCache(userId, startDate.getYear(), startDate.getMonthValue());
+        // 시작 월부터 종료 월까지 모든 월의 캐시 삭제 (반복 계획 지원)
+        LocalDate current = startDate.withDayOfMonth(1); // 월 첫날로 설정
+        LocalDate endMonth = endDate.withDayOfMonth(1);   // 종료월 첫날로 설정
         
-        if (!startDate.getMonth().equals(endDate.getMonth()) || startDate.getYear() != endDate.getYear()) {
-            planCacheService.evictMonthlyPlansCache(userId, endDate.getYear(), endDate.getMonthValue());
+        while (!current.isAfter(endMonth)) {
+            planCacheService.evictMonthlyPlansCache(userId, current.getYear(), current.getMonthValue());
+            log.debug("Cache evicted for month: userId={}, year={}, month={}", 
+                    userId, current.getYear(), current.getMonthValue());
+            current = current.plusMonths(1);
         }
     }
 }
