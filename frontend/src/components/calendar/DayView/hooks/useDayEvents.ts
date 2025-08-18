@@ -60,6 +60,7 @@ export const useDayEvents = ({
   // 실제 계획을 Event 형태로 변환 (다중 날짜 지원)
   const convertPlansToEvents = (plans: PlanResponse[]): Event[] => {
     const events: Event[] = []
+    const eventMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
     
     plans.forEach(plan => {
       const startDate = new Date(plan.startDate + 'T00:00:00') // 로컬 시간대로 파싱
@@ -68,14 +69,38 @@ export const useDayEvents = ({
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
       while (currentDate <= endDate) {
+        // 반복 계획인 경우 요일 확인
+        if (plan.isRecurring && plan.recurringResInfo?.repeatWeekdays) {
+          const dayOfWeek = currentDate.getDay()
+          const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
+          const currentDayName = dayNames[dayOfWeek]
+          
+          // 반복 요일에 포함되지 않으면 건너뛰기
+          if (!plan.recurringResInfo.repeatWeekdays.includes(currentDayName)) {
+            currentDate.setDate(currentDate.getDate() + 1)
+            continue
+          }
+        }
+        
         // 로컬 시간대 유지하여 날짜 문자열 생성
         const year = currentDate.getFullYear()
         const month = String(currentDate.getMonth() + 1).padStart(2, '0')
         const day = String(currentDate.getDate()).padStart(2, '0')
         const dateString = `${year}-${month}-${day}`
         
+        // 중복 체크: 동일한 계획이 같은 날짜에 이미 추가되었는지 확인
+        const eventKey = `${plan.id}-${dateString}`
+        if (eventMap.has(eventKey)) {
+          currentDate.setDate(currentDate.getDate() + 1)
+          continue
+        }
+        eventMap.set(eventKey, true)
+        
+        // 고유 ID 생성: planId * 100000 + (월 * 100 + 일)
+        const uniqueId = plan.id * 100000 + (currentDate.getMonth() + 1) * 100 + currentDate.getDate()
+        
         events.push({
-          id: plan.id + parseInt(currentDate.getTime().toString().slice(-3)), // 고유 ID 생성
+          id: uniqueId,
           title: plan.planName,
           date: dateString,
           startTime: plan.startTime || '00:00',
