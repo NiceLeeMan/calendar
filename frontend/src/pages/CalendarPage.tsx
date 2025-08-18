@@ -32,6 +32,7 @@ const CalendarPage = () => {
   
   // 모달 상태 관리
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingPlan, setEditingPlan] = useState<PlanResponse | null>(null) // 수정할 계획
   
   // 새로 생성된 계획 상태 - 실시간 UI 업데이트용
   const [newCreatedPlan, setNewCreatedPlan] = useState<PlanResponse | null>(null)
@@ -51,6 +52,13 @@ const CalendarPage = () => {
   // 모달 닫기 핸들러
   const handleClosePlanCreateModal = () => {
     setIsModalOpen(false)
+    setEditingPlan(null) // 수정 상태 초기화
+  }
+
+  // 계획 수정 핸들러
+  const handleEditPlan = (plan: PlanResponse) => {
+    setEditingPlan(plan)
+    setIsModalOpen(true)
   }
 
   // 계획 생성 성공 핸들러 - 실시간 UI 업데이트
@@ -58,6 +66,17 @@ const CalendarPage = () => {
     setNewCreatedPlan(createdPlan)
     
     // 일정 시간 후 상태 초기화 (다음 생성을 위해)
+    setTimeout(() => {
+      setNewCreatedPlan(null)
+    }, 1000)
+  }
+
+  // 계획 수정 성공 핸들러 - 실시간 UI 업데이트
+  const handlePlanUpdated = (updatedPlan: PlanResponse) => {
+    // 수정된 계획으로 실시간 업데이트 (생성과 동일한 메커니즘 사용)
+    setNewCreatedPlan(updatedPlan)
+    
+    // 일정 시간 후 상태 초기화
     setTimeout(() => {
       setNewCreatedPlan(null)
     }, 1000)
@@ -104,6 +123,7 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                onEditPlan={handleEditPlan}
                 plans={plans}
                 isLoading={isLoading}
                 error={error}
@@ -118,6 +138,7 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
+                onEditPlan={handleEditPlan}
                 plans={plans}
               />
             )}
@@ -129,6 +150,7 @@ const CalendarPage = () => {
                   setCurrentDate(date)
                   setSelectedDate(date)
                 }}
+                onEditPlan={handleEditPlan}
                 plans={plans}
               />
             )}
@@ -145,13 +167,15 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* 일정 추가 모달 - Month와 Week 뷰용 (Day는 자체 모달 사용) */}
+      {/* 일정 추가/수정 모달 - Month와 Week 뷰용 (Day는 자체 모달 사용) */}
       {currentView !== 'day' && (
         <PlanCreateModal 
           isOpen={isModalOpen}
           onClose={handleClosePlanCreateModal}
           selectedDate={selectedDate || currentDate}
+          editPlan={editingPlan}
           onPlanCreated={handlePlanCreated}
+          onPlanUpdated={handlePlanUpdated}
           onRefreshMonth={refreshCurrentMonth}
           currentDate={currentDate}
         />

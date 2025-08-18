@@ -7,12 +7,17 @@ interface PlanCreateModalProps {
   isOpen: boolean
   onClose: () => void
   selectedDate?: Date
+  editPlan?: PlanResponse | null // 수정할 계획 (null이면 생성 모드)
   onPlanCreated?: (plan: PlanResponse) => void
+  onPlanUpdated?: (plan: PlanResponse) => void // 수정 완료 콜백
   onRefreshMonth?: () => Promise<void> // 월별 새로고침 콜백 (fallback용)
   currentDate?: Date // 현재 달력 날짜 추가
 }
 
-const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated, onRefreshMonth, currentDate }: PlanCreateModalProps) => {
+const PlanCreateModal = ({ isOpen, onClose, selectedDate, editPlan, onPlanCreated, onPlanUpdated, onRefreshMonth, currentDate }: PlanCreateModalProps) => {
+  // 편집 모드 여부 확인
+  const isEditMode = !!editPlan
+  
   const {
     formData,
     handleInputChange,
@@ -21,13 +26,20 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated, onRefre
     removeAlarm,
     updateAlarm,
     resetForm
-  } = usePlanForm(selectedDate)
+  } = usePlanForm(selectedDate, editPlan) // editPlan 전달
 
   const { isSubmitting, error, handleSubmit } = usePlanSubmit()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleSubmit(formData, onPlanCreated, onClose, resetForm, onRefreshMonth, currentDate)
+    
+    if (isEditMode && editPlan) {
+      // 수정 모드
+      await handleSubmit(formData, onPlanUpdated, onClose, resetForm, onRefreshMonth, currentDate, editPlan.id)
+    } else {
+      // 생성 모드
+      await handleSubmit(formData, onPlanCreated, onClose, resetForm, onRefreshMonth, currentDate)
+    }
   }
 
   if (!isOpen) return null
@@ -37,7 +49,9 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated, onRefre
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* 헤더 */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-800">일정 추가</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            {isEditMode ? '일정 수정' : '일정 추가'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -96,10 +110,10 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated, onRefre
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  저장 중...
+                  {isSubmitting ? (isEditMode ? '수정 중...' : '저장 중...') : (isEditMode ? '수정' : '저장')}
                 </>
               ) : (
-                '저장'
+                isEditMode ? '수정' : '저장'
               )}
             </button>
           </div>

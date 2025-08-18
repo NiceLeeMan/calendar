@@ -67,22 +67,27 @@ const DayView = ({
   } = useTimeSlots({ currentDate })
   
   const { 
-    isModalOpen, 
+    isModalOpen,
+    editingPlan,
     handleAddPlan, 
+    handleEditPlan: handleModalEditPlan,
     handleCloseModal,
-    handlePlanCreated 
+    handlePlanCreated,
+    handlePlanUpdated 
   } = usePlanModal()
 
   // 컨텍스트 메뉴 및 삭제 훅
   const { contextMenu, handleContextMenu, closeContextMenu } = usePlanContextMenu()
   const { deleteModal, openDeleteModal, closeDeleteModal, handleDeleteConfirm } = usePlanDelete()
 
-  // 계획 수정 핸들러
+  // 계획 수정 핸들러 - 외부(CalendarPage)에서 오는 경우와 내부 모달용 통합
   const handleEditPlan = (plan: PlanResponse) => {
     if (onEditPlan) {
+      // 외부 모달 사용 (CalendarPage에서 전달받은 핸들러)
       onEditPlan(plan)
     } else {
-      console.log('수정 기능이 연결되지 않았습니다:', plan.planName)
+      // 내부 모달 사용 (DayView 자체 모달)
+      handleModalEditPlan(plan)
     }
   }
 
@@ -152,12 +157,14 @@ const DayView = ({
         onAddPlan={handleAddPlan}
       />
 
-      {/* 일정 추가 모달 */}
+      {/* 일정 추가/수정 모달 */}
       <PlanCreateModal 
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         selectedDate={currentDate}
+        editPlan={editingPlan}
         onPlanCreated={handlePlanCreated}
+        onPlanUpdated={handlePlanUpdated}
       />
     </div>
   )
