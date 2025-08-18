@@ -100,12 +100,26 @@ const PlanDeleteModal = ({ plan, isOpen, onConfirm, onCancel }: PlanDeleteModalP
             <span className="font-medium">'{plan.planName}'</span> 일정을 삭제하시겠습니까?
             <br />
             <span className="text-gray-500">이 작업은 되돌릴 수 없습니다.</span>
-            {plan.isRecurring && (
-              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-                <strong>반복 일정:</strong> 전체 반복 일정이 삭제됩니다.
-              </div>
-            )}
           </p>
+          
+          {/* 반복 일정 경고 메시지 강화 */}
+          {plan.isRecurring && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-red-800">반복 일정 전체 삭제</p>
+                  <p className="text-xs text-red-700 mt-1">
+                    이 반복 일정의 <strong>모든 날짜</strong>가 삭제됩니다.
+                    <br />
+                    특정 날짜만 삭제하려면 취소 후 개별적으로 처리해주세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 버튼 영역 */}

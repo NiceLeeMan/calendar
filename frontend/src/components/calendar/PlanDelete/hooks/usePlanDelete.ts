@@ -41,19 +41,37 @@ export const usePlanDelete = () => {
 
     setIsDeleting(true)
     try {
-      await deletePlan(deleteModal.plan.id)
+      // 반복계획의 경우 원본 Plan ID 사용 (인스턴스 ID가 아닌)
+      const planIdToDelete = deleteModal.plan.isRecurring 
+        ? deleteModal.plan.id  // 반복계획은 모든 인스턴스가 같은 원본 ID를 가짐
+        : deleteModal.plan.id
+
+      console.log(`계획 삭제 시도: planId=${planIdToDelete}, isRecurring=${deleteModal.plan.isRecurring}`)
       
-      console.log(`계획 ${deleteModal.plan.id} 삭제 완료`)
+      await deletePlan(planIdToDelete)
+      
+      console.log(`계획 ${planIdToDelete} 삭제 완료`)
       
       // 삭제 성공 시 모달 닫기
       closeDeleteModal()
+      
+      // 반복계획 삭제 시 성공 메시지 표시
+      if (deleteModal.plan.isRecurring) {
+        alert('반복 일정이 전체 삭제되었습니다.')
+      }
       
       // 페이지 새로고침으로 데이터 갱신 (간단한 방법)
       window.location.reload()
       
     } catch (error) {
       console.error(`계획 ${deleteModal.plan.id} 삭제 실패:`, error)
-      alert('일정 삭제에 실패했습니다. 다시 시도해주세요.')
+      
+      // 에러 메시지 개선
+      if (deleteModal.plan.isRecurring) {
+        alert('반복 일정 삭제에 실패했습니다. 다시 시도해주세요.')
+      } else {
+        alert('일정 삭제에 실패했습니다. 다시 시도해주세요.')
+      }
     } finally {
       setIsDeleting(false)
     }
