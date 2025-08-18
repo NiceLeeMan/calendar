@@ -7,8 +7,9 @@
  * @updated 2025-08-12 - 실시간 계획 업데이트 지원
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { PlanResponse } from '../../../../types/plan'
+import { planEventManager } from '../../../../utils/planEventManager'
 
 interface Event {
   id: number
@@ -41,6 +42,32 @@ export const useDayEvents = ({
   plans = [],
   getColorForPlan
 }: UseDayEventsProps): UseDayEventsReturn => {
+  const [currentPlans, setCurrentPlans] = useState<PlanResponse[]>(plans)
+
+  // plans prop이 변경될 때 상태 업데이트
+  useEffect(() => {
+    setCurrentPlans(plans)
+  }, [plans])
+
+  // 계획 삭제 이벤트 감지
+  useEffect(() => {
+    const handlePlanDeleted = (planId: number) => {
+      console.log(`DayView에서 계획 삭제 감지: planId=${planId}`)
+      setCurrentPlans(prevPlans => {
+        const updatedPlans = prevPlans.filter(plan => plan.id !== planId)
+        console.log(`DayView 삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
+        return updatedPlans
+      })
+    }
+
+    planEventManager.addPlanDeletedListener(handlePlanDeleted)
+
+    // 컴포넌트 언마운트 시 리스너 제거
+    return () => {
+      const handler = (event: CustomEvent) => handlePlanDeleted(event.detail.planId)
+      planEventManager.removePlanDeletedListener(handler as EventListener)
+    }
+  }, [])
 
   // 기본 컬러 팔레트 (fallback)
   const defaultColors = [
@@ -68,7 +95,15 @@ export const useDayEvents = ({
       
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
-      while (currentDate <= endDate) {
+      
+      // 반복 계획인 경우 반복 종료일 확인
+      let actualEndDate = endDate
+      if (plan.isRecurring && plan.recurringResInfo?.endDate) {
+        const repeatEndDate = new Date(plan.recurringResInfo.endDate + 'T00:00:00')
+        actualEndDate = repeatEndDate < endDate ? repeatEndDate : endDate
+      }
+      
+      while (currentDate <= actualEndDate) {
         // 반복 계획인 경우 요일 확인
         if (plan.isRecurring && plan.recurringResInfo?.repeatWeekdays) {
           const dayOfWeek = currentDate.getDay()
@@ -116,10 +151,10 @@ export const useDayEvents = ({
     return events
   }
 
-  // 모든 이벤트 결합 (실제 계획 + 전달받은 이벤트)
+  // 모든 이벤트 결합 (실제 계획 + 전달받은 이벤트) - 상태로 관리되는 plans 사용
   const allEvents = useMemo(() => {
-    return [...convertPlansToEvents(plans), ...events]
-  }, [plans, events])
+    return [...convertPlansToEvents(currentPlans), ...events]
+  }, [currentPlans, events])
 
   // 현재 날짜의 이벤트 가져오기
   const getDayEvents = (): Event[] => {

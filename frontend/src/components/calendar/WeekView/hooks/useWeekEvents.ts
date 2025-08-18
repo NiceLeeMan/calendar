@@ -8,6 +8,8 @@
  */
 
 import { PlanResponse } from '../../../../types/plan'
+import { planEventManager } from '../../../../utils/planEventManager'
+import { useState, useEffect } from 'react'
 
 interface CalendarEvent {
   id: number
@@ -32,6 +34,32 @@ interface UseWeekEventsReturn {
 }
 
 export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProps = {}): UseWeekEventsReturn => {
+  const [currentPlans, setCurrentPlans] = useState<PlanResponse[]>(plans)
+
+  // plans prop이 변경될 때 상태 업데이트
+  useEffect(() => {
+    setCurrentPlans(plans)
+  }, [plans])
+
+  // 계획 삭제 이벤트 감지
+  useEffect(() => {
+    const handlePlanDeleted = (planId: number) => {
+      console.log(`WeekView에서 계획 삭제 감지: planId=${planId}`)
+      setCurrentPlans(prevPlans => {
+        const updatedPlans = prevPlans.filter(plan => plan.id !== planId)
+        console.log(`WeekView 삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
+        return updatedPlans
+      })
+    }
+
+    planEventManager.addPlanDeletedListener(handlePlanDeleted)
+
+    // 컴포넌트 언마운트 시 리스너 제거
+    return () => {
+      const handler = (event: CustomEvent) => handlePlanDeleted(event.detail.planId)
+      planEventManager.removePlanDeletedListener(handler as EventListener)
+    }
+  }, [])
 
   // 기본 컬러 팔레트 (fallback)
   const defaultColors = [
@@ -60,7 +88,16 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
 
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
-      while (currentDate <= endDate) {
+      
+      // 반복 계획인 경우 반복 종료일 확인
+      let actualEndDate = endDate
+      if (plan.isRecurring && plan.recurringResInfo?.endDate) {
+        const repeatEndDate = new Date(plan.recurringResInfo.endDate + 'T00:00:00')
+        actualEndDate = repeatEndDate < endDate ? repeatEndDate : endDate
+        console.log(`반복 계획 종료일 확인 - 계획: ${plan.planName}, 원래 종료일: ${plan.endDate}, 반복 종료일: ${plan.recurringResInfo.endDate}, 실제 종료일: ${actualEndDate.toISOString().split('T')[0]}`)
+      }
+      
+      while (currentDate <= actualEndDate) {
         // 반복 계획인 경우 요일 확인
         if (plan.isRecurring && plan.recurringResInfo?.repeatWeekdays) {
           const dayOfWeek = currentDate.getDay()
@@ -108,8 +145,8 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
     return events
   }
 
-  // 실제 계획만 사용
-  const allEvents = convertPlansToEvents(plans)
+  // 실제 계획만 사용 (상태로 관리되는 plans 사용)
+  const allEvents = convertPlansToEvents(currentPlans)
 
   // 특정 날짜와 시간의 이벤트 가져오기
   const getEventsForDateTime = (date: Date, hour: number): CalendarEvent[] => {
@@ -196,21 +233,17 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
       }
 
       group.forEach((event, index) => {
-        // 현재 시간 슬롯(hour) 내에서의 표시 위치 계산
-        const slotStartMinutes = hour * 60
-        const slotEndMinutes = (hour + 1) * 60
+        // 이벤트가 시작하는 시간 슬롯에서만 전체 블록 표시
+        const eventStartHour = parseInt(event.startTime.split(':')[0])
+        if (hour !== eventStartHour) return // 시작 시간이 아니면 건너뛰기
 
-        // 이벤트가 현재 슬롯과 겹치는 부분만 계산
-        const visibleStart = Math.max(event.startMinutes, slotStartMinutes)
-        const visibleEnd = Math.min(event.endMinutes, slotEndMinutes)
-
-        if (visibleStart >= visibleEnd) return // 현재 슬롯에 표시할 부분이 없음
-
-        const offsetInSlot = visibleStart - slotStartMinutes
-        const durationInSlot = visibleEnd - visibleStart
-
-        const topPercent = (offsetInSlot / 60) * 100
-        const heightPercent = (durationInSlot / 60) * 100
+        // 전체 이벤트의 시간과 높이 계산
+        const eventStartMinutes = parseInt(event.startTime.split(':')[1])
+        const eventEndHour = parseInt(event.endTime.split(':')[0])
+        const eventEndMinutes = parseInt(event.endTime.split(':')[1])
+        
+        const totalDurationHours = eventEndHour - eventStartHour + (eventEndMinutes / 60)
+        const offsetInSlot = eventStartMinutes / 60 * 100
 
         // 가로 배치: 너비를 그룹 크기로 나누고 인덱스에 따라 위치 지정
         const widthPercent = 100 / groupSize
@@ -226,8 +259,8 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
             position: 'absolute',
             left: `${leftPercent + 1}%`,
             width: `${widthPercent - 2}%`,
-            top: `${topPercent + 1}%`,
-            height: `${Math.max(heightPercent - 2, 25)}%`,
+            top: `${offsetInSlot + 1}%`,
+            height: `${totalDurationHours * 100 - 2}%`,
             zIndex: 10 + index
           }
         })

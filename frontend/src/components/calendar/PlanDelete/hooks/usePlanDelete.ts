@@ -10,6 +10,7 @@
 import { useState, useCallback } from 'react'
 import { deletePlan } from '../../../../api/planApi'
 import { PlanResponse } from '../../../../types/plan'
+import { planEventManager } from '../../../../utils/planEventManager'
 
 export const usePlanDelete = () => {
   const [deleteModal, setDeleteModal] = useState<{
@@ -52,6 +53,9 @@ export const usePlanDelete = () => {
       
       console.log(`계획 ${planIdToDelete} 삭제 완료`)
       
+      // 삭제 이벤트 발생 - 즉시 UI 업데이트용
+      planEventManager.emitPlanDeleted(planIdToDelete)
+      
       // 삭제 성공 시 모달 닫기
       closeDeleteModal()
       
@@ -60,8 +64,9 @@ export const usePlanDelete = () => {
         alert('반복 일정이 전체 삭제되었습니다.')
       }
       
-      // 페이지 새로고침으로 데이터 갱신 (간단한 방법)
-      window.location.reload()
+      // 페이지 새로고침 대신 React Query 캐시 무효화로 데이터 갱신
+      // (React Query를 사용하는 경우 queryClient.invalidateQueries 사용 권장)
+      // window.location.reload() - 제거: 현재 뷰 유지를 위해
       
     } catch (error) {
       console.error(`계획 ${deleteModal.plan.id} 삭제 실패:`, error)

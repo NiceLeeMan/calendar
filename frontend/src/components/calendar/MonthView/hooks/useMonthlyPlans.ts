@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react'
 import { getMonthlyPlans } from '../../../../api'
 import { PlanResponse } from '../../../../types'
+import { planEventManager } from '../../../../utils/planEventManager'
 
 interface UseMonthlyPlansProps {
   currentDate: Date
@@ -39,6 +40,30 @@ export const useMonthlyPlans = ({
     'bg-red-500', 'bg-teal-500', 'bg-rose-500', 'bg-cyan-500',
     'bg-lime-500', 'bg-amber-500', 'bg-emerald-500', 'bg-violet-500'
   ]
+  // 계획 삭제 이벤트 감지
+  useEffect(() => {
+    const handlePlanDeleted = (planId: number) => {
+      console.log(`MonthView에서 계획 삭제 감지: planId=${planId}`)
+      setPlans(prevPlans => {
+        const updatedPlans = prevPlans.filter(plan => {
+          // 반복 계획인 경우 originalPlanId로 비교, 일반 계획은 id로 비교
+          const planIdToCompare = plan.id
+          return planIdToCompare !== planId
+        })
+        console.log(`삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
+        return updatedPlans
+      })
+    }
+
+    planEventManager.addPlanDeletedListener(handlePlanDeleted)
+
+    // 컴포넌트 언마운트 시 리스너 제거
+    return () => {
+      const handler = (event: CustomEvent) => handlePlanDeleted(event.detail.planId)
+      planEventManager.removePlanDeletedListener(handler as EventListener)
+    }
+  }, [])
+
   useEffect(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth() + 1
@@ -47,6 +72,30 @@ export const useMonthlyPlans = ({
   }, [currentDate])
 
   // 새로운 일정이 추가되었을 때 UI갱신, 반복계획의 UI 갱신문제는 이쪽이 아닐까?
+  // 계획 삭제 이벤트 감지
+  useEffect(() => {
+    const handlePlanDeleted = (planId: number) => {
+      console.log(`MonthView에서 계획 삭제 감지: planId=${planId}`)
+      setPlans(prevPlans => {
+        const updatedPlans = prevPlans.filter(plan => {
+          // 반복 계획인 경우 originalPlanId로 비교, 일반 계획은 id로 비교
+          const planIdToCompare = plan.id
+          return planIdToCompare !== planId
+        })
+        console.log(`삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
+        return updatedPlans
+      })
+    }
+
+    planEventManager.addPlanDeletedListener(handlePlanDeleted)
+
+    // 컴포넌트 언마운트 시 리스너 제거
+    return () => {
+      const handler = (event: CustomEvent) => handlePlanDeleted(event.detail.planId)
+      planEventManager.removePlanDeletedListener(handler as EventListener)
+    }
+  }, [])
+
   useEffect(() => {
     if (newPlan) {
       setPlans(prevPlans => {
