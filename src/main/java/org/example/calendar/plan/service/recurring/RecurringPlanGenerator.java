@@ -62,6 +62,12 @@ public class RecurringPlanGenerator {
         LocalDate planStart = plan.getStartDate();
         LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
         
+        // 반복 종료일이 설정된 경우, 조회 범위를 종료일까지로 제한
+        LocalDate effectiveEnd = monthEnd;
+        if (recurringEnd != null && recurringEnd.isBefore(monthEnd)) {
+            effectiveEnd = recurringEnd;
+        }
+        
         for (DayOfWeek targetDayOfWeek : recurring.getRepeatWeekdays()) {
             LocalDate current = monthStart.with(TemporalAdjusters.firstInMonth(targetDayOfWeek));
             
@@ -70,7 +76,8 @@ public class RecurringPlanGenerator {
                 current = current.plusWeeks(1);
             }
             
-            while (!current.isAfter(monthEnd) && (recurringEnd == null || !current.isAfter(recurringEnd))) {
+            // 반복 종료일을 초과하지 않도록 체크
+            while (!current.isAfter(effectiveEnd)) {
                 // 예외 날짜가 아닌 경우만 추가
                 if (!recurring.getExceptionDates().contains(current)) {
                     PlanResponse instance = planMapper.toPlanResponse(plan);
@@ -78,7 +85,7 @@ public class RecurringPlanGenerator {
                     instance.setEndDate(current.plusDays(plan.getEndDate().toEpochDay() - plan.getStartDate().toEpochDay()));
                     instances.add(instance);
                 }
-                
+
                 current = current.plusWeeks(recurring.getRepeatInterval());
             }
         }
@@ -94,7 +101,7 @@ public class RecurringPlanGenerator {
         if (recurring.getRepeatDayOfMonth() != null) {
             // 매월 특정 일 (예: 매월 15일)
             LocalDate current = monthStart.withDayOfMonth(Math.min(recurring.getRepeatDayOfMonth(), monthStart.lengthOfMonth()));
-            
+
             if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
                 (recurringEnd == null || !current.isAfter(recurringEnd)) &&
                 !recurring.getExceptionDates().contains(current)) {
@@ -118,7 +125,7 @@ public class RecurringPlanGenerator {
             if (monthStart.getMonthValue() == recurring.getRepeatMonth()) {
                 LocalDate current = LocalDate.of(monthStart.getYear(), recurring.getRepeatMonth(), 
                         Math.min(recurring.getRepeatDayOfYear(), monthStart.lengthOfMonth()));
-                
+
                 if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
                     (recurringEnd == null || !current.isAfter(recurringEnd)) &&
                     !recurring.getExceptionDates().contains(current)) {

@@ -8,9 +8,11 @@ interface PlanCreateModalProps {
   onClose: () => void
   selectedDate?: Date
   onPlanCreated?: (plan: PlanResponse) => void
+  onRefreshMonth?: () => Promise<void> // 월별 새로고침 콜백 (fallback용)
+  currentDate?: Date // 현재 달력 날짜 추가
 }
 
-const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated }: PlanCreateModalProps) => {
+const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated, onRefreshMonth, currentDate }: PlanCreateModalProps) => {
   const {
     formData,
     handleInputChange,
@@ -25,7 +27,7 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, onPlanCreated }: PlanC
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await handleSubmit(formData, onPlanCreated, onClose, resetForm)
+    await handleSubmit(formData, onPlanCreated, onClose, resetForm, onRefreshMonth, currentDate)
   }
 
   if (!isOpen) return null

@@ -6,6 +6,21 @@ interface RecurringSectionProps {
 }
 
 const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }: RecurringSectionProps) => {
+  // 요일 선택 핸들러
+  const handleWeekdayChange = (dayIndex: number, checked: boolean) => {
+    const currentWeekdays = formData.recurringPlan.repeatWeekdays || []
+    let newWeekdays: string[]
+    
+    if (checked) {
+      newWeekdays = [...currentWeekdays, dayIndex.toString()]
+    } else {
+      newWeekdays = currentWeekdays.filter((day: string) => day !== dayIndex.toString())
+    }
+    
+    handleRecurringChange('repeatWeekdays', newWeekdays)
+    console.log('요일 변경:', { dayIndex, checked, newWeekdays })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center">
@@ -60,10 +75,12 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
                 반복 요일
               </label>
               <div className="flex flex-wrap gap-2">
-                {['월', '화', '수', '목', '금', '토', '일'].map((day) => (
+                {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
                   <label key={day} className="flex items-center">
                     <input
                       type="checkbox"
+                      checked={formData.recurringPlan.repeatWeekdays?.includes(index.toString()) || false}
+                      onChange={(e) => handleWeekdayChange(index, e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <span className="ml-1 text-sm text-gray-700">{day}</span>
