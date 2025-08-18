@@ -346,6 +346,74 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
 }
 
 /**
+ * 일정 폼 데이터를 수정 API 요청 형식으로 변환
+ * PlanCreateModal의 수정 모드에서 사용할 변환 함수
+ * 
+ * @param formData 폼에서 입력된 데이터
+ * @returns API 수정 요청용 데이터
+ */
+export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest => {
+  const request: PlanUpdateRequest = {
+    planName: formData.planName.trim(),
+    planContent: formData.planContent?.trim() || undefined,
+    startDate: formData.startDate,
+    endDate: formData.endDate,
+    startTime: formData.startTime,
+    endTime: formData.endTime,
+    isRecurring: formData.isRecurring
+  }
+
+  // 반복 설정 변환 (생성과 동일한 로직)
+  if (formData.isRecurring && formData.recurringPlan) {
+    console.log('반복 계획 수정 변환 시작:', formData.recurringPlan)
+
+    const recurring = formData.recurringPlan
+    
+    request.recurringPlan = {
+      type: recurring.repeatUnit || recurring.type,
+      repeatInterval: recurring.repeatInterval || 1
+    }
+
+    // 반복 유형별 설정 추가
+    switch (request.recurringPlan.type) {
+      case 'WEEKLY':
+        if (recurring.repeatWeekdays?.length > 0) {
+          request.recurringPlan.daysOfWeek = recurring.repeatWeekdays
+          console.log('주간 반복 수정 - 선택된 요일:', recurring.repeatWeekdays)
+        }
+        break
+      case 'MONTHLY':
+        if (recurring.repeatDayOfMonth) {
+          request.recurringPlan!.dayOfMonth = recurring.repeatDayOfMonth
+        } else if (recurring.repeatWeeksOfMonth?.length > 0) {
+          request.recurringPlan!.weeksOfMonth = recurring.repeatWeeksOfMonth
+          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays
+        }
+        break
+      case 'YEARLY':
+        if (recurring.repeatMonth && recurring.repeatDayOfYear) {
+          request.recurringPlan!.month = recurring.repeatMonth
+          request.recurringPlan!.dayOfYear = recurring.repeatDayOfYear
+        }
+        break
+    }
+  }
+
+  // 알람 설정 변환
+  if (formData.alarms?.length > 0) {
+    request.alarms = formData.alarms
+      .filter((alarm: any) => alarm.alarmTime) // 시간이 설정된 알람만
+      .map((alarm: any) => ({
+        alarmDate: alarm.alarmDate || null,
+        alarmTime: alarm.alarmTime
+      }))
+  }
+
+  console.log('convertFormDataToUpdateRequest - 최종 request:', request)
+  return request
+}
+
+/**
  * API 응답을 폼 데이터 형식으로 변환
  * 일정 수정 시 기존 데이터를 폼에 로드할 때 사용
  * 

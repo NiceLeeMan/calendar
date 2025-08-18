@@ -23,5 +23,6 @@ export {
 // 유틸리티 함수들
 export {
   convertFormDataToCreateRequest,
+  convertFormDataToUpdateRequest,
   isPlanOnDate
 } from './planUtils'

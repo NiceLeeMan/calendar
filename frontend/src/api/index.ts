@@ -21,6 +21,7 @@ export {
   searchPlans,
   getTodayPlans,
   convertFormDataToCreateRequest,
+  convertFormDataToUpdateRequest,
   isPlanOnDate
 } from './planApi'
 
