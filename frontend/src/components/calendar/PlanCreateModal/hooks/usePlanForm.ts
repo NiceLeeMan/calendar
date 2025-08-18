@@ -12,11 +12,7 @@ export const usePlanForm = (selectedDate?: Date) => {
     const day = String(selectedDate.getDate()).padStart(2, '0')
     return `${year}-${month}-${day}`
   })() : ''
-  
-  // 디버깅용 로그
-  console.log('usePlanForm - selectedDate:', selectedDate)
-  console.log('usePlanForm - defaultDate:', defaultDate)
-  
+
   const [formData, setFormData] = useState({
     planName: '',
     planContent: '',
@@ -44,10 +40,6 @@ export const usePlanForm = (selectedDate?: Date) => {
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
       const day = String(selectedDate.getDate()).padStart(2, '0')
       const newDate = `${year}-${month}-${day}`
-      
-      console.log('useEffect - selectedDate changed:', selectedDate)
-      console.log('useEffect - updating dates to:', newDate)
-      
       setFormData(prev => ({
         ...prev,
         startDate: newDate,
@@ -57,7 +49,6 @@ export const usePlanForm = (selectedDate?: Date) => {
   }, [selectedDate])
 
   const handleInputChange = (field: string, value: any) => {
-    console.log('handleInputChange:', { field, value })
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -99,11 +90,7 @@ export const usePlanForm = (selectedDate?: Date) => {
       const day = String(selectedDate.getDate()).padStart(2, '0')
       return `${year}-${month}-${day}`
     })() : ''
-    
-    // 디버깅용 로그
-    console.log('resetForm - selectedDate:', selectedDate)
-    console.log('resetForm - defaultDate:', defaultDate)
-    
+
     setFormData({
       planName: '',
       planContent: '',
