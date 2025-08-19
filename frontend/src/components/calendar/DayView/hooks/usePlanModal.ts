@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react'
-import { PlanResponse } from '../../../../types/plan'
+import { PlanResponse } from '../../../../types'
 
 interface UsePlanModalReturn {
   isModalOpen: boolean
