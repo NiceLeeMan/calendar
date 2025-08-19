@@ -6,7 +6,7 @@
  * @since 2025-08-11
  */
 
-import React from 'react'
+
 
 interface DayHeaderProps {
   currentDate: Date

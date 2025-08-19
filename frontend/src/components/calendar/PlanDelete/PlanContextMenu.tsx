@@ -8,7 +8,7 @@
  * - 클릭 외부 영역 시 자동 닫힘
  */
 
-import React, { useEffect, useRef } from 'react'
+import  { useEffect, useRef } from 'react'
 import { PlanResponse } from '../../../types/plan'
 
 interface PlanContextMenuProps {

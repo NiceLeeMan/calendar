@@ -30,7 +30,7 @@ interface EventOverlayProps {
   onPlanContextMenu?: (event: React.MouseEvent, plan: PlanResponse, targetDate: string) => void
 }
 
-const EventOverlay = ({ eventsWithPositions, onDateSelect, currentDate, onPlanContextMenu }: EventOverlayProps) => {
+const EventOverlay = ({ eventsWithPositions, currentDate, onPlanContextMenu }: EventOverlayProps) => {
   
   const handlePlanContextMenu = (event: React.MouseEvent, planEvent: Event & { style: React.CSSProperties }) => {
     if (onPlanContextMenu && planEvent.originalPlan) {

@@ -8,7 +8,7 @@
  * - 로딩 상태 표시
  */
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { PlanResponse } from '../../../types/plan'
 
 interface PlanDeleteModalProps {
