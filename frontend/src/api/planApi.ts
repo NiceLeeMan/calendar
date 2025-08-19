@@ -409,7 +409,7 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
       }))
   }
 
-  console.log('convertFormDataToUpdateRequest - 최종 request:', request)
+  console.log('updated request:', request)
   return request
 }
 

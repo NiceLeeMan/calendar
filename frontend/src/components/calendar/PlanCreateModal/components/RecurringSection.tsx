@@ -18,7 +18,6 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
     }
     
     handleRecurringChange('repeatWeekdays', newWeekdays)
-    console.log('요일 변경:', { dayIndex, checked, newWeekdays })
   }
 
   return (

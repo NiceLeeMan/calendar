@@ -30,10 +30,9 @@ class PlanEventManager {
       detail: { planId, action: 'delete' }
     })
     window.dispatchEvent(event)
-    console.log(`계획 삭제 이벤트 발생: planId=${planId}`)
   }
   
-  // 계획 생성 이벤트 발생
+  // 계획 생성 이벤트 발생왜 걔네드릉ㄴ 이거 안쓰지?
   public emitPlanCreated(planData: any): void {
     const event = new CustomEvent('planCreated', {
       detail: { action: 'create', data: planData }

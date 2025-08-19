@@ -7,10 +7,7 @@ interface DateTimeSectionProps {
 }
 
 const DateTimeSection = ({ formData, handleInputChange }: DateTimeSectionProps) => {
-  // 디버깅용 로그
-  console.log('DateTimeSection - formData.startDate:', formData.startDate)
-  console.log('DateTimeSection - formData.endDate:', formData.endDate)
-  
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-gray-800">날짜 및 시간</h3>

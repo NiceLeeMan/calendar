@@ -47,11 +47,10 @@ export const usePlanDelete = () => {
         ? deleteModal.plan.id  // 반복계획은 모든 인스턴스가 같은 원본 ID를 가짐
         : deleteModal.plan.id
 
-      console.log(`계획 삭제 시도: planId=${planIdToDelete}, isRecurring=${deleteModal.plan.isRecurring}`)
+
+     await deletePlan(planIdToDelete)
       
-      await deletePlan(planIdToDelete)
-      
-      console.log(`계획 ${planIdToDelete} 삭제 완료`)
+      console.log(`삭제된 PlanId : `+ planIdToDelete)
       
       // 삭제 이벤트 발생 - 즉시 UI 업데이트용
       planEventManager.emitPlanDeleted(planIdToDelete)
