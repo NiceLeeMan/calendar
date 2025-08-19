@@ -124,13 +124,26 @@ public class PlanMapper {
 
     /**
      * 기존 RecurringInfo 업데이트
+     * JPA @ElementCollection 사용 시 clear() 후 addAll()로 DB 동기화
      */
     public void updateRecurringInfo(RecurringInfo existing, RecurringReqInfo request, LocalDate planEndDate) {
         existing.setRepeatUnit(request.getRepeatUnit());
         existing.setRepeatInterval(request.getRepeatInterval());
-        existing.setRepeatWeekdays(request.getRepeatWeekdays() != null ? new HashSet<>(request.getRepeatWeekdays()) : new HashSet<>());
+
+        // repeatWeekdays 업데이트 - 기존 요일 clear 후 새로운 요일 추가
+        existing.getRepeatWeekdays().clear();
+        if (request.getRepeatWeekdays() != null) {
+            existing.getRepeatWeekdays().addAll(request.getRepeatWeekdays());
+        }
+
         existing.setRepeatDayOfMonth(request.getRepeatDayOfMonth());
-        existing.setRepeatWeeksOfMonth(request.getRepeatWeeksOfMonth() != null ? new HashSet<>(request.getRepeatWeeksOfMonth()) : new HashSet<>());
+
+        // repeatWeeksOfMonth 업데이트 - 기존 주차 clear 후 새로운 주차 추가
+        existing.getRepeatWeeksOfMonth().clear();
+        if (request.getRepeatWeeksOfMonth() != null) {
+            existing.getRepeatWeeksOfMonth().addAll(request.getRepeatWeeksOfMonth());
+        }
+
         existing.setRepeatMonth(request.getRepeatMonth());
         existing.setRepeatDayOfYear(request.getRepeatDayOfYear());
         existing.setEndDate(planEndDate);  // Plan의 endDate를 반복 종료일로 사용

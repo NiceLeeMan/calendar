@@ -154,14 +154,22 @@ public class PlanService {
         
         LocalDate oldStartDate = plan.getStartDate();
         LocalDate oldEndDate = plan.getEndDate();
-        
+
+//         RecurringInfo가 있는 경우 영속성 컨텍스트에 로드되도록 초기화
+        if (plan.getRecurringInfo() != null) {
+            // repeatWeekdays 컬렉션을 강제로 초기화 (LAZY 로딩 문제 해결)
+            plan.getRecurringInfo().getRepeatWeekdays().size();
+            plan.getRecurringInfo().getRepeatWeeksOfMonth().size();
+            log.debug("RecurringInfo initialized - weekdays: {}", plan.getRecurringInfo().getRepeatWeekdays());
+        }
+
         // 계획 업데이트 (헬퍼 사용)
         planUpdateHelper.updateBasicFields(plan, request);
         planUpdateHelper.updateRecurringInfo(plan, request);
         planUpdateHelper.updateAlarms(plan, request);
         
-        // DB 저장
-        Plan updatedPlan = planRepository.save(plan);
+        // DB 저장 및 flush로 즉시 반영 . 요부분 반복계획의 겨우 다른 테이블 명시해야할듯
+        Plan updatedPlan = planRepository.saveAndFlush(plan);
         
         // 캐시 무효화 (기존 날짜 + 새 날짜)
         evictRelatedCache(userId, oldStartDate, oldEndDate);
