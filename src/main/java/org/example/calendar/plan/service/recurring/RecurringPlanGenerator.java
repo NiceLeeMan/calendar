@@ -101,7 +101,7 @@ public class RecurringPlanGenerator {
                     
                     PlanResponse instance = planMapper.toPlanResponse(plan);
                     instance.setStartDate(current);
-                    instance.setEndDate(current.plusDays(plan.getEndDate().toEpochDay() - plan.getStartDate().toEpochDay()));
+                    instance.setEndDate(plan.getEndDate());
                     instances.add(instance);
                     log.info("    ✅ 인스턴스 생성: {} ~ {}", instance.getStartDate(), instance.getEndDate());
                 } else {
