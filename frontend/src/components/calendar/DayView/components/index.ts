@@ -5,7 +5,7 @@
  * @since 2025-08-11
  */
 
-export { default as TimeGrid } from './TimeGrid'
-export { default as EventOverlay } from './EventOverlay'
+export { default as DayTimeGrid } from './DayTimeGrid.tsx'
+export { default as DayPlanBlock } from './DayPlanBlock.tsx'
 export { default as DayHeader } from './DayHeader'
 export { default as DaySidebar } from './DaySidebar'

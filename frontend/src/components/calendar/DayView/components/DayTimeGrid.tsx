@@ -20,7 +20,7 @@ interface TimeGridProps {
   children: React.ReactNode
 }
 
-const TimeGrid = ({ timeSlots, currentTimePosition, children }: TimeGridProps) => {
+const DayTimeGrid = ({ timeSlots, currentTimePosition, children }: TimeGridProps) => {
   return (
     <div className="max-h-[600px] overflow-y-auto relative">
       {/* 스크롤 가능한 시간 컨테이너 */}
@@ -91,4 +91,4 @@ const TimeGrid = ({ timeSlots, currentTimePosition, children }: TimeGridProps) =
   )
 }
 
-export default TimeGrid
+export default DayTimeGrid

@@ -11,7 +11,7 @@ import { useMemo, useState, useEffect } from 'react'
 import { PlanResponse } from '../../../../types/plan'
 import { planEventManager } from '../../../../utils/planEventManager'
 
-interface Event {
+interface PlanBlock {
   id: number
   title: string
   date: string
@@ -24,16 +24,16 @@ interface Event {
 
 interface UseDayEventsProps {
   currentDate: Date
-  events?: Event[]
+  events?: PlanBlock[]
   plans?: PlanResponse[]
   getColorForPlan?: (planId: number) => string
 }
 
 interface UseDayEventsReturn {
-  getDayEvents: () => Event[]
-  getEventsForHour: (hour: number) => Event[]
-  getEventStyle: (event: Event) => React.CSSProperties
-  getOverlappingEvents: () => Array<Event & { style: React.CSSProperties }>
+  getDayPlanBlocks: () => PlanBlock[]
+  getActivePlanBlocksForHour: (hour: number) => PlanBlock[]
+  calculatePlanBlockPosition: (block: PlanBlock) => React.CSSProperties
+  arrangeOverlappingBlocks: () => Array<PlanBlock & { style: React.CSSProperties }>
 }
 
 export const useDayEvents = ({ 
@@ -77,17 +77,17 @@ export const useDayEvents = ({
   ]
 
   // 색상 할당 함수
-  const getEventColor = (planId: number): string => {
+  const assignColorToPlanBlock = (planId: number): string => {
     if (getColorForPlan) {
       return getColorForPlan(planId)
     }
     return defaultColors[planId % defaultColors.length]
   }
 
-  // 실제 계획을 Event 형태로 변환 (다중 날짜 지원)
-  const convertPlansToEvents = (plans: PlanResponse[]): Event[] => {
-    const events: Event[] = []
-    const eventMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
+  // 실제 계획을 UI 블록형태로 생성
+  const createPlanBlocks = (plans: PlanResponse[]): PlanBlock[] => {
+    const planBlocks: PlanBlock[] = []
+    const blockMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
     
     plans.forEach(plan => {
       const startDate = new Date(plan.startDate + 'T00:00:00') // 로컬 시간대로 파싱
@@ -124,23 +124,23 @@ export const useDayEvents = ({
         const dateString = `${year}-${month}-${day}`
         
         // 중복 체크: 동일한 계획이 같은 날짜에 이미 추가되었는지 확인
-        const eventKey = `${plan.id}-${dateString}`
-        if (eventMap.has(eventKey)) {
+        const blockId = `${plan.id}-${dateString}`
+        if (blockMap.has(blockId)) {
           currentDate.setDate(currentDate.getDate() + 1)
           continue
         }
-        eventMap.set(eventKey, true)
+        blockMap.set(blockId, true)
         
         // 고유 ID 생성: planId * 100000 + (월 * 100 + 일)
         const uniqueId = plan.id * 100000 + (currentDate.getMonth() + 1) * 100 + currentDate.getDate()
         
-        events.push({
+        planBlocks.push({
           id: uniqueId,
           title: plan.planName,
           date: dateString,
           startTime: plan.startTime || '00:00',
           endTime: plan.endTime || '23:59',
-          color: getEventColor(plan.id),
+          color: assignColorToPlanBlock(plan.id),
           originalPlanId: plan.id, // 원본 계획 ID 추가
           originalPlan: plan // 원본 계획 데이터 추가
         })
@@ -148,45 +148,45 @@ export const useDayEvents = ({
       }
     })
     
-    return events
+    return planBlocks
   }
 
-  // 모든 이벤트 결합 (실제 계획 + 전달받은 이벤트) - 상태로 관리되는 plans 사용
-  const allEvents = useMemo(() => {
-    return [...convertPlansToEvents(currentPlans), ...events]
+  // 모든 블록 결합 (실제 계획 + 전달받은 블록) - 상태로 관리되는 plans 사용
+  const allBlocks = useMemo(() => {
+    return [...createPlanBlocks(currentPlans), ...events]
   }, [currentPlans, events])
 
-  // 현재 날짜의 이벤트 가져오기
-  const getDayEvents = (): Event[] => {
+  // 현재 날짜의 블록들 가져오기
+  const getBlocksForCurrentDate = (): PlanBlock[] => {
     // 로컬 시간대 유지하여 날짜 문자열 생성 (useMonthlyPlans와 동일한 방식)
     const year = currentDate.getFullYear()
     const month = String(currentDate.getMonth() + 1).padStart(2, '0')
     const day = String(currentDate.getDate()).padStart(2, '0')
     const dateString = `${year}-${month}-${day}`
     
-    return allEvents.filter(event => event.date === dateString)
+    return allBlocks.filter(block => block.date === dateString)
       .sort((a, b) => a.startTime.localeCompare(b.startTime))
   }
 
-  // 특정 시간대의 이벤트 가져오기
-  const getEventsForHour = (hour: number): Event[] => {
-    const dayEvents = getDayEvents()
-    return dayEvents.filter(event => {
-      const eventStart = parseInt(event.startTime.split(':')[0])
-      const eventEnd = parseInt(event.endTime.split(':')[0])
-      return hour >= eventStart && hour < eventEnd
+  // 특정 시간대의 활성 블록들 가져오기
+  const getActivePlanBlocksForHours = (hour: number): PlanBlock[] => {
+    const dayBlocks = getBlocksForCurrentDate()
+    return dayBlocks.filter(block => {
+      const blockStart = parseInt(block.startTime.split(':')[0])
+      const blockEnd = parseInt(block.endTime.split(':')[0])
+      return hour >= blockStart && hour < blockEnd
     })
   }
 
-  // 이벤트의 위치와 크기 계산
-  const getEventStyle = (event: Event): React.CSSProperties => {
-    const eventStart = parseInt(event.startTime.split(':')[0])
-    const eventStartMinutes = parseInt(event.startTime.split(':')[1])
-    const eventEnd = parseInt(event.endTime.split(':')[0])
-    const eventEndMinutes = parseInt(event.endTime.split(':')[1])
+  // 블록의 위치와 크기 계산
+  const calculateBlockPositionAndSize = (block: PlanBlock): React.CSSProperties => {
+    const blockStartHours = parseInt(block.startTime.split(':')[0])
+    const blockStartMinutes = parseInt(block.startTime.split(':')[1])
+    const blockEndHours = parseInt(block.endTime.split(':')[0])
+    const blockEndMinutes = parseInt(block.endTime.split(':')[1])
     
-    const totalStartMinutes = eventStart * 60 + eventStartMinutes
-    const totalEndMinutes = eventEnd * 60 + eventEndMinutes
+    const totalStartMinutes = blockStartHours * 60 + blockStartMinutes
+    const totalEndMinutes = blockEndHours * 60 + blockEndMinutes
     const durationMinutes = totalEndMinutes - totalStartMinutes
     
     // 하루를 1440분(24시간 * 60분)으로 계산

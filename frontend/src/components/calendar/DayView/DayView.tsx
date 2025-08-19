@@ -15,11 +15,11 @@
  */
 
 import React from 'react'
-import { PlanResponse } from '../../../types/plan'
+import { PlanResponse } from '../../../types'
 import { useCalendarColors } from '../hooks'
 import PlanCreateModal from '../PlanCreateModal/PlanCreateModal.tsx'
 import { useDayEvents, useTimeSlots, usePlanModal } from './hooks'
-import { TimeGrid, EventOverlay, DayHeader, DaySidebar } from './components'
+import { DayTimeGrid, DayPlanBlock, DayHeader, DaySidebar } from './components'
 import { 
   PlanContextMenu, 
   PlanDeleteModal, 
@@ -27,7 +27,7 @@ import {
   usePlanDelete 
 } from '../PlanDelete'
 
-interface Event {
+interface PlanBlock {
   id: number
   title: string
   date: string
@@ -42,7 +42,7 @@ interface DayViewProps {
   onDateSelect: (date: Date) => void
   onEditPlan?: (plan: PlanResponse) => void
   plans: PlanResponse[]
-  events?: Event[]// 실시간 UI 업데이트용
+  events?: PlanBlock[]// 실시간 UI 업데이트용
 }
 
 const DayView = ({ 
@@ -57,7 +57,7 @@ const DayView = ({
   
   // 커스텀 훅들로 로직 분리
   const {
-    getOverlappingEvents 
+    arrangeOverlappingBlocks 
   } = useDayEvents({ currentDate, events, plans, getColorForPlan: getColorForPlanWithOpacity })
   
   const { 
@@ -101,7 +101,7 @@ const DayView = ({
     handleContextMenu(event, plan, targetDate)
   }
 
-  const eventsWithPositions = getOverlappingEvents()
+  const eventsWithPositions = arrangeOverlappingBlocks()
   const currentTimePosition = getCurrentTimePosition()
 
   return (
@@ -115,17 +115,17 @@ const DayView = ({
         />
 
         {/* 시간 그리드와 이벤트 */}
-        <TimeGrid 
+        <DayTimeGrid 
           timeSlots={timeSlots}
           currentTimePosition={currentTimePosition}
         >
-          <EventOverlay 
+          <DayPlanBlock 
             eventsWithPositions={eventsWithPositions}
             onDateSelect={onDateSelect}
             currentDate={currentDate}
             onPlanContextMenu={handlePlanContextMenu}
           />
-        </TimeGrid>
+        </DayTimeGrid>
 
         {/* 컨텍스트 메뉴 */}
         {contextMenu.isOpen && contextMenu.plan && (

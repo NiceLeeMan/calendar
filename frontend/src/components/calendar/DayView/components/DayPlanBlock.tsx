@@ -30,8 +30,7 @@ interface EventOverlayProps {
   onPlanContextMenu?: (event: React.MouseEvent, plan: PlanResponse, targetDate: string) => void
 }
 
-const EventOverlay = ({ eventsWithPositions, currentDate, onPlanContextMenu }: EventOverlayProps) => {
-  
+const DayPlanBlock = ({ eventsWithPositions, currentDate, onPlanContextMenu }: EventOverlayProps) => {
   const handlePlanContextMenu = (event: React.MouseEvent, planEvent: Event & { style: React.CSSProperties }) => {
     if (onPlanContextMenu && planEvent.originalPlan) {
       const targetDate = currentDate.toISOString().split('T')[0]
@@ -77,4 +76,4 @@ const EventOverlay = ({ eventsWithPositions, currentDate, onPlanContextMenu }: E
   )
 }
 
-export default EventOverlay
+export default DayPlanBlock

@@ -29,7 +29,7 @@ export const useTimeSlots = ({
 }: UseTimeSlotsProps): UseTimeSlotsReturn => {
 
   // 시간 슬롯 생성 (12 AM ~ 11 PM)
-  const timeSlots = useMemo((): TimeSlot[] => {
+  const createTimeSlots = useMemo((): TimeSlot[] => {
     const slots = []
     for (let hour = 0; hour < 24; hour++) {
       const time12h = hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`
@@ -43,14 +43,14 @@ export const useTimeSlots = ({
   }, [])
 
   // 날짜가 오늘인지 확인
-  const isToday = (): boolean => {
+  const checkCurrentDateEqualsToday = (): boolean => {
     const today = new Date()
     return currentDate.toDateString() === today.toDateString()
   }
 
   // 현재 시간 위치 계산
-  const getCurrentTimePosition = () => {
-    if (!isToday()) return null
+  const calculateCurrentTimePosition = () => {
+    if (!checkCurrentDateEqualsToday()) return null
 
     const now = new Date()
     const currentHour = now.getHours()
@@ -69,8 +69,8 @@ export const useTimeSlots = ({
   }
 
   return {
-    timeSlots,
-    isToday,
-    getCurrentTimePosition
+    timeSlots: createTimeSlots,
+    isToday: checkCurrentDateEqualsToday,
+    getCurrentTimePosition: calculateCurrentTimePosition
   }
 }
