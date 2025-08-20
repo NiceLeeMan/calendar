@@ -204,49 +204,46 @@ export const useDayEvents = ({
     }
   }
 
-  // 겹치는 이벤트들의 위치 조정
-  const getOverlappingEvents = () => {
-    const dayEvents = getDayEvents()
-    const eventsWithStyles = dayEvents.map(event => ({
-      ...event,
-      style: getEventStyle(event)
-    }))
-
-    // 겹치는 이벤트들을 그룹으로 묶기
-    const overlappingGroups: Array<Array<typeof eventsWithStyles[0]>> = []
+  // 1단계: 겹치는 블록들을 그룹으로 묶기
+  const groupOverlappingBlocks = (blocksWithStyles: Array<PlanBlock & { style: React.CSSProperties }>) => {
+    const overlappingGroups: Array<Array<typeof blocksWithStyles[0]>> = []
     
-    eventsWithStyles.forEach(event => {
-      const eventStart = parseInt(event.startTime.split(':')[0]) * 60 + parseInt(event.startTime.split(':')[1])
-      const eventEnd = parseInt(event.endTime.split(':')[0]) * 60 + parseInt(event.endTime.split(':')[1])
+    blocksWithStyles.forEach(block => {
+      const blockStartMinutes = parseInt(block.startTime.split(':')[0]) * 60 + parseInt(block.startTime.split(':')[1])
+      const blockEndMinutes = parseInt(block.endTime.split(':')[0]) * 60 + parseInt(block.endTime.split(':')[1])
       
       let addedToGroup = false
       
       for (let group of overlappingGroups) {
-        const hasOverlap = group.some(groupEvent => {
-          const groupStart = parseInt(groupEvent.startTime.split(':')[0]) * 60 + parseInt(groupEvent.startTime.split(':')[1])
-          const groupEnd = parseInt(groupEvent.endTime.split(':')[0]) * 60 + parseInt(groupEvent.endTime.split(':')[1])
+        const hasOverlap = group.some(groupBlock => {
+          const groupStartMinutes = parseInt(groupBlock.startTime.split(':')[0]) * 60 + parseInt(groupBlock.startTime.split(':')[1])
+          const groupEndMinutes = parseInt(groupBlock.endTime.split(':')[0]) * 60 + parseInt(groupBlock.endTime.split(':')[1])
           
-          return (eventStart < groupEnd && eventEnd > groupStart)
+          return (blockStartMinutes < groupEndMinutes && blockEndMinutes > groupStartMinutes)
         })
         
         if (hasOverlap) {
-          group.push(event)
+          group.push(block)
           addedToGroup = true
           break
         }
       }
       
       if (!addedToGroup) {
-        overlappingGroups.push([event])
+        overlappingGroups.push([block])
       }
     })
+    
+    return overlappingGroups
+  }
 
-    // 각 그룹의 이벤트들 위치 조정
-    return overlappingGroups.flatMap(group => 
-      group.map((event, index) => ({
-        ...event,
+  // 2단계: 각 그룹 내 블록들의 위치 조정
+  const adjustBlockPositions = (groups: Array<Array<PlanBlock & { style: React.CSSProperties }>>) => {
+    return groups.flatMap(group => 
+      group.map((block, index) => ({
+        ...block,
         style: {
-          ...event.style,
+          ...block.style,
           left: `${8 + (index * (100 / group.length) * 0.9)}%`,
           width: `${(100 / group.length) * 0.9}%`
         }
@@ -254,10 +251,22 @@ export const useDayEvents = ({
     )
   }
 
+  // 3단계: 겹치는 블록들을 배치 처리
+  const arrangeOverlappingBlocks = () => {
+    const dayBlocks = getBlocksForCurrentDate()
+    const blocksWithStyles = dayBlocks.map(block => ({
+      ...block,
+      style: calculateBlockPositionAndSize(block)
+    }))
+
+    const groups = groupOverlappingBlocks(blocksWithStyles)
+    return adjustBlockPositions(groups)
+  }
+
   return {
-    getDayEvents,
-    getEventsForHour,
-    getEventStyle,
-    getOverlappingEvents
+    getDayPlanBlocks: getBlocksForCurrentDate,
+    getActivePlanBlocksForHour: getActivePlanBlocksForHours,
+    calculatePlanBlockPosition: calculateBlockPositionAndSize,
+    arrangeOverlappingBlocks
   }
 }

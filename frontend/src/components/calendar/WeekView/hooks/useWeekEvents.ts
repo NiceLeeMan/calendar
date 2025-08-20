@@ -29,7 +29,6 @@ interface UseWeekEventsProps {
 
 interface UseWeekEventsReturn {
   getEventsForDateTime: (date: Date, hour: number) => planBlock[]
-  getEventStyle: (event: planBlock, hour: number) => React.CSSProperties | null
   getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<planBlock & { style: React.CSSProperties }>
 }
 
@@ -88,7 +87,7 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
 
       // 시작일부터 종료일까지 각 날짜별로 이벤트 생성
       const currentDate = new Date(startDate)
-      
+
       // 반복 계획인 경우 반복 종료일 확인
       let actualEndDate = endDate
       if (plan.isRecurring && plan.recurringResInfo?.endDate) {
@@ -96,27 +95,27 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
         actualEndDate = repeatEndDate < endDate ? repeatEndDate : endDate
         console.log(`반복 계획 종료일 확인 - 계획: ${plan.planName}, 원래 종료일: ${plan.endDate}, 반복 종료일: ${plan.recurringResInfo.endDate}, 실제 종료일: ${actualEndDate.toISOString().split('T')[0]}`)
       }
-      
+
       while (currentDate <= actualEndDate) {
         // 반복 계획인 경우 요일 확인
         if (plan.isRecurring && plan.recurringResInfo?.repeatWeekdays) {
           const dayOfWeek = currentDate.getDay()
           const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
           const currentDayName = dayNames[dayOfWeek]
-          
+
           // 반복 요일에 포함되지 않으면 건너뛰기
           if (!plan.recurringResInfo.repeatWeekdays.includes(currentDayName)) {
             currentDate.setDate(currentDate.getDate() + 1)
             continue
           }
         }
-        
+
         // MonthView/DayView와 동일한 방식으로 날짜 문자열 생성
         const year = currentDate.getFullYear()
         const month = String(currentDate.getMonth() + 1).padStart(2, '0')
         const day = String(currentDate.getDate()).padStart(2, '0')
         const dateString = `${year}-${month}-${day}`
-        
+
         // 중복 체크: 동일한 계획이 같은 날짜에 이미 추가되었는지 확인
         const blockId = `${plan.id}-${dateString}`
         if (blockMap.has(blockId)) {
@@ -124,10 +123,10 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
           continue
         }
         blockMap.set(blockId, true)
-        
+
         // 고유 ID 생성: planId * 100000 + (월 * 100 + 일)
         const uniqueId = plan.id * 100000 + (currentDate.getMonth() + 1) * 100 + currentDate.getDate()
-        
+
         planBlocks.push({
           id: uniqueId,
           title: plan.planName,
@@ -155,7 +154,7 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
     const dateString = `${year}-${month}-${day}`
-    
+
     return allEvents.filter(event => {
       if (event.date !== dateString) return false
 
@@ -167,24 +166,9 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
     })
   }
 
-  // 겹치는 이벤트들의 위치 계산 (가로 분할 방식)
-  const getOverlappingEventsForDateTime = (date: Date, hour: number): Array<CalendarEvent & { style: React.CSSProperties }> => {
-    const events = getEventsForDateTime(date, hour)
-
-    if (events.length === 0) return []
-
-    // 디버깅용 로그
-    if (events.length > 1) {
-      const year = date.getFullYear()
-      const month = String(date.getMonth() + 1).padStart(2, '0')
-      const day = String(date.getDate()).padStart(2, '0')
-      const dateString = `${year}-${month}-${day}`
-      console.log(`겹치는 이벤트 발견 - 날짜: ${dateString}, 시간: ${hour}시, 이벤트 수: ${events.length}`)
-      console.log('이벤트들:', events.map(e => `${e.title} (${e.startTime}-${e.endTime})`))
-    }
-
-    // 각 이벤트의 전체 기간을 분 단위로 계산
-    const eventsWithTime = events.map(event => {
+  // 1단계: 이벤트들을 시간 정보와 함께 변환
+  const convertEventsWithTimeInfo = (events: planBlock[]) => {
+    return events.map(event => {
       const startParts = event.startTime.split(':')
       const endParts = event.endTime.split(':')
       const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1])
@@ -196,8 +180,10 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
         endMinutes
       }
     })
+  }
 
-    // 겹치는 이벤트들을 찾아서 그룹화
+  // 2단계: 겹치는 이벤트들을 그룹으로 묶기
+  const groupOverlappingEvents = (eventsWithTime: Array<planBlock & { startMinutes: number; endMinutes: number }>) => {
     const groups: Array<Array<typeof eventsWithTime[0]>> = []
 
     eventsWithTime.forEach(event => {
@@ -222,8 +208,15 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
       }
     })
 
-    // 각 그룹의 이벤트들을 가로로 배치
-    const result: Array<CalendarEvent & { style: React.CSSProperties }> = []
+    return groups
+  }
+
+  // 3단계: 각 그룹 내 이벤트들의 레이아웃 계산
+  const calculateEventLayout = (
+    groups: Array<Array<planBlock & { startMinutes: number; endMinutes: number }>>,
+    hour: number
+  ) => {
+    const result: Array<planBlock & { style: React.CSSProperties }> = []
 
     groups.forEach(group => {
       const groupSize = group.length
@@ -241,7 +234,7 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
         const eventStartMinutes = parseInt(event.startTime.split(':')[1])
         const eventEndHour = parseInt(event.endTime.split(':')[0])
         const eventEndMinutes = parseInt(event.endTime.split(':')[1])
-        
+
         const totalDurationHours = eventEndHour - eventStartHour + (eventEndMinutes / 60)
         const offsetInSlot = eventStartMinutes / 60 * 100
 
@@ -270,38 +263,31 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
     return result
   }
 
-  // 이벤트의 시간대별 위치와 높이 계산
-  const getEventStyle = (event: CalendarEvent, hour: number): React.CSSProperties | null => {
-    const eventStart = parseInt(event.startTime.split(':')[0])
-    const eventStartMinutes = parseInt(event.startTime.split(':')[1])
-    const eventEnd = parseInt(event.endTime.split(':')[0])
-    const eventEndMinutes = parseInt(event.endTime.split(':')[1])
+  // 4단계: 겹치는 이벤트들의 위치 계산 (가로 분할 방식)
+  const getOverlappingEventsForDateTime = (date: Date, hour: number): Array<planBlock & { style: React.CSSProperties }> => {
+    const events = getEventsForDateTime(date, hour)
 
-    const totalStartMinutes = eventStart * 60 + eventStartMinutes
-    const totalEndMinutes = eventEnd * 60 + eventEndMinutes
-    const durationMinutes = totalEndMinutes - totalStartMinutes
+    if (events.length === 0) return []
 
-    // 현재 시간 슬롯에서 이벤트가 시작하는지 확인
-    if (hour === eventStart) {
-      const topOffset = (eventStartMinutes / 60) * 100
-      const height = (durationMinutes / 60) * 100
-
-      return {
-        position: 'absolute',
-        top: `${topOffset}%`,
-        left: '4px',
-        right: '4px',
-        height: `${height}%`,
-        zIndex: 10
-      }
+    // 디버깅용 로그
+    if (events.length > 1) {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const dateString = `${year}-${month}-${day}`
+      console.log(`겹치는 이벤트 발견 - 날짜: ${dateString}, 시간: ${hour}시, 이벤트 수: ${events.length}`)
+      console.log('이벤트들:', events.map(e => `${e.title} (${e.startTime}-${e.endTime})`))
     }
 
-    return null
+    // 단계별 처리
+    const eventsWithTime = convertEventsWithTimeInfo(events)
+    const groups = groupOverlappingEvents(eventsWithTime)
+    return calculateEventLayout(groups, hour)
   }
+
 
   return {
     getEventsForDateTime,
-    getEventStyle,
     getOverlappingEventsForDateTime
   }
 }
