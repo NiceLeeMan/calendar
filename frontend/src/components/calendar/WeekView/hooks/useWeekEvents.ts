@@ -11,7 +11,7 @@ import { PlanResponse } from '../../../../types/plan'
 import { planEventManager } from '../../../../utils/planEventManager'
 import { useState, useEffect } from 'react'
 
-interface CalendarEvent {
+interface planBlock {
   id: number
   title: string
   date: string
@@ -28,9 +28,9 @@ interface UseWeekEventsProps {
 }
 
 interface UseWeekEventsReturn {
-  getEventsForDateTime: (date: Date, hour: number) => CalendarEvent[]
-  getEventStyle: (event: CalendarEvent, hour: number) => React.CSSProperties | null
-  getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<CalendarEvent & { style: React.CSSProperties }>
+  getEventsForDateTime: (date: Date, hour: number) => planBlock[]
+  getEventStyle: (event: planBlock, hour: number) => React.CSSProperties | null
+  getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<planBlock & { style: React.CSSProperties }>
 }
 
 export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProps = {}): UseWeekEventsReturn => {
@@ -77,9 +77,9 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
   }
 
   // 실제 계획을 CalendarEvent 형태로 변환 (다중 날짜 지원)
-  const convertPlansToEvents = (plans: PlanResponse[]): CalendarEvent[] => {
-    const events: CalendarEvent[] = []
-    const eventMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
+  const createWeekPlanBlocks = (plans: PlanResponse[]): planBlock[] => {
+    const planBlocks: planBlock[] = []
+    const blockMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
 
     plans.forEach(plan => {
       // MonthView/DayView와 동일한 방식으로 로컬 시간대로 파싱
@@ -118,17 +118,17 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
         const dateString = `${year}-${month}-${day}`
         
         // 중복 체크: 동일한 계획이 같은 날짜에 이미 추가되었는지 확인
-        const eventKey = `${plan.id}-${dateString}`
-        if (eventMap.has(eventKey)) {
+        const blockId = `${plan.id}-${dateString}`
+        if (blockMap.has(blockId)) {
           currentDate.setDate(currentDate.getDate() + 1)
           continue
         }
-        eventMap.set(eventKey, true)
+        blockMap.set(blockId, true)
         
         // 고유 ID 생성: planId * 100000 + (월 * 100 + 일)
         const uniqueId = plan.id * 100000 + (currentDate.getMonth() + 1) * 100 + currentDate.getDate()
         
-        events.push({
+        planBlocks.push({
           id: uniqueId,
           title: plan.planName,
           date: dateString,
@@ -142,14 +142,14 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
       }
     })
 
-    return events
+    return planBlocks
   }
 
   // 실제 계획만 사용 (상태로 관리되는 plans 사용)
-  const allEvents = convertPlansToEvents(currentPlans)
+  const allEvents = createWeekPlanBlocks(currentPlans)
 
   // 특정 날짜와 시간의 이벤트 가져오기
-  const getEventsForDateTime = (date: Date, hour: number): CalendarEvent[] => {
+  const getEventsForDateTime = (date: Date, hour: number): planBlock[] => {
     // MonthView/DayView와 동일한 방식으로 날짜 문자열 생성
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')

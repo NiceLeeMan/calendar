@@ -85,7 +85,7 @@ export const useDayEvents = ({
   }
 
   // 실제 계획을 UI 블록형태로 생성
-  const createPlanBlocks = (plans: PlanResponse[]): PlanBlock[] => {
+  const createDayPlanBlocks = (plans: PlanResponse[]): PlanBlock[] => {
     const planBlocks: PlanBlock[] = []
     const blockMap = new Map<string, boolean>() // 중복 방지를 위한 Map (key: planId-date)
     
@@ -153,7 +153,7 @@ export const useDayEvents = ({
 
   // 모든 블록 결합 (실제 계획 + 전달받은 블록) - 상태로 관리되는 plans 사용
   const allBlocks = useMemo(() => {
-    return [...createPlanBlocks(currentPlans), ...events]
+    return [...createDayPlanBlocks(currentPlans), ...events]
   }, [currentPlans, events])
 
   // 현재 날짜의 블록들 가져오기

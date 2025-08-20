@@ -54,25 +54,25 @@ export const useCalendarDays = ({
   }, [currentDate])
 
   // 날짜가 현재 월에 속하는지 확인
-  const isCurrentMonth = (date: Date): boolean => {
+  const CheckDateIsCurrentMonth = (date: Date): boolean => {
     return date.getMonth() === currentDate.getMonth()
   }
 
   // 날짜가 오늘인지 확인
-  const isToday = (date: Date): boolean => {
+  const CheckDateIsToday = (date: Date): boolean => {
     const today = new Date()
     return date.toDateString() === today.toDateString()
   }
 
   // 날짜가 선택된 날짜인지 확인
-  const isSelected = (date: Date): boolean => {
+  const CheckDateIsSelected = (date: Date): boolean => {
     return selectedDate ? date.toDateString() === selectedDate.toDateString() : false
   }
 
   return {
     calendarDays,
-    isCurrentMonth,
-    isToday,
-    isSelected
+    isCurrentMonth: CheckDateIsCurrentMonth,
+    isToday: CheckDateIsToday,
+    isSelected: CheckDateIsSelected
   }
 }
