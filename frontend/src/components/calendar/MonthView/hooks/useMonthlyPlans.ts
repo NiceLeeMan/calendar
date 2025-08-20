@@ -43,14 +43,12 @@ export const useMonthlyPlans = ({
   // 계획 삭제 이벤트 감지
   useEffect(() => {
     const handlePlanDeleted = (planId: number) => {
-      console.log(`MonthView에서 계획 삭제 감지: planId=${planId}`)
       setPlans(prevPlans => {
         const updatedPlans = prevPlans.filter(plan => {
           // 반복 계획인 경우 originalPlanId로 비교, 일반 계획은 id로 비교
           const planIdToCompare = plan.id
           return planIdToCompare !== planId
         })
-        console.log(`삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
         return updatedPlans
       })
     }
@@ -121,12 +119,9 @@ export const useMonthlyPlans = ({
         const isInCurrentMonth = planStartDate <= monthEnd && planEndDate >= monthStart
 
         if (isInCurrentMonth) {
-          console.log(`✅ 새 일정이 ${currentYear}년 ${currentMonth + 1}월에 표시됨:`, newPlan.planName)
-          console.log(`   일정 기간: ${newPlan.startDate} ~ ${newPlan.endDate}`)
           return [...prevPlans, newPlan]
         }
 
-        console.log(`❌ 새 일정이 ${currentYear}년 ${currentMonth + 1}월에 해당하지 않음`)
         return prevPlans
       })
     }

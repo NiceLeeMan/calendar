@@ -43,10 +43,8 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
   // 계획 삭제 이벤트 감지
   useEffect(() => {
     const handlePlanDeleted = (planId: number) => {
-      console.log(`WeekView에서 계획 삭제 감지: planId=${planId}`)
       setCurrentPlans(prevPlans => {
         const updatedPlans = prevPlans.filter(plan => plan.id !== planId)
-        console.log(`WeekView 삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
         return updatedPlans
       })
     }
