@@ -43,6 +43,9 @@ interface DayViewProps {
   onEditPlan?: (plan: PlanResponse) => void
   plans: PlanResponse[]
   events?: PlanBlock[]// 실시간 UI 업데이트용
+  onPlanCreated?: (plan: PlanResponse) => void
+  onPlanUpdated?: (plan: PlanResponse) => void
+  onRefreshMonth?: () => Promise<void>
 }
 
 const DayView = ({ 
@@ -51,6 +54,9 @@ const DayView = ({
   onEditPlan,
   plans,
   events = [],
+  onPlanCreated,
+  onPlanUpdated,
+  onRefreshMonth
 }: DayViewProps) => {
   // 공통 색상 관리 (더 연한 투명도)
   const { getColorForPlanWithOpacity } = useCalendarColors()
@@ -72,9 +78,13 @@ const DayView = ({
     handleAddPlan, 
     handleEditPlan: handleModalEditPlan,
     handleCloseModal,
-    handlePlanCreated,
-    handlePlanUpdated 
-  } = usePlanModal()
+    handlePlanCreated: handleInternalPlanCreated,
+    handlePlanUpdated: handleInternalPlanUpdated 
+  } = usePlanModal({
+    onPlanCreated,
+    onPlanUpdated,
+    onRefreshMonth
+  })
 
   // 컨텍스트 메뉴 및 삭제 훅
   const { contextMenu, handleContextMenu, closeContextMenu } = usePlanContextMenu()
@@ -163,8 +173,10 @@ const DayView = ({
         onClose={handleCloseModal}
         selectedDate={currentDate}
         editPlan={editingPlan}
-        onPlanCreated={handlePlanCreated}
-        onPlanUpdated={handlePlanUpdated}
+        onPlanCreated={handleInternalPlanCreated}
+        onPlanUpdated={handleInternalPlanUpdated}
+        onRefreshMonth={onRefreshMonth}
+        currentDate={currentDate}
       />
     </div>
   )

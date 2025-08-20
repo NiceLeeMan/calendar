@@ -152,6 +152,9 @@ const CalendarPage = () => {
                 }}
                 onEditPlan={handleEditPlan}
                 plans={plans}
+                onPlanCreated={handlePlanCreated}
+                onPlanUpdated={handlePlanUpdated}
+                onRefreshMonth={refreshCurrentMonth}
               />
             )}
           </div>
