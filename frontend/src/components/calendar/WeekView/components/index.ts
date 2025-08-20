@@ -7,4 +7,3 @@
 
 export { default as WeekHeader } from './WeekHeader'
 export { default as WeekGrid } from './WeekGrid'
-export { default as CurrentTimeLine } from './CurrentTimeLine'

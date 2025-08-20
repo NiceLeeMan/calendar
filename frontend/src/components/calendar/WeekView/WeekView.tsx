@@ -17,7 +17,7 @@ import React from 'react'
 import { PlanResponse } from '../../../types/plan'
 import { useWeekEvents, useWeekDays } from './hooks'
 import { useCalendarColors } from '../hooks'
-import { WeekHeader, WeekGrid, CurrentTimeLine } from './components'
+import { WeekHeader, WeekGrid } from './components'
 import { 
   PlanContextMenu, 
   PlanDeleteModal, 
@@ -54,8 +54,7 @@ const WeekView = ({
     weekDays, 
     timeSlots, 
     isToday, 
-    isSelected, 
-    getCurrentTimeLine 
+    isSelected,
   } = useWeekDays({ currentDate, selectedDate })
 
   // 컨텍스트 메뉴 및 삭제 훅
@@ -81,8 +80,6 @@ const WeekView = ({
     handleContextMenu(event, plan, targetDate)
   }
 
-  const currentTimeLine = getCurrentTimeLine()
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative">
       {/* 헤더: 요일과 날짜 */}
@@ -104,8 +101,6 @@ const WeekView = ({
         onPlanContextMenu={handlePlanContextMenu}
       />
 
-      {/* 현재 시간 표시선 (오늘인 경우) */}
-      <CurrentTimeLine timeLine={currentTimeLine} />
 
       {/* 컨텍스트 메뉴 */}
       {contextMenu.isOpen && contextMenu.plan && (
