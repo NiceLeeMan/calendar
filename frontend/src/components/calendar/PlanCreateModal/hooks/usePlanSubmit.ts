@@ -34,18 +34,31 @@ export const usePlanSubmit = () => {
       }
 
       // 성공 후 처리
-      if (resultPlan.isRecurring && resultPlan.recurringResInfo && onRefreshMonth) {
-        // 반복 계획인 경우: 새로고침으로 서버에서 인스턴스들 받아오기
-        console.log('반복 계획 처리 - 새로고침으로 서버 데이터 로드')
-        await onRefreshMonth()
-      } else if (!resultPlan.isRecurring && onSuccess) {
-        // 일반 계획인 경우: 기존 방식으로 실시간 UI 업데이트
-        onSuccess(resultPlan)
-      } else {
-        // fallback: 월별 데이터 새로고침
-        console.log('fallback - 월별 데이터 새로고침 실행')
-        if (onRefreshMonth) {
+      if (editPlanId) {
+        // 수정 모드: 항상 onSuccess 콜백 호출하여 즉시 UI 업데이트
+        if (onSuccess) {
+          onSuccess(resultPlan)
+        }
+        // 반복 계획 수정의 경우 추가로 새로고침
+        if (resultPlan.isRecurring && onRefreshMonth) {
+          console.log('반복 계획 수정 - 새로고침으로 서버 데이터 동기화')
           await onRefreshMonth()
+        }
+      } else {
+        // 생성 모드
+        if (resultPlan.isRecurring && resultPlan.recurringResInfo && onRefreshMonth) {
+          // 반복 계획인 경우: 새로고침으로 서버에서 인스턴스들 받아오기
+          console.log('반복 계획 처리 - 새로고침으로 서버 데이터 로드')
+          await onRefreshMonth()
+        } else if (!resultPlan.isRecurring && onSuccess) {
+          // 일반 계획인 경우: 기존 방식으로 실시간 UI 업데이트
+          onSuccess(resultPlan)
+        } else {
+          // fallback: 월별 데이터 새로고침
+          console.log('fallback - 월별 데이터 새로고침 실행')
+          if (onRefreshMonth) {
+            await onRefreshMonth()
+          }
         }
       }
       

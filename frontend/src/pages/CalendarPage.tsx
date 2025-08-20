@@ -73,13 +73,13 @@ const CalendarPage = () => {
 
   // 계획 수정 성공 핸들러 - 실시간 UI 업데이트
   const handlePlanUpdated = (updatedPlan: PlanResponse) => {
-    // 수정된 계획으로 실시간 업데이트 (생성과 동일한 메커니즘 사용)
+    // 수정된 계획으로 즉시 UI 업데이트
     setNewCreatedPlan(updatedPlan)
     
-    // 일정 시간 후 상태 초기화
+    // 상태 초기화를 더 빠르게 하여 다음 수정이 즉시 반영되도록 함
     setTimeout(() => {
       setNewCreatedPlan(null)
-    }, 1000)
+    }, 500)
   }
 
   // 월별 계획 데이터 가져오기 (모든 View와 사이드바용)
@@ -170,19 +170,17 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* 일정 추가/수정 모달 - Month와 Week 뷰용 (Day는 자체 모달 사용) */}
-      {currentView !== 'day' && (
-        <PlanCreateModal 
-          isOpen={isModalOpen}
-          onClose={handleClosePlanCreateModal}
-          selectedDate={selectedDate || currentDate}
-          editPlan={editingPlan}
-          onPlanCreated={handlePlanCreated}
-          onPlanUpdated={handlePlanUpdated}
-          onRefreshMonth={refreshCurrentMonth}
-          currentDate={currentDate}
-        />
-      )}
+      {/* 일정 추가/수정 모달 - 모든 뷰에서 사용 가능 */}
+      <PlanCreateModal 
+        isOpen={isModalOpen}
+        onClose={handleClosePlanCreateModal}
+        selectedDate={selectedDate || currentDate}
+        editPlan={editingPlan}
+        onPlanCreated={handlePlanCreated}
+        onPlanUpdated={handlePlanUpdated}
+        onRefreshMonth={refreshCurrentMonth}
+        currentDate={currentDate}
+      />
     </div>
   )
 }

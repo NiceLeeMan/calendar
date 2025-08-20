@@ -66,43 +66,16 @@ export const useMonthlyPlans = ({
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth() + 1
     loadMonthlyPlans(year, month)
-    // console.log("현재 월이 변경될때 일정 로드")
+    console.log("현재 월이 변경될때 일정 로드")
   }, [currentDate])
 
-  // 새로운 일정이 추가되었을 때 UI갱신, 반복계획의 UI 갱신문제는 이쪽이 아닐까?
-  // 계획 삭제 이벤트 감지
-  useEffect(() => {
-    const handlePlanDeleted = (planId: number) => {
-      console.log(`MonthView에서 계획 삭제 감지: planId=${planId}`)
-      setPlans(prevPlans => {
-        const updatedPlans = prevPlans.filter(plan => {
-          // 반복 계획인 경우 originalPlanId로 비교, 일반 계획은 id로 비교
-          const planIdToCompare = plan.id
-          return planIdToCompare !== planId
-        })
-        console.log(`삭제 후 계획 수: ${prevPlans.length} → ${updatedPlans.length}`)
-        return updatedPlans
-      })
-    }
-
-    planEventManager.addPlanDeletedListener(handlePlanDeleted)
-
-    // 컴포넌트 언마운트 시 리스너 제거
-    return () => {
-      const handler = (event: CustomEvent) => handlePlanDeleted(event.detail.planId)
-      planEventManager.removePlanDeletedListener(handler as EventListener)
-    }
-  }, [])
-
+  // 새로운 일정이 추가되거나 수정되었을 때 UI갱신
   useEffect(() => {
     if (newPlan) {
       setPlans(prevPlans => {
-        // 중복 방지: 이미 존재하는 일정인지 확인
-        const exists = prevPlans.some(plan => plan.id === newPlan.id)
-        if (exists) {
-          return prevPlans
-        }
-
+        // 기존 계획이 수정된 경우인지 확인
+        const existingPlanIndex = prevPlans.findIndex(plan => plan.id === newPlan.id)
+        
         // 현재 월 정보
         const currentYear = currentDate.getFullYear()
         const currentMonth = currentDate.getMonth()
@@ -118,8 +91,22 @@ export const useMonthlyPlans = ({
         // 일정이 현재 월과 겹치는지 확인 (시작일 <= 월말 AND 종료일 >= 월초)
         const isInCurrentMonth = planStartDate <= monthEnd && planEndDate >= monthStart
 
-        if (isInCurrentMonth) {
-          return [...prevPlans, newPlan]
+        if (existingPlanIndex !== -1) {
+          // 기존 계획 수정의 경우
+          if (isInCurrentMonth) {
+            // 현재 월에 속하면 기존 계획을 새 계획으로 교체
+            const updatedPlans = [...prevPlans]
+            updatedPlans[existingPlanIndex] = newPlan
+            return updatedPlans
+          } else {
+            // 현재 월에 속하지 않으면 기존 계획 제거
+            return prevPlans.filter(plan => plan.id !== newPlan.id)
+          }
+        } else {
+          // 새로운 계획 생성의 경우
+          if (isInCurrentMonth) {
+            return [...prevPlans, newPlan]
+          }
         }
 
         return prevPlans
@@ -127,7 +114,7 @@ export const useMonthlyPlans = ({
     }
   }, [newPlan, currentDate])
   // 일정에 색상 할당하는 함수
-  const getColorForPlan = (planId: number): string => {
+  const assignColorToPlan = (planId: number): string => {
     return colors[planId % colors.length]
   }
 
@@ -141,14 +128,11 @@ export const useMonthlyPlans = ({
       
       // 서버에서 받은 원본 데이터 로그 (디버깅용)
       console.log('🔍 서버에서 받은 원본 데이터:', monthlyPlans)
-      monthlyPlans.forEach((plan, idx) => {
-        if (plan.isRecurring) {
-          console.log(`  반복계획 ${idx}: ${plan.planName} | 기간: ${plan.startDate} ~ ${plan.endDate}`)
-        }
+
+      // 기존 plans를 완전히 대체 (반복 계획 수정 시 이전 요일 인스턴스 제거를 위해)
+      setPlans(() => {
+        return [...monthlyPlans] // 새로운 배열로 완전히 대체
       })
-      
-      setPlans(monthlyPlans)
-      console.log(`월별 일정 로드 성공: ${year}년 ${month}월, ${monthlyPlans.length}개`)
     } catch (error) {
       console.error('월별 일정 로드 실패:', error)
       setError('일정을 불러오는데 실패했습니다.')
@@ -160,16 +144,41 @@ export const useMonthlyPlans = ({
 
   // 현재 월이 변경될 때 일정 로드
 
-  // 특정 날짜의 클릭했을때
+  // 일반 일정이 특정 날짜에 표시되는지 확인
+  const isRegularPlanOnDate = (plan: PlanResponse, dateString: string): boolean => {
+    const planStartDate = plan.startDate
+    const planEndDate = plan.endDate
+    
+    // endDate > startDate인 경우 (정상적인 날짜 범위)와 단일 날짜 계획 모두 처리
+    const minDate = planStartDate <= planEndDate ? planStartDate : planEndDate
+    const maxDate = planStartDate <= planEndDate ? planEndDate : planStartDate
+    
+    // dateString이 날짜 범위 사이에 있는지 확인
+    return dateString >= minDate && dateString <= maxDate
+  }
+
+  // 반복 일정이 특정 날짜에 표시되는지 확인
+  const isRecurringPlanOnDate = (plan: PlanResponse, dateString: string): boolean => {
+    // 반복 일정의 경우: 서버에서 이미 올바른 날짜에만 인스턴스가 생성되어 있음
+    // 따라서 startDate가 해당 날짜와 일치하는지만 확인
+    return plan.startDate === dateString
+  }
+
+  // 특정 날짜의 계획들을 가져오는 함수
   const getPlansForDate = (date: Date): PlanResponse[] => {
     // 로컬 시간대 유지하여 날짜 문자열 생성
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
     const dateString = `${year}-${month}-${day}`
-    
-    // 서버에서 받은 모든 계획에서 해당 날짜에 시작하는 계획만 필터링
-    return plans.filter(plan => plan.startDate === dateString)
+
+    return plans.filter(plan => {
+      if (plan.isRecurring) {
+        return isRecurringPlanOnDate(plan, dateString)
+      } else {
+        return isRegularPlanOnDate(plan, dateString)
+      }
+    })
   }
 
   // 현재 월 새로고침 함수
@@ -177,6 +186,10 @@ export const useMonthlyPlans = ({
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth() + 1
     console.log('월별 데이터 새로고침:', year, month)
+    
+    // 새로고침 시 기존 plans 초기화 (이전 요일 인스턴스 제거를 위해)
+    setPlans([])
+
     await loadMonthlyPlans(year, month)
   }
 
@@ -185,7 +198,7 @@ export const useMonthlyPlans = ({
     isLoading,
     error,
     getPlansForDate,
-    getColorForPlan,
+    getColorForPlan: assignColorToPlan,
     refreshCurrentMonth
   }
 }

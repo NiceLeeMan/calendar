@@ -194,8 +194,8 @@ export const useDayEvents = ({
     return {
       position: 'absolute',
       top: `${topPercentage}%`,
-      left: '8px',
-      right: '8px',
+      left: '88px', // 시간 레이블(80px) + 여백(8px) = 88px부터 시작
+      right: '8px', // 오른쪽 여백 8px
       height: `${heightPercentage}%`,
       zIndex: 10,
       minHeight: '32px' // 최소 높이 보장
@@ -238,14 +238,25 @@ export const useDayEvents = ({
   // 2단계: 각 그룹 내 블록들의 위치 조정
   const adjustBlockPositions = (groups: Array<Array<PlanBlock & { style: React.CSSProperties }>>) => {
     return groups.flatMap(group => 
-      group.map((block, index) => ({
-        ...block,
-        style: {
-          ...block.style,
-          left: `${8 + (index * (100 / group.length) * 0.9)}%`,
-          width: `${(100 / group.length) * 0.9}%`
+      group.map((block, index) => {
+        const timeAreaWidth = 88 // 시간 레이블 영역 너비 (80px + 8px 여백)
+        const rightMargin = 8 // 오른쪽 여백
+        
+        // 사용 가능한 너비를 픽셀로 계산 (전체에서 시간 영역과 오른쪽 여백 제외)
+        // 퍼센티지 대신 픽셀 단위로 정확한 위치 계산
+        const blockWidth = `calc((100% - ${timeAreaWidth + rightMargin}px) / ${group.length} - 4px)`
+        const leftOffset = `calc(${timeAreaWidth}px + ((100% - ${timeAreaWidth + rightMargin}px) / ${group.length}) * ${index})`
+        
+        return {
+          ...block,
+          style: {
+            ...block.style,
+            left: leftOffset,
+            width: blockWidth,
+            right: 'auto' // right 속성 제거하여 left + width 방식 사용
+          }
         }
-      }))
+      })
     )
   }
 

@@ -124,9 +124,9 @@ const MonthView = ({
 
           {/* 일정 목록 */}
           <div className="space-y-1">
-            {dayPlans.slice(0, 3).map((plan) => (
+            {dayPlans.slice(0, 3).map((plan, planIndex) => (
               <div
-                key={`plan-${plan.id}-${dateString}`}
+                key={`plan-${plan.id}-${dateString}-${planIndex}`}
                 className={`text-xs px-2 py-1 rounded text-white truncate font-medium ${
                   getColorForPlan(plan.id)
                 } cursor-pointer hover:opacity-80 transition-opacity relative z-10`}
