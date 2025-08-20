@@ -164,9 +164,7 @@ public class PlanService {
         }
 
         // 계획 업데이트 (헬퍼 사용)
-        planUpdateHelper.updateBasicFields(plan, request);
-        planUpdateHelper.updateRecurringInfo(plan, request);
-        planUpdateHelper.updateAlarms(plan, request);
+        planUpdateHelper.updatePlan(plan, request);
         
         // DB 저장 및 flush로 즉시 반영 . 요부분 반복계획의 겨우 다른 테이블 명시해야할듯
         Plan updatedPlan = planRepository.saveAndFlush(plan);
