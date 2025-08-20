@@ -44,6 +44,7 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
   // editPlan이 변경될 때마다 폼 데이터 업데이트
   useEffect(() => {
     if (editPlan) {
+      // 수정 모드: editPlan 데이터로 폼 설정
       setFormData({
         planName: editPlan.planName,
         planContent: editPlan.planContent || '',
@@ -66,23 +67,38 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
           alarmTime: alarm.alarmTime
         })) || []
       })
-    }
-  }, [editPlan])
+    } else {
+      // 신규 생성 모드: 기본값으로 폼 초기화
+      const defaultDate = selectedDate ? (() => {
+        const year = selectedDate.getFullYear()
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+        const day = String(selectedDate.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      })() : ''
 
-  // selectedDate가 변경될 때마다 startDate와 endDate 업데이트 (편집 모드가 아닐 때만)
-  useEffect(() => {
-    if (selectedDate && !editPlan) {
-      const year = selectedDate.getFullYear()
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
-      const day = String(selectedDate.getDate()).padStart(2, '0')
-      const newDate = `${year}-${month}-${day}`
-      setFormData(prev => ({
-        ...prev,
-        startDate: newDate,
-        endDate: newDate
-      }))
+      setFormData({
+        planName: '',
+        planContent: '',
+        startDate: defaultDate,
+        endDate: defaultDate,
+        startTime: '09:00',
+        endTime: '10:00',
+        isRecurring: false,
+        recurringPlan: {
+          repeatUnit: 'WEEKLY',
+          repeatInterval: 1,
+          repeatWeekdays: [],
+          repeatDayOfMonth: null,
+          repeatWeeksOfMonth: [],
+          repeatMonth: null,
+          repeatDayOfYear: null
+        },
+        alarms: []
+      })
     }
-  }, [selectedDate, editPlan])
+  }, [editPlan, selectedDate])
+
+
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
