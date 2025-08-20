@@ -1,4 +1,5 @@
 
+import React, { useState, useRef } from 'react'
 import { PlanResponse } from '../../../types/plan'
 import { usePlanForm, usePlanSubmit } from './hooks'
 import { BasicInfoSection, DateTimeSection, RecurringSection, AlarmSection, ErrorMessage } from './components'
@@ -15,6 +16,12 @@ interface PlanCreateModalProps {
 }
 
 const PlanCreateModal = ({ isOpen, onClose, selectedDate, editPlan, onPlanCreated, onPlanUpdated, onRefreshMonth, currentDate }: PlanCreateModalProps) => {
+  // 드래그 관련 state
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const modalRef = useRef<HTMLDivElement>(null)
+
   // 편집 모드 여부 확인
   const isEditMode = !!editPlan
   
@@ -29,6 +36,48 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, editPlan, onPlanCreate
   } = usePlanForm(selectedDate, editPlan) // editPlan 전달
 
   const { isSubmitting, error, handleSubmit } = usePlanSubmit()
+
+  // 드래그 이벤트 핸들러
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    })
+  }
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return
+    
+    setPosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  // 전역 마우스 이벤트 리스너
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragStart])
+
+  // 모달이 열릴 때 위치 초기화
+  React.useEffect(() => {
+    if (isOpen) {
+      setPosition({ x: 0, y: 0 })
+    }
+  }, [isOpen])
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,9 +95,21 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, editPlan, onPlanCreate
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`
+        }}
+      >
         {/* 헤더 */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div 
+          className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+          onMouseDown={handleMouseDown}
+          style={{ 
+            userSelect: 'none'
+          }}
+        >
           <h2 className="text-xl font-semibold text-gray-800">
             {isEditMode ? '일정 수정' : '일정 추가'}
           </h2>
