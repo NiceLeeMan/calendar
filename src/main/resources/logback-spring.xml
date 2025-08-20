@@ -59,12 +59,14 @@
             <appender-ref ref="FILE_ERROR"/>
         </root>
 
-        <!-- 개발 시 필요한 로깅만 선별 -->
+        <!-- 개발 시 불필요한 로그 제거 -->
         <logger name="org.springframework.web" level="INFO"/>
-        <logger name="org.hibernate.SQL" level="INFO"/>
+        <logger name="org.springframework.security" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.hibernate.orm.jdbc.bind" level="WARN"/>
         <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
         <logger name="org.flywaydb" level="INFO"/>
-        <logger name="com.calendar" level="DEBUG"/>
+        <logger name="org.example.calendar" level="INFO"/>
 
         <!-- 불필요한 로그 제거 -->
         <logger name="org.springframework.boot" level="WARN"/>
