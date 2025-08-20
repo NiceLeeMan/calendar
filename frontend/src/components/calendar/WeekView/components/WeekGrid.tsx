@@ -34,7 +34,6 @@ interface WeekGridProps {
   weekDays: Date[]
   onDateSelect: (date: Date) => void
   getEventsForDateTime: (date: Date, hour: number) => Event[]
-  getEventStyle: (event: Event, hour: number) => React.CSSProperties | null
   getOverlappingEventsForDateTime: (date: Date, hour: number) => Array<Event & { style: React.CSSProperties }>
   onPlanContextMenu?: (event: React.MouseEvent, plan: PlanResponse, targetDate: string) => void
 }

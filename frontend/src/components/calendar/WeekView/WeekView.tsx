@@ -45,8 +45,7 @@ const WeekView = ({
   
   // 커스텀 훅들로 로직 분리
   const { 
-    getEventsForDateTime, 
-    getEventStyle,
+    getEventsForDateTime,
     getOverlappingEventsForDateTime 
   } = useWeekEvents({ plans, getColorForPlan: getColorForPlanWithOpacity })
   
@@ -96,7 +95,6 @@ const WeekView = ({
         weekDays={weekDays}
         onDateSelect={onDateSelect}
         getEventsForDateTime={getEventsForDateTime}
-        getEventStyle={getEventStyle}
         getOverlappingEventsForDateTime={getOverlappingEventsForDateTime}
         onPlanContextMenu={handlePlanContextMenu}
       />
