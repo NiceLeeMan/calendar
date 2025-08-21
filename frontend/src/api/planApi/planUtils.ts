@@ -143,6 +143,7 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
     }
   } else if (!formData.isRecurring) {
     // 반복 해제 시 명시적으로 null 설정
+    // @ts-ignore
     request.recurringPlan = null
     console.log('반복 계획 해제 - recurringPlan을 null로 설정')
   }

@@ -20,7 +20,7 @@ const DateTimeSection = ({ formData, handleInputChange }: DateTimeSectionProps) 
           <input
             type="date"
             value={formData.startDate}
-            min={formData.startDate || undefined}
+            min={new Date().toISOString().split('T')[0]}
             onChange={(e) => handleInputChange('startDate', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
@@ -34,7 +34,7 @@ const DateTimeSection = ({ formData, handleInputChange }: DateTimeSectionProps) 
           <input
             type="date"
             value={formData.endDate}
-            min={formData.startDate || formData.endDate || undefined}
+            min={new Date().toISOString().split('T')[0]}
             onChange={(e) => handleInputChange('endDate', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
