@@ -82,8 +82,7 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("월별 계획 조회 요청: userId={}, year={}, month={}", userId, year, month);
-        
+
         // 입력값 유효성 검증
         if (month < 1 || month > 12) {
             return ResponseEntity.badRequest().build();
@@ -127,7 +126,7 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("계획 추가 요청: userId={}, planName={}", userId, request.getPlanName());
+        log.info("계획 추가 요청: userId={}, request={}", userId, request.toString());
         
         PlanResponse createdPlan = planService.createPlan(request, userId);
         
@@ -173,8 +172,8 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("계획 수정 요청: userId={}, planId={}", userId, planId);
-        log.info("Raw request weekdays: {}", request.getRecurringPlan().getRepeatWeekdays());
+        log.info("계획 수정 요청: userId={}, request={}", userId, request.toString());
+
         PlanResponse updatedPlan = planService.updatePlan(planId, request, userId);
         
         log.info("계획 수정 완료: userId={}, planId={}", userId, planId);

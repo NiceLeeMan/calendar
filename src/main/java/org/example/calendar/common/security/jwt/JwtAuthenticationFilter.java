@@ -41,14 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        log.info("JWT 필터 실행됨: {}", path);  // 디버깅 로그 추가
-
         try {
-            // 기존 로직 그대로...
             String token = getTokenFromCookie(request);
-            log.info("추출된 토큰: {}", token != null ? "있음" : "없음");  // 디버깅 로그
-
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 log.info("토큰 검증 성공 - 인증 설정 시작");
 
@@ -109,10 +103,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // ===== 디버깅 로그 추가 =====
-        log.info("shouldNotFilter() 호출됨 - 요청 경로: {}", path);
-        log.info("shouldNotFilter() 호출됨 - HTTP 메서드: {}", request.getMethod());
-
         // 인증이 불필요한 경로들
         boolean shouldNotFilter = path.startsWith("/users/login") ||
                 path.startsWith("/users/signup") ||
@@ -122,7 +112,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/actuator");
 
-        log.info("shouldNotFilter() 결과 - 필터 제외 여부: {}", shouldNotFilter);
 
         if (shouldNotFilter) {
             log.info("JWT 필터를 건너뜀: {}", path);
