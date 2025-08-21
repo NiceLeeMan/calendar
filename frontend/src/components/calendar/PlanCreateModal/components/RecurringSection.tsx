@@ -5,16 +5,30 @@ interface RecurringSectionProps {
   handleRecurringChange: (field: string, value: any) => void
 }
 
+// 요일명 ↔ 인덱스 변환 함수
+const WEEKDAY_NAMES = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+const WEEKDAY_KOREAN = ['월', '화', '수', '목', '금', '토', '일']
+
+const indexToWeekdayName = (index: number): string => {
+  return WEEKDAY_NAMES[index]
+}
+
 const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }: RecurringSectionProps) => {
-  // 요일 선택 핸들러
+  // 요일 선택 핸들러 (인덱스 → 요일명으로 변환하여 저장)
   const handleWeekdayChange = (dayIndex: number, checked: boolean) => {
     const currentWeekdays = formData.recurringPlan.repeatWeekdays || []
+    const weekdayName = indexToWeekdayName(dayIndex)
     let newWeekdays: string[]
     
     if (checked) {
-      newWeekdays = [...currentWeekdays, dayIndex.toString()]
+      // 중복 방지: 이미 포함되어 있지 않은 경우만 추가
+      if (!currentWeekdays.includes(weekdayName)) {
+        newWeekdays = [...currentWeekdays, weekdayName]
+      } else {
+        newWeekdays = currentWeekdays // 이미 있으면 변경하지 않음
+      }
     } else {
-      newWeekdays = currentWeekdays.filter((day: string) => day !== dayIndex.toString())
+      newWeekdays = currentWeekdays.filter((day: string) => day !== weekdayName)
     }
     
     handleRecurringChange('repeatWeekdays', newWeekdays)
@@ -74,11 +88,11 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
                 반복 요일
               </label>
               <div className="flex flex-wrap gap-2">
-                {['월', '화', '수', '목', '금', '토', '일'].map((day, index) => (
+                {WEEKDAY_KOREAN.map((day, index) => (
                   <label key={day} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.recurringPlan.repeatWeekdays?.includes(index.toString()) || false}
+                      checked={formData.recurringPlan.repeatWeekdays?.includes(indexToWeekdayName(index)) || false}
                       onChange={(e) => handleWeekdayChange(index, e.target.checked)}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
