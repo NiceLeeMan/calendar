@@ -66,6 +66,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class RecurringReqInfo {
 
     @JsonProperty("type")  // JSON의 "type" 필드를 repeatUnit에 매핑

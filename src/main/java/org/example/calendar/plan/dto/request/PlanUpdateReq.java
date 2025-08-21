@@ -44,6 +44,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class PlanUpdateReq {
 
     @Size(max = 30, message = "계획 제목은 30자 이하여야 합니다")
