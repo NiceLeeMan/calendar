@@ -1,5 +1,6 @@
 package org.example.calendar.plan.mapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.calendar.plan.dto.common.AlarmReqInfo;
 import org.example.calendar.plan.dto.common.AlarmResInfo;
 import org.example.calendar.plan.dto.common.RecurringReqInfo;
@@ -124,24 +125,22 @@ public class PlanMapper {
 
     /**
      * 기존 RecurringInfo 업데이트
-     * JPA @ElementCollection 사용 시 clear() 후 addAll()로 DB 동기화
+     * 컬렉션 재생성 후 새 데이터 직접 설정 (JPA 더티체킹 문제 해결)
      */
     public void updateRecurringInfo(RecurringInfo existing, RecurringReqInfo request, LocalDate planEndDate) {
         existing.setRepeatUnit(request.getRepeatUnit());
         existing.setRepeatInterval(request.getRepeatInterval());
 
-        // repeatWeekdays 업데이트 - 기존 요일 clear 후 새로운 요일 추가
-        existing.getRepeatWeekdays().clear();
+        // repeatWeekdays 업데이트 - 새로운 HashSet으로 직접 교체
         if (request.getRepeatWeekdays() != null) {
-            existing.getRepeatWeekdays().addAll(request.getRepeatWeekdays());
+            existing.setRepeatWeekdays(new HashSet<>(request.getRepeatWeekdays()));
         }
 
         existing.setRepeatDayOfMonth(request.getRepeatDayOfMonth());
 
-        // repeatWeeksOfMonth 업데이트 - 기존 주차 clear 후 새로운 주차 추가
-        existing.getRepeatWeeksOfMonth().clear();
+        // repeatWeeksOfMonth 업데이트 - 새로운 HashSet으로 직접 교체
         if (request.getRepeatWeeksOfMonth() != null) {
-            existing.getRepeatWeeksOfMonth().addAll(request.getRepeatWeeksOfMonth());
+            existing.setRepeatWeeksOfMonth(new HashSet<>(request.getRepeatWeeksOfMonth()));
         }
 
         existing.setRepeatMonth(request.getRepeatMonth());

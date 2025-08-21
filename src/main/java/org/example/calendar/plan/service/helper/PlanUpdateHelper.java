@@ -9,6 +9,7 @@ import org.example.calendar.plan.mapper.PlanMapper;
 import org.example.calendar.plan.repository.RecurringInfoRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -178,8 +179,12 @@ public class PlanUpdateHelper {
         // 기존 데이터 삭제
         deleteExistingRecurringData(existing.getId(), requestInfo.getRepeatUnit());
         
+        // 컬렉션을 완전히 새로운 HashSet으로 교체 (JPA 더티체킹 문제 해결)
+        recreateCollectionInPersistenceContext(existing, requestInfo.getRepeatUnit());
+        
         // 새 데이터 적용
         planMapper.updateRecurringInfo(existing, requestInfo, request.getEndDate());
+
     }
     
     /**
@@ -198,6 +203,28 @@ public class PlanUpdateHelper {
             // DAILY, YEARLY는 ElementCollection 사용 안함
         }
     }
+    
+    /**
+     * 영속성 컨텍스트의 컬렉션을 완전히 새로운 HashSet으로 교체
+     * JPA 더티체킹 문제 해결: 기존 컬렉션 참조를 끊고 새로운 컬렉션으로 교체
+     */
+    private void recreateCollectionInPersistenceContext(org.example.calendar.plan.entity.RecurringInfo existing, 
+                                                       org.example.calendar.plan.enums.RepeatUnit repeatUnit) {
+        switch (repeatUnit) {
+            case WEEKLY:
+                // 기존 컬렉션 참조를 끊고 새로운 HashSet으로 교체
+                existing.setRepeatWeekdays(new HashSet<>());
+                log.info("새로운 weekdays 컬렉션으로 교체");
+                break;
+            case MONTHLY:
+                // 기존 컬렉션 참조를 끊고 새로운 HashSet으로 교체
+                existing.setRepeatWeeksOfMonth(new HashSet<>());
+                log.info("새로운 weeksOfMonth 컬렉션으로 교체");
+                break;
+        }
+    }
+
+
     
     /**
      * 반복정보가 실제로 변경되었는지 확인

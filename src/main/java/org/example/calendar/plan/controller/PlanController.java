@@ -174,7 +174,7 @@ public class PlanController {
         
         Long userId = userDetails.getUser().getId();
         log.info("계획 수정 요청: userId={}, planId={}", userId, planId);
-        
+        log.info("Raw request weekdays: {}", request.getRecurringPlan().getRepeatWeekdays());
         PlanResponse updatedPlan = planService.updatePlan(planId, request, userId);
         
         log.info("계획 수정 완료: userId={}, planId={}", userId, planId);
