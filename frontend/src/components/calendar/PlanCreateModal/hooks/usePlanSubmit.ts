@@ -13,7 +13,8 @@ export const usePlanSubmit = () => {
     resetForm?: () => void,
     onRefreshMonth?: () => Promise<void>, // 월별 데이터 새로고침 콜백 (fallback용)
     currentDate?: Date, // 현재 달력 날짜 (사용하지 않지만 호환성 유지)
-    editPlanId?: number // 수정할 계획 ID (있으면 수정 모드)
+    editPlanId?: number, // 수정할 계획 ID (있으면 수정 모드)
+    originalPlan?: PlanResponse // 수정 전 원본 계획 (전환 감지용)
   ) => {
     setIsSubmitting(true)
     setError(null)
@@ -35,14 +36,25 @@ export const usePlanSubmit = () => {
 
       // 성공 후 처리
       if (editPlanId) {
-        // 수정 모드: 항상 onSuccess 콜백 호출하여 즉시 UI 업데이트
-        if (onSuccess) {
-          onSuccess(resultPlan)
-        }
-        // 반복 계획 수정의 경우 추가로 새로고침
-        if (resultPlan.isRecurring && onRefreshMonth) {
+        // 수정 모드 처리
+        
+        // 반복 → 단일 전환 감지
+        const wasRecurring = originalPlan?.isRecurring === true
+        const isNowSingle = resultPlan.isRecurring === false
+        const isRecurringToSingleConversion = wasRecurring && isNowSingle
+        
+        if (isRecurringToSingleConversion && onRefreshMonth) {
+          // 반복 → 단일 전환: 새로고침으로 기존 반복 인스턴스들 제거
+          console.log('반복 → 단일 전환 감지 - 새로고침으로 기존 인스턴스 제거')
+          await onRefreshMonth()
+        } else if (resultPlan.isRecurring && onRefreshMonth) {
+          // 반복 계획 수정: 새로고침으로 서버 데이터 동기화
           console.log('반복 계획 수정 - 새로고침으로 서버 데이터 동기화')
           await onRefreshMonth()
+        } else if (onSuccess) {
+          // 일반 단일 → 단일 수정: 즉시 UI 업데이트
+          console.log('단일 계획 수정 - 즉시 UI 업데이트')
+          onSuccess(resultPlan)
         }
       } else {
         // 생성 모드

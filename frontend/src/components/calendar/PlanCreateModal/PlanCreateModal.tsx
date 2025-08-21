@@ -84,7 +84,7 @@ const PlanCreateModal = ({ isOpen, onClose, selectedDate, editPlan, onPlanCreate
     
     if (isEditMode && editPlan) {
       // 수정 모드
-      await handleSubmit(formData, onPlanUpdated, onClose, resetForm, onRefreshMonth, currentDate, editPlan.id)
+      await handleSubmit(formData, onPlanUpdated, onClose, resetForm, onRefreshMonth, currentDate, editPlan.id, editPlan)
     } else {
       // 생성 모드
       await handleSubmit(formData, onPlanCreated, onClose, resetForm, onRefreshMonth, currentDate)
