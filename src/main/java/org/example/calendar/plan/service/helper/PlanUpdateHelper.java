@@ -33,19 +33,33 @@ public class PlanUpdateHelper {
 
     private final PlanMapper planMapper;
     private final RecurringInfoRepository recurringInfoRepository;
+    
+    /**
+     * 반복 설정 전환 타입
+     */
+    private enum RecurringTransitionType {
+        SINGLE_TO_SINGLE,       // 단일 → 단일 (기본 필드만 수정)
+        SINGLE_TO_RECURRING,    // 단일 → 반복
+        RECURRING_TO_SINGLE,    // 반복 → 단일  
+        RECURRING_TO_RECURRING, // 반복 → 반복 (수정)
+        NO_CHANGE              // 변경 없음
+    }
 
     /**
      * 변경사항에 따라 필요한 업데이트만 실행
      */
     public void updatePlan(Plan plan, PlanUpdateReq request) {
+        // 원본 상태 보존 (기본 필드 업데이트 전에 저장)
+        boolean originalIsRecurring = plan.getIsRecurring();
+        
         // 기본 필드 변경사항이 있으면 업데이트
         if (hasBasicFieldChanges(request)) {
             updateBasicFields(plan, request);
         }
         
-        // 반복 필드 변경사항이 있으면 업데이트
-        if (hasRecurringFieldChanges(plan, request)) {
-            updateRecurringFields(plan, request);
+        // 반복 필드 변경사항이 있으면 업데이트 (원본 상태 기준으로 판단)
+        if (hasRecurringFieldChanges(originalIsRecurring, request)) {
+            updateRecurringFields(plan, request, originalIsRecurring);
         }
         
         // 알람 필드 변경사항이 있으면 업데이트
@@ -72,33 +86,10 @@ public class PlanUpdateHelper {
     /**
      * 반복 필드 변경사항 확인
      */
-    private boolean hasRecurringFieldChanges(Plan plan, PlanUpdateReq request) {
-        // 반복 해제하는 경우
-        if (Boolean.FALSE.equals(request.getIsRecurring())) {
-            log.info("반복계획 해제 요청");
-            return true;
-        }
-        
-        // 반복 설정이 없으면 변경사항 없음
-        if (!Boolean.TRUE.equals(request.getIsRecurring()) || request.getRecurringPlan() == null) {
-            log.info("반복 필드 변경사항 없음");
-            return false;
-        }
-        
-        // 새로운 반복정보 생성하는 경우
-        if (plan.getRecurringInfo() == null) {
-            log.info("새로운 반복정보 생성 필요");
-            return true;
-        }
-        
-        // 기존 반복정보와 비교
-        boolean changed = isRecurringInfoChanged(plan.getRecurringInfo(), request.getRecurringPlan());
-        if (changed) {
-            log.info("반복정보 변경 감지");
-        } else {
-            log.info("반복정보 변경 없음");
-        }
-        return changed;
+    private boolean hasRecurringFieldChanges(boolean originalIsRecurring, PlanUpdateReq request) {
+        // isRecurring 필드 변경이 있거나, 반복 설정 내용이 변경된 경우
+        return request.getIsRecurring() != null || 
+               (originalIsRecurring && request.getRecurringPlan() != null);
     }
     
     /**
@@ -127,25 +118,29 @@ public class PlanUpdateHelper {
     /**
      * 반복 필드 업데이트
      */
-    private void updateRecurringFields(Plan plan, PlanUpdateReq request) {
+    private void updateRecurringFields(Plan plan, PlanUpdateReq request, boolean originalIsRecurring) {
         log.info("반복 필드 업데이트 실행");
         
-        // 반복 해제
-        if (Boolean.FALSE.equals(request.getIsRecurring())) {
-            plan.setRecurringInfo(null);
-            log.info("반복계획 해제 완료");
-            return;
-        }
+        // 전환 타입 결정 (원본 상태 기준)
+        RecurringTransitionType transitionType = determineTransitionType(originalIsRecurring, request);
+        log.info("반복 설정 전환 타입: {}", transitionType);
         
-        // 반복 설정
-        if (Boolean.TRUE.equals(request.getIsRecurring()) && request.getRecurringPlan() != null) {
-            if (plan.getRecurringInfo() == null) {
-                // 새로운 반복정보 생성
-                createNewRecurringInfo(plan, request);
-            } else {
-                // 기존 반복정보 업데이트
-                updateExistingRecurringInfo(plan, request);
-            }
+        switch (transitionType) {
+            case SINGLE_TO_SINGLE:
+                log.info("단일 계획 유지 (반복 관련 처리 없음)");
+                break;
+            case SINGLE_TO_RECURRING:
+                handleSingleToRecurring(plan, request);
+                break;
+            case RECURRING_TO_SINGLE:
+                handleRecurringToSingle(plan);
+                break;
+            case RECURRING_TO_RECURRING:
+                handleRecurringUpdate(plan, request);
+                break;
+            case NO_CHANGE:
+                log.info("반복 설정 변경 없음");
+                break;
         }
     }
     
@@ -161,11 +156,81 @@ public class PlanUpdateHelper {
     // ========== 반복정보 처리 헬퍼 ==========
     
     /**
-     * 새로운 반복정보 생성
+     * 반복 설정 전환 타입 결정 (원본 상태 기준)
      */
-    private void createNewRecurringInfo(Plan plan, PlanUpdateReq request) {
-        log.info("새로운 반복정보 생성");
-        plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), request.getEndDate()));
+    private RecurringTransitionType determineTransitionType(boolean originalIsRecurring, PlanUpdateReq request) {
+        Boolean newRecurringStatus = request.getIsRecurring();
+        
+        log.info("전환 타입 결정 - 원본 상태: {}, 요청 상태: {}", originalIsRecurring, newRecurringStatus);
+        
+        // isRecurring 필드 변경이 없으면 현재 상태 유지
+        if (newRecurringStatus == null) {
+            return RecurringTransitionType.NO_CHANGE;
+        }
+        
+        if (!originalIsRecurring && !newRecurringStatus) {
+            return RecurringTransitionType.SINGLE_TO_SINGLE;        // 단일 → 단일
+        } else if (!originalIsRecurring && newRecurringStatus) {
+            return RecurringTransitionType.SINGLE_TO_RECURRING;     // 단일 → 반복
+        } else if (originalIsRecurring && !newRecurringStatus) {
+            return RecurringTransitionType.RECURRING_TO_SINGLE;     // 반복 → 단일
+        } else {
+            return RecurringTransitionType.RECURRING_TO_RECURRING;  // 반복 → 반복
+        }
+    }
+    
+    /**
+     * 단일 → 반복 전환 처리
+     */
+    private void handleSingleToRecurring(Plan plan, PlanUpdateReq request) {
+        log.info("단일 → 반복 전환 처리");
+        if (request.getRecurringPlan() != null) {
+            plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), request.getEndDate()));
+            log.info("새로운 반복정보 생성 완료");
+        } else {
+            log.warn("반복 설정 요청이지만 recurringPlan 데이터가 없음");
+        }
+    }
+    
+    /**
+     * 반복 → 단일 전환 처리
+     */
+    private void handleRecurringToSingle(Plan plan) {
+        log.info("반복 → 단일 전환 처리");
+        
+        if (plan.getRecurringInfo() != null) {
+            Long recurringInfoId = plan.getRecurringInfo().getId();
+            log.info("RecurringInfo ID: {} 관련 데이터 완전 삭제 시작", recurringInfoId);
+            
+            // 1. @ElementCollection 데이터 명시적 삭제 (FK 참조 제거)
+            deleteAllElementCollectionData(recurringInfoId);
+            
+            // 2. Plan의 recurringInfo 참조 제거 (orphanRemoval 동작)
+            plan.setRecurringInfo(null);
+            
+            log.info("RecurringInfo ID: {} 완전 삭제 완료", recurringInfoId);
+        } else {
+            log.info("RecurringInfo가 이미 null - 삭제할 데이터 없음");
+        }
+        
+        log.info("반복 → 단일 전환 처리 완료");
+    }
+    
+    /**
+     * 반복 → 반복 수정 처리
+     */
+    private void handleRecurringUpdate(Plan plan, PlanUpdateReq request) {
+        log.info("반복 → 반복 수정 처리");
+        if (request.getRecurringPlan() != null) {
+            // 기존 반복정보와 비교하여 실제 변경사항이 있는지 확인
+            if (isRecurringInfoChanged(plan.getRecurringInfo(), request.getRecurringPlan())) {
+                updateExistingRecurringInfo(plan, request);
+            } else {
+                log.info("반복정보 변경사항 없음");
+            }
+        } else {
+            log.warn("반복 계획 수정 요청이지만 recurringPlan 데이터가 없음");
+        }
     }
     
     /**
@@ -176,15 +241,23 @@ public class PlanUpdateHelper {
         var existing = plan.getRecurringInfo();
         var requestInfo = request.getRecurringPlan();
         
-        // 기존 데이터 삭제
-        deleteExistingRecurringData(existing.getId(), requestInfo.getRepeatUnit());
+        // RepeatUnit 변경 여부 확인
+        boolean repeatUnitChanged = !existing.getRepeatUnit().equals(requestInfo.getRepeatUnit());
         
-        // 컬렉션을 완전히 새로운 HashSet으로 교체 (JPA 더티체킹 문제 해결)
-        recreateCollectionInPersistenceContext(existing, requestInfo.getRepeatUnit());
+        if (repeatUnitChanged) {
+            log.info("RepeatUnit 변경: {} -> {}", existing.getRepeatUnit(), requestInfo.getRepeatUnit());
+            // 기존 RepeatUnit의 데이터 삭제 후 새로운 RepeatUnit으로 재생성
+            deleteExistingRecurringData(existing.getId(), existing.getRepeatUnit());
+            recreateCollectionInPersistenceContext(existing, requestInfo.getRepeatUnit());
+        } else {
+            log.info("RepeatUnit 동일 - {} 타입 내에서 데이터 변경", existing.getRepeatUnit());
+            // 같은 RepeatUnit 내에서 데이터만 변경
+            deleteExistingRecurringData(existing.getId(), existing.getRepeatUnit());
+            recreateCollectionInPersistenceContext(existing, existing.getRepeatUnit());
+        }
         
         // 새 데이터 적용
         planMapper.updateRecurringInfo(existing, requestInfo, request.getEndDate());
-
     }
     
     /**
@@ -226,6 +299,25 @@ public class PlanUpdateHelper {
 
 
     
+    /**
+     * 모든 @ElementCollection 데이터 삭제
+     */
+    private void deleteAllElementCollectionData(Long recurringInfoId) {
+        log.info("@ElementCollection 데이터 전체 삭제 시작");
+        
+        // 각 삭제 쿼리 후 즉시 flush
+        recurringInfoRepository.deleteWeekdaysByRecurringInfoId(recurringInfoId);
+        log.info("weekdays 삭제 완료 - recurringInfoId: {}", recurringInfoId);
+        
+        recurringInfoRepository.deleteWeeksOfMonthByRecurringInfoId(recurringInfoId);
+        log.info("weeksOfMonth 삭제 완료 - recurringInfoId: {}", recurringInfoId);
+        
+        recurringInfoRepository.deleteExceptionsByRecurringInfoId(recurringInfoId);
+        log.info("exceptions 삭제 완료 - recurringInfoId: {}", recurringInfoId);
+        
+        log.info("@ElementCollection 데이터 전체 삭제 완료");
+    }
+
     /**
      * 반복정보가 실제로 변경되었는지 확인
      */
