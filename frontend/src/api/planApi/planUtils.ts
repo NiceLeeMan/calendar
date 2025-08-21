@@ -48,6 +48,8 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
         if (recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan.daysOfWeek = recurring.repeatWeekdays
           console.log('주간 반복 - 선택된 요일:', recurring.repeatWeekdays)
+        } else {
+          console.warn('주간 반복이지만 선택된 요일이 없습니다')
         }
         break
       case 'MONTHLY':
@@ -65,6 +67,10 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
         }
         break
     }
+  } else if (!formData.isRecurring) {
+    // 반복 해제 시 명시적으로 undefined 설정 (생성 시에는 null이 아닌 undefined)
+    request.recurringPlan = undefined
+    console.log('반복 계획 해제 - recurringPlan을 undefined로 설정')
   }
 
   // 알람 설정 변환
@@ -99,7 +105,7 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
     isRecurring: formData.isRecurring
   }
 
-  // 반복 설정 변환 (생성과 동일한 로직)
+  // 반복 설정 변환
   if (formData.isRecurring && formData.recurringPlan) {
     console.log('반복 계획 수정 변환 시작:', formData.recurringPlan)
 
@@ -116,6 +122,8 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
         if (recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan.daysOfWeek = recurring.repeatWeekdays
           console.log('주간 반복 수정 - 선택된 요일:', recurring.repeatWeekdays)
+        } else {
+          console.warn('주간 반복이지만 선택된 요일이 없습니다')
         }
         break
       case 'MONTHLY':
@@ -133,6 +141,10 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
         }
         break
     }
+  } else if (!formData.isRecurring) {
+    // 반복 해제 시 명시적으로 null 설정
+    request.recurringPlan = null
+    console.log('반복 계획 해제 - recurringPlan을 null로 설정')
   }
 
   // 알람 설정 변환
