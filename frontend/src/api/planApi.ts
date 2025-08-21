@@ -79,8 +79,8 @@ export const createPlan = async (planData: PlanCreateRequest): Promise<PlanRespo
       const startMinutes = startHour * 60 + startMin
       const endMinutes = endHour * 60 + endMin
       
-      if (endMinutes <= startMinutes) {
-        throw new Error('같은 날짜인 경우 종료 시간은 시작 시간 이후여야 합니다')
+      if (endMinutes < startMinutes) {
+        throw new Error('같은 날짜인 경우 종료 시간은 시작 시간 이후이거나 같아야 합니다')
       }
     }
 

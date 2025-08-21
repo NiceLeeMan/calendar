@@ -159,8 +159,8 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
       const eventStart = parseInt(event.startTime.split(':')[0])
       const eventEnd = parseInt(event.endTime.split(':')[0])
 
-      // 이벤트가 이 시간대에 걸쳐있는지 확인
-      return hour >= eventStart && hour < eventEnd
+      // 이벤트가 이 시간대에 걸쳐있는지 확인 (시작시간 = 종료시간인 경우도 포함)
+      return hour >= eventStart && (hour < eventEnd || eventStart === eventEnd)
     })
   }
 
@@ -244,6 +244,11 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
           console.log(`${event.title} - left: ${leftPercent}%, width: ${widthPercent}%`)
         }
 
+        // 최소 높이 보장: 시작시간 = 종료시간일 때도 표시되도록 함
+        const calculatedHeight = totalDurationHours * 100 - 2
+        const minHeightPercent = 6 // 최소 6% 높이 보장 (64px 슬롯에서 약 3.84px)
+        const finalHeight = Math.max(calculatedHeight, minHeightPercent)
+
         result.push({
           ...event,
           style: {
@@ -251,7 +256,8 @@ export const useWeekEvents = ({ plans = [], getColorForPlan }: UseWeekEventsProp
             left: `${leftPercent + 1}%`,
             width: `${widthPercent - 2}%`,
             top: `${offsetInSlot + 1}%`,
-            height: `${totalDurationHours * 100 - 2}%`,
+            height: `${finalHeight}%`,
+            minHeight: '24px', // 더 큰 최소 높이로 확실하게 보이도록
             zIndex: 10 + index
           }
         })

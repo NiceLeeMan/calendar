@@ -78,7 +78,7 @@ const WeekGrid = ({
                     <div
                       key={event.id}
                       style={event.style}
-                      className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-30 cursor-pointer hover:opacity-80 transition-opacity`}
+                      className={`${event.color || 'bg-blue-500'} text-white text-xs p-1.5 rounded-md shadow-sm border border-white border-opacity-30 cursor-pointer hover:opacity-80 transition-opacity min-h-[24px]`}
                       title={`${event.title} (${event.startTime} - ${event.endTime})`}
                       onContextMenu={(e) => {
                         e.preventDefault()
