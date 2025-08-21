@@ -61,12 +61,7 @@ public class RecurringPlanGenerator {
         RecurringInfo recurring = plan.getRecurringInfo();
         LocalDate planStart = plan.getStartDate();
         LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
-        
-        log.info("🔍 generateWeeklyInstances: 계획={}, 월범위={} ~ {}, 반복종료일={}", 
-                plan.getPlanName(), monthStart, monthEnd, recurringEnd);
-        log.info("    계획기간: {} ~ {}, 반복간격: {}주, 요일들: {}", 
-                planStart, plan.getEndDate(), recurring.getRepeatInterval(), recurring.getRepeatWeekdays());
-        
+
         // 반복 종료일이 설정된 경우, 조회 범위를 종료일까지로 제한
         LocalDate effectiveEnd = monthEnd;
         if (recurringEnd != null && recurringEnd.isBefore(monthEnd)) {
@@ -74,43 +69,37 @@ public class RecurringPlanGenerator {
         }
         
         for (DayOfWeek targetDayOfWeek : recurring.getRepeatWeekdays()) {
-            log.info("  📅 {} 요일 처리 시작", targetDayOfWeek);
-            
+
             // 원래 계획 시작일부터 해당 요일의 첫 번째 발생일 찾기
             LocalDate firstOccurrence = findFirstOccurrenceOfDayOfWeek(planStart, targetDayOfWeek);
-            log.info("    첫 발생일: {}", firstOccurrence);
-            
+
             // 첫 발생일부터 반복 간격으로 계산하여 해당 월에 포함되는 날짜들 찾기
             LocalDate current = firstOccurrence;
             
             // 현재 월 이전의 발생들을 건너뛰어 현재 월에 가까운 발생일 찾기
             while (current.isBefore(monthStart)) {
                 current = current.plusWeeks(recurring.getRepeatInterval());
-                log.info("    건너뛰기: {} (월 시작 이전)", current.minusWeeks(recurring.getRepeatInterval()));
             }
-            log.info("    처리 시작점: {}", current);
+
             
             // 해당 월 범위 내에서 반복 인스턴스 생성
             while (!current.isAfter(effectiveEnd)) {
-                log.info("    검토 중: {} (월범위: {} ~ {}, 효과적종료: {})", 
-                        current, monthStart, monthEnd, effectiveEnd);
-                
+
                 // 현재 월 범위에 포함되고 예외 날짜가 아닌 경우만 추가
                 if (!current.isBefore(monthStart) && !current.isAfter(monthEnd) && 
                     !recurring.getExceptionDates().contains(current)) {
-                    
+
                     PlanResponse instance = planMapper.toPlanResponse(plan);
                     instance.setStartDate(current);
                     instance.setEndDate(plan.getEndDate());
                     instances.add(instance);
-                    log.info("    ✅ 인스턴스 생성: {} ~ {}", instance.getStartDate(), instance.getEndDate());
+
                 } else {
-                    log.info("    ❌ 조건 불만족: 월범위({} ~ {}) 벗어남 또는 예외날짜", monthStart, monthEnd);
+
                 }
 
                 current = current.plusWeeks(recurring.getRepeatInterval());
             }
-            log.info("  📅 {} 요일 처리 완료", targetDayOfWeek);
         }
         
         log.info("🏁 generateWeeklyInstances 완료: 총 {}개 인스턴스 생성", instances.size());
