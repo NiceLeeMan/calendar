@@ -31,7 +31,14 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
       newWeekdays = currentWeekdays.filter((day: string) => day !== weekdayName)
     }
     
+    // 요일 업데이트
     handleRecurringChange('repeatWeekdays', newWeekdays)
+    
+    // 주간 반복에서 모든 요일이 해제되면 반복 일정 자체를 해제
+    if (formData.recurringPlan.repeatUnit === 'WEEKLY' && newWeekdays.length === 0) {
+      console.log('주간 반복에서 모든 요일 해제 - 반복 일정을 false로 변경')
+      handleInputChange('isRecurring', false)
+    }
   }
 
   return (
