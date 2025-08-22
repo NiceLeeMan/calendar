@@ -82,6 +82,23 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
     } else {
       // 주차+요일 방식: 특정 날짜 데이터 초기화
       handleRecurringChange('repeatDayOfMonth', null)
+      
+      // 기본값 설정: 현재 시작 날짜 기준으로 주차와 요일 자동 설정
+      if (formData.startDate && 
+          (!formData.recurringPlan.repeatWeeksOfMonth?.length || 
+           !formData.recurringPlan.repeatWeekdays?.length)) {
+        const startDate = new Date(formData.startDate)
+        const dayOfWeek = startDate.getDay() // 0=일요일, 1=월요일, ...
+        
+        // 해당 월에서 몇 번째 주인지 계산
+        const weekOfMonth = Math.ceil(startDate.getDate() / 7)
+        
+        // 요일명 변환 (일요일=0을 SUNDAY로 변환)
+        const weekdayName = dayOfWeek === 0 ? 'SUNDAY' : WEEKDAY_NAMES[dayOfWeek - 1]
+        
+        handleRecurringChange('repeatWeeksOfMonth', [weekOfMonth])
+        handleRecurringChange('repeatWeekdays', [weekdayName])
+      }
     }
   }
 
@@ -207,12 +224,75 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
                   <span className="ml-2 text-sm text-gray-700">매월 특정 주차의 요일</span>
                 </label>
                 
-                {/* 주차+요일 선택 UI (향후 구현 예정) */}
+                {/* 주차+요일 선택 UI */}
                 {monthlyType === 'weekday' && (
-                  <div className="ml-6 mt-2 p-3 bg-gray-100 rounded-md">
-                    <p className="text-sm text-gray-600">
-                      🚧 주차+요일 선택 기능은 다음 단계에서 구현됩니다.
-                    </p>
+                  <div className="ml-6 mt-2 space-y-3">
+                    {/* 주차 선택 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        주차 선택 (다중 선택 가능)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {[1, 2, 3, 4, -1].map(week => (
+                          <label key={week} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.recurringPlan.repeatWeeksOfMonth?.includes(week) || false}
+                              onChange={(e) => {
+                                const currentWeeks = formData.recurringPlan.repeatWeeksOfMonth || []
+                                let newWeeks
+                                if (e.target.checked) {
+                                  newWeeks = [...currentWeeks, week]
+                                } else {
+                                  newWeeks = currentWeeks.filter(w => w !== week)
+                                }
+                                handleRecurringChange('repeatWeeksOfMonth', newWeeks)
+                              }}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-1 text-sm text-gray-700">
+                              {week === -1 ? '마지막주' : `${week}째주`}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 요일 선택 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-2">
+                        요일 선택 (다중 선택 가능)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {WEEKDAY_KOREAN.map((day, index) => (
+                          <label key={day} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.recurringPlan.repeatWeekdays?.includes(indexToWeekdayName(index)) || false}
+                              onChange={(e) => handleWeekdayChange(index, e.target.checked)}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <span className="ml-1 text-sm text-gray-700">{day}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 선택 상태 미리보기 */}
+                    {(formData.recurringPlan.repeatWeeksOfMonth?.length > 0 && 
+                      formData.recurringPlan.repeatWeekdays?.length > 0) && (
+                      <div className="p-2 bg-blue-100 rounded text-sm text-blue-800">
+                        <strong>선택된 패턴:</strong> 매월 {
+                          formData.recurringPlan.repeatWeeksOfMonth
+                            .map(week => week === -1 ? '마지막' : `${week}째`)
+                            .join(', ')
+                        }주 {
+                          formData.recurringPlan.repeatWeekdays
+                            .map(day => WEEKDAY_KOREAN[WEEKDAY_NAMES.indexOf(day)])
+                            .join(', ')
+                        }요일
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

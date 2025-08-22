@@ -89,6 +89,21 @@ export const createPlan = async (planData: PlanCreateRequest): Promise<PlanRespo
       throw new Error('반복 일정인 경우 반복 설정이 필요합니다')
     }
 
+    // 월간 반복 추가 검증
+    if (planData.isRecurring && planData.recurringPlan?.type === 'MONTHLY') {
+      const monthly = planData.recurringPlan
+      const hasDayOfMonth = monthly.dayOfMonth
+      const hasWeeksAndDays = monthly.weeksOfMonth?.length > 0 && monthly.daysOfWeek?.length > 0
+      
+      if (!hasDayOfMonth && !hasWeeksAndDays) {
+        throw new Error('월간 반복은 특정 날짜 또는 주차+요일 중 하나를 선택해야 합니다')
+      }
+      
+      if (hasDayOfMonth && hasWeeksAndDays) {
+        throw new Error('월간 반복은 특정 날짜와 주차+요일을 동시에 설정할 수 없습니다')
+      }
+    }
+
     const response = await apiClient.post<PlanResponse>('/plans', planData)
     return response.data
   } catch (error) {
@@ -138,6 +153,21 @@ export const updatePlan = async (planId: number, planData: PlanUpdateRequest): P
     // 반복 일정 검증
     if (planData.isRecurring === true && !planData.recurringPlan) {
       throw new Error('반복 일정인 경우 반복 설정이 필요합니다')
+    }
+
+    // 월간 반복 추가 검증
+    if (planData.isRecurring === true && planData.recurringPlan?.type === 'MONTHLY') {
+      const monthly = planData.recurringPlan
+      const hasDayOfMonth = monthly.dayOfMonth
+      const hasWeeksAndDays = monthly.weeksOfMonth?.length > 0 && monthly.daysOfWeek?.length > 0
+      
+      if (!hasDayOfMonth && !hasWeeksAndDays) {
+        throw new Error('월간 반복은 특정 날짜 또는 주차+요일 중 하나를 선택해야 합니다')
+      }
+      
+      if (hasDayOfMonth && hasWeeksAndDays) {
+        throw new Error('월간 반복은 특정 날짜와 주차+요일을 동시에 설정할 수 없습니다')
+      }
     }
 
     const response = await apiClient.put<PlanResponse>(`/plans/${planId}`, planData)
@@ -302,6 +332,8 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
 
   // 반복 설정 변환
   if (formData.isRecurring && formData.recurringPlan) {
+    console.log('반복 계획 생성 변환 시작:', formData.recurringPlan)
+    
     request.recurringPlan = {
       type: formData.recurringPlan.repeatUnit,
       repeatInterval: formData.recurringPlan.repeatInterval || 1
@@ -313,28 +345,35 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
       case 'WEEKLY':
         if (recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
+          console.log('주간 반복 생성 - 선택된 요일:', recurring.repeatWeekdays)
         }
         break
       case 'MONTHLY':
         // 방식 1: 특정 날짜 (dayOfMonth)
         if (recurring.repeatDayOfMonth) {
           request.recurringPlan!.dayOfMonth = recurring.repeatDayOfMonth
-          console.log('월간 반복 수정 - 특정 날짜:', recurring.repeatDayOfMonth)
+          console.log('월간 반복 생성 - 특정 날짜:', recurring.repeatDayOfMonth)
         } 
         // 방식 2: 주차 + 요일 (weeksOfMonth + daysOfWeek)
         else if (recurring.repeatWeeksOfMonth?.length > 0 && recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan!.weeksOfMonth = recurring.repeatWeeksOfMonth
           request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
-          console.log('월간 반복 수정 - 주차+요일:', recurring.repeatWeeksOfMonth, recurring.repeatWeekdays)
+          console.log('월간 반복 생성 - 주차+요일:', {
+            weeksOfMonth: recurring.repeatWeeksOfMonth,
+            daysOfWeek: recurring.repeatWeekdays
+          })
         }
         break
       case 'YEARLY':
         if (recurring.repeatMonth && recurring.repeatDayOfYear) {
           request.recurringPlan!.month = recurring.repeatMonth
           request.recurringPlan!.dayOfYear = recurring.repeatDayOfYear
+          console.log('연간 반복 생성:', recurring.repeatMonth, recurring.repeatDayOfYear)
         }
         break
     }
+    
+    console.log('최종 반복 계획 요청 데이터:', request.recurringPlan)
   }
 
   // 알람 설정 변환
@@ -347,6 +386,7 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
       }))
   }
 
+  console.log('최종 생성 요청 데이터:', request)
   return request
 }
 
@@ -391,13 +431,13 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
         // 방식 1: 특정 날짜 (dayOfMonth)
         if (recurring.repeatDayOfMonth) {
           request.recurringPlan!.dayOfMonth = recurring.repeatDayOfMonth
-          console.log('월간 반복 수정 - 특정 날짜:', recurring.repeatDayOfMonth)
+          console.log('월간 반복 생성 - 특정 날짜:', recurring.repeatDayOfMonth)
         } 
         // 방식 2: 주차 + 요일 (weeksOfMonth + daysOfWeek)
         else if (recurring.repeatWeeksOfMonth?.length > 0 && recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan!.weeksOfMonth = recurring.repeatWeeksOfMonth
           request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
-          console.log('월간 반복 수정 - 주차+요일:', recurring.repeatWeeksOfMonth, recurring.repeatWeekdays)
+          console.log('월간 반복 생성 - 주차+요일:', recurring.repeatWeeksOfMonth, recurring.repeatWeekdays)
         }
         break
       case 'YEARLY':
@@ -407,6 +447,7 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
         }
         break
     }
+    console.log('최종 반복 계획 수정 요청 데이터:', request.recurringPlan)
   }
 
   // 알람 설정 변환
@@ -420,6 +461,7 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
   }
 
   console.log('updated request:', request)
+  console.log('최종 생성 요청 데이터:', request)
   return request
 }
 
