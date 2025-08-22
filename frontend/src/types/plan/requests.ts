@@ -3,6 +3,7 @@
  * 
  * @author Calendar Team
  * @since 2025-08-11
+ * @updated 2025-08-22 - 백엔드 RecurringReqInfo 매핑 완성
  */
 
 import { RepeatUnit, DayOfWeek } from './enums'
@@ -18,30 +19,39 @@ export interface AlarmReqInfo {
 }
 
 /**
- * 반복 일정 요청 정보 (백엔드 RecurringReqInfo 매핑)
+ * 반복 일정 요청 정보 (백엔드 RecurringReqInfo와 완전 매핑)
+ * 
+ * @JsonProperty 매핑:
+ * - type → repeatUnit
+ * - daysOfWeek → repeatWeekdays  
+ * - dayOfMonth → repeatDayOfMonth
+ * - weeksOfMonth → repeatWeeksOfMonth
+ * - month → repeatMonth
+ * - dayOfYear → repeatDayOfYear
  */
 export interface RecurringReqInfo {
-  /** 반복 단위 */
+  /** 반복 단위 (백엔드: @JsonProperty("type")) */
   type: RepeatUnit
+  
   /** 반복 간격 (1-20) */
   repeatInterval?: number
   
-  // 주간 반복
-  /** 반복 요일들 */
+  // === 주간 반복 ===
+  /** 반복 요일들 (백엔드: @JsonProperty("daysOfWeek")) */
   daysOfWeek?: DayOfWeek[]
   
-  // 월간 반복 - 방식 1: 특정 날짜
-  /** 매월 반복할 날짜 (1-31) */
+  // === 월간 반복 - 방식 1: 특정 날짜 ===
+  /** 매월 반복할 날짜 (1-31) (백엔드: @JsonProperty("dayOfMonth")) */
   dayOfMonth?: number | null
   
-  // 월간 반복 - 방식 2: 주차 + 요일
-  /** 반복할 주차들 (1-5) */
+  // === 월간 반복 - 방식 2: 주차 + 요일 ===
+  /** 반복할 주차들 (1-5, -1=마지막주) (백엔드: @JsonProperty("weeksOfMonth")) */
   weeksOfMonth?: number[]
   
-  // 연간 반복
-  /** 월 (1-12) */
+  // === 연간 반복 ===
+  /** 월 (1-12) (백엔드: @JsonProperty("month")) */
   month?: number | null
-  /** 일 (1-366) */
+  /** 일 (1-366) (백엔드: @JsonProperty("dayOfYear")) */
   dayOfYear?: number | null
 }
 

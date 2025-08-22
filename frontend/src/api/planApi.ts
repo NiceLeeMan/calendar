@@ -316,11 +316,16 @@ export const convertFormDataToCreateRequest = (formData: any): PlanCreateRequest
         }
         break
       case 'MONTHLY':
+        // 방식 1: 특정 날짜 (dayOfMonth)
         if (recurring.repeatDayOfMonth) {
           request.recurringPlan!.dayOfMonth = recurring.repeatDayOfMonth
-        } else if (recurring.repeatWeeksOfMonth?.length > 0) {
+          console.log('월간 반복 수정 - 특정 날짜:', recurring.repeatDayOfMonth)
+        } 
+        // 방식 2: 주차 + 요일 (weeksOfMonth + daysOfWeek)
+        else if (recurring.repeatWeeksOfMonth?.length > 0 && recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan!.weeksOfMonth = recurring.repeatWeeksOfMonth
-          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays
+          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
+          console.log('월간 반복 수정 - 주차+요일:', recurring.repeatWeeksOfMonth, recurring.repeatWeekdays)
         }
         break
       case 'YEARLY':
@@ -383,11 +388,16 @@ export const convertFormDataToUpdateRequest = (formData: any): PlanUpdateRequest
         }
         break
       case 'MONTHLY':
+        // 방식 1: 특정 날짜 (dayOfMonth)
         if (recurring.repeatDayOfMonth) {
           request.recurringPlan!.dayOfMonth = recurring.repeatDayOfMonth
-        } else if (recurring.repeatWeeksOfMonth?.length > 0) {
+          console.log('월간 반복 수정 - 특정 날짜:', recurring.repeatDayOfMonth)
+        } 
+        // 방식 2: 주차 + 요일 (weeksOfMonth + daysOfWeek)
+        else if (recurring.repeatWeeksOfMonth?.length > 0 && recurring.repeatWeekdays?.length > 0) {
           request.recurringPlan!.weeksOfMonth = recurring.repeatWeeksOfMonth
-          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays
+          request.recurringPlan!.daysOfWeek = recurring.repeatWeekdays as DayOfWeek[]
+          console.log('월간 반복 수정 - 주차+요일:', recurring.repeatWeeksOfMonth, recurring.repeatWeekdays)
         }
         break
       case 'YEARLY':
