@@ -74,7 +74,11 @@ public class RecurringInfo {
     @Builder.Default
     private Set<LocalDate> exceptionDates = new HashSet<>();
 
-    // 반복 종료 날짜
+    // 반복 시작 날짜 (Plan.startDate와 동기화)
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    // 반복 종료 날짜 (Plan.endDate와 동기화)
     @Column(name = "end_date")
     private LocalDate endDate;
 

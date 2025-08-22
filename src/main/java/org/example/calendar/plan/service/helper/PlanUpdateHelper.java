@@ -108,8 +108,22 @@ public class PlanUpdateHelper {
         log.info("기본 필드 업데이트 실행");
         if (request.getPlanName() != null) plan.setPlanName(request.getPlanName());
         if (request.getPlanContent() != null) plan.setPlanContent(request.getPlanContent());
-        if (request.getStartDate() != null) plan.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null) plan.setEndDate(request.getEndDate());
+        if (request.getStartDate() != null) {
+            plan.setStartDate(request.getStartDate());
+
+            // 반복계획인 경우 recurring_info.endDate도 동기화
+            if (plan.isRecurringPlan() && plan.getRecurringInfo() != null) {
+                plan.getRecurringInfo().setStartDate(request.getStartDate());
+            }
+        }
+        if (request.getEndDate() != null) {
+            plan.setEndDate(request.getEndDate());
+
+            // 반복계획인 경우 recurring_info.endDate도 동기화
+            if (plan.isRecurringPlan() && plan.getRecurringInfo() != null) {
+                plan.getRecurringInfo().setEndDate(request.getEndDate());
+            }
+        }
         if (request.getStartTime() != null) plan.setStartTime(request.getStartTime());
         if (request.getEndTime() != null) plan.setEndTime(request.getEndTime());
         if (request.getIsRecurring() != null) plan.setIsRecurring(request.getIsRecurring());
@@ -185,7 +199,7 @@ public class PlanUpdateHelper {
     private void handleSingleToRecurring(Plan plan, PlanUpdateReq request) {
         log.info("단일 → 반복 전환 처리");
         if (request.getRecurringPlan() != null) {
-            plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), request.getEndDate()));
+            plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), plan.getStartDate(), plan.getEndDate()));
             log.info("새로운 반복정보 생성 완료");
         } else {
             log.warn("반복 설정 요청이지만 recurringPlan 데이터가 없음");
@@ -257,7 +271,7 @@ public class PlanUpdateHelper {
         }
         
         // 새 데이터 적용
-        planMapper.updateRecurringInfo(existing, requestInfo, request.getEndDate());
+        planMapper.updateRecurringInfo(existing, requestInfo, plan.getStartDate(), plan.getEndDate());
     }
     
     /**

@@ -114,7 +114,7 @@ public class PlanService {
         
         // 반복 설정 처리
         if (Boolean.TRUE.equals(request.getIsRecurring()) && request.getRecurringPlan() != null) {
-            RecurringInfo recurringInfo = planMapper.toRecurringInfo(request.getRecurringPlan(), request.getEndDate());
+            RecurringInfo recurringInfo = planMapper.toRecurringInfo(request.getRecurringPlan(), request.getStartDate(), request.getEndDate());
             plan.setRecurringInfo(recurringInfo);
         }
         

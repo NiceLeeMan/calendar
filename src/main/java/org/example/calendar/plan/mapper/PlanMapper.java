@@ -58,9 +58,9 @@ public class PlanMapper {
 
     /**
      * RecurringReqInfo를 RecurringInfo 엔티티로 변환
-     * Plan의 endDate를 반복 종료일로 사용
+     * Plan의 startDate와 endDate를 반복 기간으로 사용
      */
-    public RecurringInfo toRecurringInfo(RecurringReqInfo request, LocalDate planEndDate) {
+    public RecurringInfo toRecurringInfo(RecurringReqInfo request, LocalDate planStartDate, LocalDate planEndDate) {
         return RecurringInfo.builder()
                 .repeatUnit(request.getRepeatUnit())
                 .repeatInterval(request.getRepeatInterval())
@@ -69,7 +69,8 @@ public class PlanMapper {
                 .repeatWeeksOfMonth(request.getRepeatWeeksOfMonth() != null ? new HashSet<>(request.getRepeatWeeksOfMonth()) : new HashSet<>())
                 .repeatMonth(request.getRepeatMonth())
                 .repeatDayOfYear(request.getRepeatDayOfYear())
-                .endDate(planEndDate)  // Plan의 endDate를 반복 종료일로 사용
+                .startDate(planStartDate)  // Plan의 startDate를 반복 시작일로 사용
+                .endDate(planEndDate)      // Plan의 endDate를 반복 종료일로 사용
                 .exceptionDates(new HashSet<>())
                 .build();
     }
@@ -102,6 +103,7 @@ public class PlanMapper {
                 .repeatWeeksOfMonth(recurringInfo.getRepeatWeeksOfMonth().stream().toList())
                 .repeatMonth(recurringInfo.getRepeatMonth())
                 .repeatDayOfYear(recurringInfo.getRepeatDayOfYear())
+                .startDate(recurringInfo.getStartDate() != null ? recurringInfo.getStartDate().toString() : null)
                 .endDate(recurringInfo.getEndDate() != null ? recurringInfo.getEndDate().toString() : null)
                 .exceptionDates(recurringInfo.getExceptionDates().stream().map(LocalDate::toString).toList())
                 .build();
@@ -127,7 +129,7 @@ public class PlanMapper {
      * 기존 RecurringInfo 업데이트
      * 컬렉션 재생성 후 새 데이터 직접 설정 (JPA 더티체킹 문제 해결)
      */
-    public void updateRecurringInfo(RecurringInfo existing, RecurringReqInfo request, LocalDate planEndDate) {
+    public void updateRecurringInfo(RecurringInfo existing, RecurringReqInfo request, LocalDate planStartDate, LocalDate planEndDate) {
         existing.setRepeatUnit(request.getRepeatUnit());
         existing.setRepeatInterval(request.getRepeatInterval());
 
@@ -145,6 +147,7 @@ public class PlanMapper {
 
         existing.setRepeatMonth(request.getRepeatMonth());
         existing.setRepeatDayOfYear(request.getRepeatDayOfYear());
-        existing.setEndDate(planEndDate);  // Plan의 endDate를 반복 종료일로 사용
+        existing.setStartDate(planStartDate);  // Plan의 startDate를 반복 시작일로 사용
+        existing.setEndDate(planEndDate);      // Plan의 endDate를 반복 종료일로 사용
     }
 }
