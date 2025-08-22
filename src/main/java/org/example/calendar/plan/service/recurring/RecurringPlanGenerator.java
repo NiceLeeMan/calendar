@@ -5,170 +5,91 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.calendar.plan.dto.response.PlanResponse;
 import org.example.calendar.plan.entity.Plan;
 import org.example.calendar.plan.entity.RecurringInfo;
-import org.example.calendar.plan.mapper.PlanMapper;
 import org.springframework.stereotype.Component;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 반복 일정 인스턴스 생성기
+ * 반복 일정 인스턴스 생성기 (메인 컨트롤러)
  * 
  * <h3>역할</h3>
  * <ul>
  *   <li>반복 설정을 기반으로 구체적인 날짜 인스턴스 생성</li>
+ *   <li>반복 단위별 전용 Generator에 작업 위임</li>
  *   <li>월별 조회 시 프론트엔드가 사용할 수 있는 형태로 변환</li>
  *   <li>예외 날짜 처리</li>
+ * </ul>
+ * 
+ * <h3>지원하는 반복 패턴</h3>
+ * <ul>
+ *   <li><strong>주간 반복</strong>: 매주 특정 요일들, N주 간격</li>
+ *   <li><strong>월간 반복</strong>: 특정 날짜 또는 주차+요일, N개월 간격</li>
+ *   <li><strong>연간 반복</strong>: 특정 월의 특정 일, N년 간격</li>
  * </ul>
  *
  * @author Calendar Team
  * @since 2025-07-25
+ * @updated 2025-08-22 - 반복 단위별 Generator 분할
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class RecurringPlanGenerator {
 
-    private final PlanMapper planMapper;
+    private final WeeklyRecurringGenerator weeklyGenerator;
+    private final MonthlyRecurringGenerator monthlyGenerator;
+    private final YearlyRecurringGenerator yearlyGenerator;
 
     /**
-     * 반복 일정의 월별 인스턴스 생성
+     * 반복 일정의 월별 인스턴스 생성 (메인 진입점)
+     * 
+     * @param plan 원본 반복 계획
+     * @param monthStart 조회 월 시작일
+     * @param monthEnd 조회 월 종료일
+     * @return 생성된 인스턴스 목록
      */
     public List<PlanResponse> generateRecurringInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd) {
-        List<PlanResponse> instances = new ArrayList<>();
+        if (plan == null || !Boolean.TRUE.equals(plan.getIsRecurring())) {
+            log.debug("반복 계획이 아니거나 null입니다. planId: {}", plan != null ? plan.getId() : "null");
+            return new ArrayList<>();
+        }
+        
         RecurringInfo recurring = plan.getRecurringInfo();
-        
-        if (recurring == null) {
-            return instances;
+        if (recurring == null || recurring.getRepeatUnit() == null) {
+            log.warn("반복 설정이 없습니다. planId: {}", plan.getId());
+            return new ArrayList<>();
         }
         
-        switch (recurring.getRepeatUnit()) {
-            case WEEKLY -> generateWeeklyInstances(plan, monthStart, monthEnd, instances);
-            case MONTHLY -> generateMonthlyInstances(plan, monthStart, monthEnd, instances);
-            case YEARLY -> generateYearlyInstances(plan, monthStart, monthEnd, instances);
+        List<PlanResponse> instances;
+        
+        try {
+            // 반복 단위별로 해당 Generator에 위임
+            instances = switch (recurring.getRepeatUnit()) {
+                case WEEKLY -> {
+                    log.debug("주간 반복 Generator 호출 - planId: {}", plan.getId());
+                    yield weeklyGenerator.generateInstances(plan, monthStart, monthEnd);
+                }
+                case MONTHLY -> {
+                    log.debug("월간 반복 Generator 호출 - planId: {}", plan.getId());
+                    yield monthlyGenerator.generateInstances(plan, monthStart, monthEnd);
+                }
+                case YEARLY -> {
+                    log.debug("연간 반복 Generator 호출 - planId: {}", plan.getId());
+                    yield yearlyGenerator.generateInstances(plan, monthStart, monthEnd);
+                }
+            };
+            
+        } catch (Exception e) {
+            log.error("반복 인스턴스 생성 중 오류 발생 - planId: {}, repeatUnit: {}", 
+                    plan.getId(), recurring.getRepeatUnit(), e);
+            return new ArrayList<>();
         }
+        
+        log.info("🎯 반복 인스턴스 생성 완료 - planId: {}, repeatUnit: {}, 인스턴스 수: {}", 
+                plan.getId(), recurring.getRepeatUnit(), instances.size());
         
         return instances;
-    }
-
-    /**
-     * 주간 반복 인스턴스 생성 (가장 일반적)
-     */
-    private void generateWeeklyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
-        RecurringInfo recurring = plan.getRecurringInfo();
-        LocalDate planStart = plan.getStartDate();
-        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
-
-        // 반복 종료일이 설정된 경우, 조회 범위를 종료일까지로 제한
-        LocalDate effectiveEnd = monthEnd;
-        if (recurringEnd != null && recurringEnd.isBefore(monthEnd)) {
-            effectiveEnd = recurringEnd;
-        }
-        
-        for (DayOfWeek targetDayOfWeek : recurring.getRepeatWeekdays()) {
-
-            // 원래 계획 시작일부터 해당 요일의 첫 번째 발생일 찾기
-            LocalDate firstOccurrence = findFirstOccurrenceOfDayOfWeek(planStart, targetDayOfWeek);
-
-            // 첫 발생일부터 반복 간격으로 계산하여 해당 월에 포함되는 날짜들 찾기
-            LocalDate current = firstOccurrence;
-            
-            // 현재 월 이전의 발생들을 건너뛰어 현재 월에 가까운 발생일 찾기
-            while (current.isBefore(monthStart)) {
-                current = current.plusWeeks(recurring.getRepeatInterval());
-            }
-
-            
-            // 해당 월 범위 내에서 반복 인스턴스 생성
-            while (!current.isAfter(effectiveEnd)) {
-
-                // 현재 월 범위에 포함되고 예외 날짜가 아닌 경우만 추가
-                if (!current.isBefore(monthStart) && !current.isAfter(monthEnd) && 
-                    !recurring.getExceptionDates().contains(current)) {
-
-                    PlanResponse instance = planMapper.toPlanResponse(plan);
-                    instance.setStartDate(current);
-                    instance.setEndDate(plan.getEndDate());
-                    instances.add(instance);
-
-                } else {
-
-                }
-
-                current = current.plusWeeks(recurring.getRepeatInterval());
-            }
-        }
-        
-        log.info("🏁 generateWeeklyInstances 완료: 총 {}개 인스턴스 생성", instances.size());
-    }
-    
-    /**
-     * 주어진 시작일부터 특정 요일의 첫 번째 발생일 찾기
-     */
-    private LocalDate findFirstOccurrenceOfDayOfWeek(LocalDate startDate, DayOfWeek targetDayOfWeek) {
-        LocalDate current = startDate;
-        
-        // 시작일이 이미 목표 요일인 경우
-        if (current.getDayOfWeek() == targetDayOfWeek) {
-            return current;
-        }
-        
-        // 시작일부터 목표 요일까지 날짜 이동
-        while (current.getDayOfWeek() != targetDayOfWeek) {
-            current = current.plusDays(1);
-        }
-        
-        return current;
-    }
-
-    /**
-     * 월간 반복 인스턴스 생성
-     */
-    private void generateMonthlyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
-        RecurringInfo recurring = plan.getRecurringInfo();
-        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
-        
-        if (recurring.getRepeatDayOfMonth() != null) {
-            // 매월 특정 일 (예: 매월 15일)
-            LocalDate current = monthStart.withDayOfMonth(Math.min(recurring.getRepeatDayOfMonth(), monthStart.lengthOfMonth()));
-
-            if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
-                (recurringEnd == null || !current.isAfter(recurringEnd)) &&
-                !recurring.getExceptionDates().contains(current)) {
-                
-                PlanResponse instance = planMapper.toPlanResponse(plan);
-                instance.setStartDate(current);
-                instance.setEndDate(current.plusDays(plan.getEndDate().toEpochDay() - plan.getStartDate().toEpochDay()));
-                instances.add(instance);
-            }
-        }
-    }
-
-    /**
-     * 연간 반복 인스턴스 생성
-     */
-    private void generateYearlyInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd, List<PlanResponse> instances) {
-        RecurringInfo recurring = plan.getRecurringInfo();
-        LocalDate recurringEnd = recurring.getEndDate(); // 반복 종료일 확인
-        
-        if (recurring.getRepeatMonth() != null && recurring.getRepeatDayOfYear() != null) {
-            if (monthStart.getMonthValue() == recurring.getRepeatMonth()) {
-                LocalDate current = LocalDate.of(monthStart.getYear(), recurring.getRepeatMonth(), 
-                        Math.min(recurring.getRepeatDayOfYear(), monthStart.lengthOfMonth()));
-
-                if (!current.isBefore(plan.getStartDate()) && !current.isAfter(monthEnd) && 
-                    (recurringEnd == null || !current.isAfter(recurringEnd)) &&
-                    !recurring.getExceptionDates().contains(current)) {
-                    
-                    PlanResponse instance = planMapper.toPlanResponse(plan);
-                    instance.setStartDate(current);
-                    instance.setEndDate(current.plusDays(plan.getEndDate().toEpochDay() - plan.getStartDate().toEpochDay()));
-                    instances.add(instance);
-                }
-            }
-        }
     }
 }
