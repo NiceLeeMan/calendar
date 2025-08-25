@@ -120,7 +120,7 @@ const MainPage = () => {
               {/* 웰컴 메시지 */}
               <div className="mb-6">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent mb-4 leading-tight">
-                  캘린더 메인 페이지
+                  메인 페이지
                 </h1>
                 
                 {userInfo && (
@@ -147,7 +147,7 @@ const MainPage = () => {
               <div className="text-gray-600 text-sm sm:text-base">
                 <p className="mb-2">우측 상단의 메뉴 버튼을 클릭하여</p>
                 <p className="flex items-center justify-center gap-1">
-                  <span>캘린더로 이동하실 수 있습니다</span>
+                  <span>다양한 기능을 이용하실 수 있습니다</span>
                   <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                   </svg>
@@ -245,6 +245,105 @@ const MainPage = () => {
                 />
               </svg>
             </button>
+
+            {/* 구분선 */}
+            <div className="border-t border-gray-200/50 my-4 sm:my-6"></div>
+
+            {/* 정책 및 약관 섹션 */}
+            <div className="mb-4 sm:mb-6">
+              <h4 className="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide mb-3 px-1">
+                정책 및 약관
+              </h4>
+              <div className="space-y-2">
+                {/* 이용약관 */}
+                <button
+                  onClick={() => {
+                    // TODO: 이용약관 페이지로 이동
+                    console.log('이용약관 페이지로 이동')
+                    setIsSidebarOpen(false)
+                  }}
+                  className="w-full flex items-center p-2 sm:p-3 rounded-lg text-left hover:bg-gray-50/80 transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 mr-3">
+                    <svg
+                      className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-grow">
+                    <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                      이용약관
+                    </div>
+                  </div>
+                  <svg
+                    className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </button>
+
+                {/* 개인정보 처리방침 */}
+                <button
+                  onClick={() => {
+                    // TODO: 개인정보 처리방침 페이지로 이동
+                    console.log('개인정보 처리방침 페이지로 이동')
+                    setIsSidebarOpen(false)
+                  }}
+                  className="w-full flex items-center p-2 sm:p-3 rounded-lg text-left hover:bg-gray-50/80 transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 mr-3">
+                    <svg
+                      className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-grow">
+                    <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
+                      개인정보 처리방침
+                    </div>
+                  </div>
+                  <svg
+                    className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
             {/* 구분선 */}
             <div className="border-t border-gray-200/50 my-4 sm:my-6"></div>
