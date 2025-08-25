@@ -134,7 +134,6 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
               >
                 <option value="WEEKLY">주간</option>
                 <option value="MONTHLY">월간</option>
-                <option value="YEARLY">연간</option>
               </select>
             </div>
 
@@ -299,14 +298,7 @@ const RecurringSection = ({ formData, handleInputChange, handleRecurringChange }
             </div>
           )}
 
-          {/* 연간 반복 설정 (기존과 동일) */}
-          {formData.recurringPlan.repeatUnit === 'YEARLY' && (
-            <div className="p-3 bg-gray-100 rounded-md">
-              <p className="text-sm text-gray-600">
-                🚧 연간 반복 설정은 향후 구현 예정입니다.
-              </p>
-            </div>
-          )}
+
         </div>
       )}
     </div>
