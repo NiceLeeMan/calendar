@@ -6,12 +6,12 @@
  * @updated 2025-08-23 - 파일 분할 및 구조 개선
  */
 
-import { PlanResponse } from '../../../../types/plan'
-import { planEventManager } from '../../../../utils/planEventManager'
+import { PlanResponse } from '../../../../../types/plan'
+import { planEventManager } from '../../../../../utils/planEventManager.ts'
 import { useState, useEffect } from 'react'
-import { formatDateToString } from './weekEventUtils'
-import { createWeekPlanBlocks, PlanBlock } from './weekPlanBlockGenerators'
-import { calculateOverlappingEventsLayout } from './weekEventLayout'
+import { formatDateToString } from '../utils/weekEventUtils.ts'
+import { createWeekPlanBlocks, PlanBlock } from '../generator/weekPlanBlockGenerators.ts'
+import { calculateOverlappingEventsLayout } from '../layout/weekEventLayout.ts'
 
 interface UseWeekEventsProps {
   plans?: PlanResponse[]

@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react'
-import { PlanResponse } from '../../../../types'
+import { PlanResponse } from '../../../../../types'
 
 interface UsePlanModalProps {
   onPlanCreated?: (plan: PlanResponse) => void

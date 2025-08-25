@@ -6,11 +6,11 @@
  * @updated 2025-08-23 - 분할된 파일들 export 추가
  */
 
-export { useDayEvents } from './useDayEvents'
-export { useTimeSlots } from './useTimeSlots'
-export { usePlanModal } from './usePlanModal'
+export { useDayEvents } from './useHook/useDayEvents.ts'
+export { useTimeSlots } from './useHook/useTimeSlots.ts'
+export { usePlanModal } from './useHook/usePlanModal.ts'
 
 // 유틸리티 함수들 (필요시 외부에서 사용 가능)
-export * from './dayEventUtils'
-export * from './dayPlanBlockGenerators'
-export * from './dayEventLayout'
+export * from './utils/dayEventUtils.ts'
+export * from './generator/dayPlanBlockGenerators.ts'
+export * from './layout/dayEventLayout.ts'

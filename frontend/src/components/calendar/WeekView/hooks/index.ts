@@ -6,10 +6,10 @@
  * @updated 2025-08-23 - 분할된 파일들 export 추가
  */
 
-export { useWeekEvents } from './useWeekEvents'
-export { useWeekDays } from './useWeekDays'
+export { useWeekEvents } from './useHook/useWeekEvents.ts'
+export { useWeekDays } from './useHook/useWeekDays.ts'
 
 // 유틸리티 함수들 (필요시 외부에서 사용 가능)
-export * from './weekEventUtils'
-export * from './weekPlanBlockGenerators'
-export * from './weekEventLayout'
+export * from './utils/weekEventUtils.ts'
+export * from './generator/weekPlanBlockGenerators.ts'
+export * from './layout/weekEventLayout.ts'

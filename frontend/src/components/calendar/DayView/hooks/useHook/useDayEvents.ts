@@ -7,11 +7,11 @@
  */
 
 import { useMemo, useState, useEffect } from 'react'
-import { PlanResponse } from '../../../../types/plan'
-import { planEventManager } from '../../../../utils/planEventManager'
-import { formatDateToString } from './dayEventUtils'
-import { createDayPlanBlocks, PlanBlock } from './dayPlanBlockGenerators'
-import { calculateBlockPositionAndSize, arrangeOverlappingBlocks } from './dayEventLayout'
+import { PlanResponse } from '../../../../../types/plan'
+import { planEventManager } from '../../../../../utils/planEventManager.ts'
+import { formatDateToString } from '../utils/dayEventUtils.ts'
+import { createDayPlanBlocks, PlanBlock } from '../generator/dayPlanBlockGenerators.ts'
+import { calculateBlockPositionAndSize, arrangeOverlappingBlocks } from '../layout/dayEventLayout.ts'
 
 interface UseDayEventsProps {
   currentDate: Date

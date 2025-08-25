@@ -6,7 +6,7 @@
  * @since 2025-08-23
  */
 
-import { PlanBlock } from './weekPlanBlockGenerators'
+import { PlanBlock } from '../generator/weekPlanBlockGenerators.ts'
 
 // =============================================================================
 // 🔄 이벤트 레이아웃 계산 함수들
