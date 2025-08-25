@@ -49,8 +49,7 @@ public class WeeklyRecurringGenerator implements RecurringGenerator {
         for (DayOfWeek targetDayOfWeek : recurring.getRepeatWeekdays()) {
             generateInstancesForDayOfWeek(plan, monthStart, monthEnd, targetDayOfWeek, instances);
         }
-        
-        log.info("🏁 주간 반복 인스턴스 생성 완료: 총 {}개 인스턴스 생성 (planId: {})", instances.size(), plan.getId());
+
         return instances;
     }
 
@@ -78,7 +77,6 @@ public class WeeklyRecurringGenerator implements RecurringGenerator {
             if (RecurringGeneratorUtils.isValidInstance(plan, current, monthStart, monthEnd)) {
                 PlanResponse instance = RecurringGeneratorUtils.createPlanInstance(plan, current, planMapper);
                 instances.add(instance);
-                log.debug("주간 반복 인스턴스 생성: {} ({})", current, targetDayOfWeek);
             }
             
             current = current.plusWeeks(recurring.getRepeatInterval());

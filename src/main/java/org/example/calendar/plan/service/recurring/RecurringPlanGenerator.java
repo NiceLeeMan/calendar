@@ -52,7 +52,6 @@ public class RecurringPlanGenerator {
      */
     public List<PlanResponse> generateRecurringInstances(Plan plan, LocalDate monthStart, LocalDate monthEnd) {
         if (plan == null || !Boolean.TRUE.equals(plan.getIsRecurring())) {
-            log.debug("반복 계획이 아니거나 null입니다. planId: {}", plan != null ? plan.getId() : "null");
             return new ArrayList<>();
         }
         
@@ -67,18 +66,9 @@ public class RecurringPlanGenerator {
         try {
             // 반복 단위별로 해당 Generator에 위임
             instances = switch (recurring.getRepeatUnit()) {
-                case WEEKLY -> {
-                    log.debug("주간 반복 Generator 호출 - planId: {}", plan.getId());
-                    yield weeklyGenerator.generateInstances(plan, monthStart, monthEnd);
-                }
-                case MONTHLY -> {
-                    log.debug("월간 반복 Generator 호출 - planId: {}", plan.getId());
-                    yield monthlyGenerator.generateInstances(plan, monthStart, monthEnd);
-                }
-                case YEARLY -> {
-                    log.debug("연간 반복 Generator 호출 - planId: {}", plan.getId());
-                    yield yearlyGenerator.generateInstances(plan, monthStart, monthEnd);
-                }
+                case WEEKLY -> weeklyGenerator.generateInstances(plan, monthStart, monthEnd);
+                case MONTHLY -> monthlyGenerator.generateInstances(plan, monthStart, monthEnd);
+                case YEARLY -> yearlyGenerator.generateInstances(plan, monthStart, monthEnd);
             };
             
         } catch (Exception e) {
@@ -86,10 +76,6 @@ public class RecurringPlanGenerator {
                     plan.getId(), recurring.getRepeatUnit(), e);
             return new ArrayList<>();
         }
-        
-        log.info("🎯 반복 인스턴스 생성 완료 - planId: {}, repeatUnit: {}, 인스턴스 수: {}", 
-                plan.getId(), recurring.getRepeatUnit(), instances.size());
-        
         return instances;
     }
 }

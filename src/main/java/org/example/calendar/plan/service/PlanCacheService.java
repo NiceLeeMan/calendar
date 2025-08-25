@@ -68,14 +68,11 @@ public class PlanCacheService {
             String cachedData = redisTemplate.opsForValue().get(cacheKey);
             
             if (cachedData == null) {
-                log.debug("Cache miss for monthly plans: userId={}, year={}, month={}", userId, year, month);
                 return null;
             }
-            
+
             List<PlanResponse> plans = objectMapper.readValue(cachedData, new TypeReference<List<PlanResponse>>() {});
-            log.debug("Cache hit for monthly plans: userId={}, year={}, month={}, count={}", 
-                    userId, year, month, plans.size());
-            
+
             return plans;
             
         } catch (JsonProcessingException e) {
@@ -102,10 +99,7 @@ public class PlanCacheService {
         try {
             String jsonData = objectMapper.writeValueAsString(plans);
             redisTemplate.opsForValue().set(cacheKey, jsonData, CACHE_TTL);
-            
-            log.debug("Cached monthly plans: userId={}, year={}, month={}, count={}", 
-                    userId, year, month, plans.size());
-            
+
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize monthly plans for cache: userId={}, year={}, month={}", 
                     userId, year, month, e);
@@ -122,9 +116,7 @@ public class PlanCacheService {
      */
     public void evictMonthlyPlansCache(Long userId, int year, int month) {
         String cacheKey = String.format(MONTHLY_PLANS_KEY, userId, year, month);
-        Boolean deleted = redisTemplate.delete(cacheKey);
-        
-        log.debug("Evicted monthly plans cache: userId={}, year={}, month={}, deleted={}", 
-                userId, year, month, deleted);
+        redisTemplate.delete(cacheKey);
+
     }
 }

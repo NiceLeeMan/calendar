@@ -63,7 +63,6 @@ public class EmailVerificationService {
      * @return String 생성된 인증번호 (로깅용)
      */
     public String sendVerificationCode(String email) {
-        logger.info("이메일 인증번호 발송 요청: email={}", email);
 
         try {
             // 1. 4자리 랜덤 인증번호 생성
@@ -76,7 +75,6 @@ public class EmailVerificationService {
             // 3. 이메일 전송
             sendVerificationEmail(email, verificationCode);
 
-            logger.info("이메일 인증번호 발송 완료: email={}, code={}", email, verificationCode);
             return verificationCode;
 
         } catch (Exception e) {
@@ -94,7 +92,6 @@ public class EmailVerificationService {
      * @throws EmailVerificationException 인증 실패 시
      */
     public boolean verifyCode(String email, String inputCode) {
-        logger.info("인증번호 검증 요청: email={}, inputCode={}", email, inputCode);
 
         // 1. Redis에서 저장된 인증번호 조회
         String redisKey = REDIS_KEY_PREFIX + email;
@@ -105,16 +102,12 @@ public class EmailVerificationService {
             logger.warn("인증번호 만료 또는 존재하지 않음: email={}", email);
             throw new EmailVerificationException("인증번호가 만료되었거나 존재하지 않습니다. 다시 요청해주세요.");
         }
-
         // 3. 인증번호 일치 여부 확인
         if (!storedCode.equals(inputCode)) {
-            logger.warn("인증번호 불일치: email={}, expected={}, actual={}", email, storedCode, inputCode);
             throw new EmailVerificationException("인증번호가 일치하지 않습니다.");
         }
-
         // 4. 인증 성공 시 Redis에서 삭제 (일회성)
         redisTemplate.delete(redisKey);
-        logger.info("인증번호 검증 성공: email={}", email);
 
         return true;
     }
@@ -143,7 +136,6 @@ public class EmailVerificationService {
         message.setText(createEmailContent(verificationCode));
 
         mailSender.send(message);
-        logger.info("인증 이메일 전송 완료: toEmail={}", toEmail);
     }
 
     /**
@@ -164,14 +156,4 @@ public class EmailVerificationService {
         );
     }
 
-    /**
-     * 특정 이메일의 인증번호 삭제 (취소 시 사용)
-     *
-     * @param email 이메일 주소
-     */
-    public void deleteVerificationCode(String email) {
-        String redisKey = REDIS_KEY_PREFIX + email;
-        redisTemplate.delete(redisKey);
-        logger.info("인증번호 삭제: email={}", email);
-    }
 }

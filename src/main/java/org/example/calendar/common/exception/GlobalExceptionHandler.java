@@ -83,8 +83,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-        logger.warn("Validation failed: {}", ex.getMessage());
-
         // 유효성 검증 실패 메시지 수집
         List<String> errors = ex.getBindingResult()
                 .getFieldErrors()
@@ -132,8 +130,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicateEmailException(
             DuplicateEmailException ex, HttpServletRequest request) {
 
-        logger.warn("Duplicate email: {}", ex.getMessage());
-
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
                 request.getRequestURI(),
@@ -154,8 +150,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateUserIdException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateUserIdException(
             DuplicateUserIdException ex, HttpServletRequest request) {
-
-        logger.warn("Duplicate user ID: {}", ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
@@ -178,8 +172,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicatePhoneException(
             DuplicatePhoneException ex, HttpServletRequest request) {
 
-        logger.warn("Duplicate phone: {}", ex.getMessage());
-
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
                 request.getRequestURI(),
@@ -200,8 +192,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
-
-        logger.warn("Illegal argument: {}", ex.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),

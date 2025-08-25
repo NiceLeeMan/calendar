@@ -64,10 +64,8 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일")
     })
     public ResponseEntity<String> sendVerificationCode(@RequestParam String email) {
-        log.info("이메일 인증번호 발송 요청: email={}", email);
 
         String message = userService.sendVerificationCode(email);
-
         return ResponseEntity.ok(message);
     }
 
@@ -86,10 +84,8 @@ public class UserController {
     public ResponseEntity<String> verifyEmailCode(
             @RequestParam String email,
             @RequestParam String code) {
-        log.info("이메일 인증번호 확인 요청: email={}", email);
 
         String message = userService.verifyEmailCode(email, code);
-
         return ResponseEntity.ok(message);
     }
 
@@ -107,10 +103,8 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "아이디 또는 이메일 중복")
     })
     public ResponseEntity<UserResponse> signup(@Valid @RequestBody SignupReq request) {
-        log.info("회원가입 요청: userId={}, email={}", request.getUserId(), request.getUserEmail());
 
         UserResponse userResponse = userService.signup(request);
-
         return ResponseEntity.status(201).body(userResponse);
     }
 
@@ -130,7 +124,6 @@ public class UserController {
     public ResponseEntity<UserResponse> login(
             @Valid @RequestBody SigninReq request,
             HttpServletResponse response) {
-        log.info("로그인 요청: userId={}", request.getUserId());
 
         // 1. 사용자 인증 및 정보 조회
         UserResponse userResponse = authService.authenticateUser(request);
@@ -141,9 +134,6 @@ public class UserController {
         // 3. JWT를 HttpOnly 쿠키로 설정
         Cookie jwtCookie = createJwtCookie(jwtToken);
         response.addCookie(jwtCookie);
-
-        log.info("로그인 성공 및 JWT 쿠키 설정 완료: userId={}", request.getUserId());
-
         return ResponseEntity.ok(userResponse);
     }
 
@@ -163,17 +153,12 @@ public class UserController {
             HttpServletResponse response) {
 
         String userId = userDetails.getUserId();
-        log.info("로그아웃 요청: userId={}", userId);
-
         // 1. 서버 측 로그아웃 처리 (필요 시 토큰 블랙리스트 등)
         String message = authService.logoutUser(userId);
 
         // 2. JWT 쿠키 삭제
         Cookie jwtCookie = clearJwtCookie();
         response.addCookie(jwtCookie);
-
-        log.info("로그아웃 완료 및 JWT 쿠키 삭제: userId={}", userId);
-
         return ResponseEntity.ok(message);
     }
 
@@ -194,11 +179,8 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         String userId = userDetails.getUserId();
-        log.info("내 정보 조회 요청: userId={}", userId);
-
         // JWT에서 추출한 사용자 ID로 정보 조회
         UserResponse userResponse = authService.getUserInfo(userId);
-
         return ResponseEntity.ok(userResponse);
     }
 
@@ -219,9 +201,6 @@ public class UserController {
 
         // SameSite 설정 (CSRF 방어) - 스프링 부트에서는 별도 설정 필요
         // cookie.setSameSite(Cookie.SameSite.STRICT); // Spring Boot 3.0+에서 사용 가능
-
-        log.debug("JWT 쿠키 생성: name={}, maxAge={}", cookie.getName(), cookie.getMaxAge());
-
         return cookie;
     }
 
@@ -236,9 +215,6 @@ public class UserController {
         cookie.setSecure(false);            // 개발환경: false, 운영환경: true
         cookie.setPath("/");
         cookie.setMaxAge(0);                // 즉시 삭제
-
-        log.debug("JWT 쿠키 삭제: name={}", cookie.getName());
-
         return cookie;
     }
 }

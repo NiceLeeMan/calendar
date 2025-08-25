@@ -53,12 +53,10 @@ public class PlanService {
      * 월별 계획 조회 (Cache-Aside 패턴)
      */
     public List<PlanResponse> getMonthlyPlans(Long userId, int year, int month) {
-        log.info("Getting monthly plans: userId={}, year={}, month={}", userId, year, month);
-        
+
         // 1. 캐시 조회
         List<PlanResponse> cachedPlans = planCacheService.getMonthlyPlansFromCache(userId, year, month);
         if (cachedPlans != null) {
-            log.debug("Cache hit for monthly plans: userId={}, count={}", userId, cachedPlans.size());
             return cachedPlans;
         }
         
@@ -84,8 +82,7 @@ public class PlanService {
         
         // 4. 캐시 저장
         planCacheService.cacheMonthlyPlans(userId, year, month, responses);
-        
-        log.info("Monthly plans loaded from DB: userId={}, count={}", userId, responses.size());
+
         return responses;
     }
 
@@ -94,8 +91,7 @@ public class PlanService {
      */
     @Transactional
     public PlanResponse createPlan(PlanCreateReq request, Long userId) {
-        log.info("Creating plan: userId={}, planName={}", userId, request.getPlanName());
-        
+
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
@@ -133,11 +129,10 @@ public class PlanService {
         // 알람 서비스 연동 (알람이 있는 경우만)
         if (!savedPlan.getAlarms().isEmpty()) {
             // TODO: AlarmService.scheduleAlarms() 호출
-            log.info("Alarms scheduled for plan: planId={}, alarmCount={}", 
+            log.info("Alarms scheduled for plan: planId={}, alarmCount={}",
                     savedPlan.getId(), savedPlan.getAlarms().size());
         }
-        
-        log.info("Plan created successfully: planId={}", savedPlan.getId());
+
         return planMapper.toPlanResponse(savedPlan);
     }
 
@@ -146,8 +141,7 @@ public class PlanService {
      */
     @Transactional
     public PlanResponse updatePlan(Long planId, PlanUpdateReq request, Long userId) {
-        log.info("Updating plan: planId={}, userId={}", planId, userId);
-        
+
         // 권한 확인 및 조회
         Plan plan = planRepository.findByIdAndUserId(planId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("계획을 찾을 수 없거나 수정 권한이 없습니다"));
@@ -160,7 +154,6 @@ public class PlanService {
             // repeatWeekdays 컬렉션을 강제로 초기화 (LAZY 로딩 문제 해결)
             plan.getRecurringInfo().getRepeatWeekdays().size();
             plan.getRecurringInfo().getRepeatWeeksOfMonth().size();
-            log.debug("RecurringInfo initialized - weekdays: {}", plan.getRecurringInfo().getRepeatWeekdays());
         }
 
         // 계획 업데이트 (헬퍼 사용)
@@ -172,8 +165,7 @@ public class PlanService {
         // 캐시 무효화 (기존 날짜 + 새 날짜)
         evictRelatedCache(userId, oldStartDate, oldEndDate);
         evictRelatedCache(userId, updatedPlan.getStartDate(), updatedPlan.getEndDate());
-        
-        log.info("Plan updated successfully: planId={}", planId);
+
         return planMapper.toPlanResponse(updatedPlan);
     }
 
@@ -182,7 +174,6 @@ public class PlanService {
      */
     @Transactional
     public void deletePlan(Long planId, Long userId) {
-        log.info("Deleting plan: planId={}, userId={}", planId, userId);
         
         // 권한 확인 및 조회
         Plan plan = planRepository.findByIdAndUserId(planId, userId)
@@ -196,8 +187,8 @@ public class PlanService {
         
         // 캐시 무효화
         evictRelatedCache(userId, startDate, endDate);
-        
-        log.info("Plan deleted successfully: planId={}", planId);
+
+
     }
 
     /**
@@ -210,8 +201,6 @@ public class PlanService {
         
         while (!current.isAfter(endMonth)) {
             planCacheService.evictMonthlyPlansCache(userId, current.getYear(), current.getMonthValue());
-            log.debug("Cache evicted for month: userId={}, year={}, month={}", 
-                    userId, current.getYear(), current.getMonthValue());
             current = current.plusMonths(1);
         }
     }

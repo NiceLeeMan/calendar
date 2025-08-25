@@ -60,16 +60,11 @@ public class AuthService {
      * @throws InvalidPasswordException 비밀번호가 일치하지 않는 경우
      */
     public UserResponse authenticateUser(SigninReq request) {
-        log.info("로그인 인증 시도: userId={}", request.getUserId());
-
         // 1. 사용자 존재 여부 확인 (UserService 위임)
         User user = userService.getUserByUserId(request.getUserId());
 
         // 2. 비밀번호 검증
         validatePassword(request.getUserPassword(), user.getPassword(), request.getUserId());
-
-        // 3. 로그인 성공 로깅
-        log.info("로그인 인증 성공: userId={}, name={}", user.getUserId(), user.getName());
 
         // 4. 사용자 정보 반환 (비밀번호 제외)
         return convertToUserResponse(user);
@@ -82,18 +77,11 @@ public class AuthService {
      * @return String 생성된 JWT 토큰
      */
     public String generateJwtToken(SigninReq request) {
-        log.debug("JWT 토큰 생성 요청: userId={}", request.getUserId());
-
         // 사용자 정보 조회 (토큰 생성을 위해 필요)
         User user = userService.getUserByUserId(request.getUserId());
 
         // JWT 토큰 생성
-        String token = jwtTokenProvider.generateToken(user);
-
-        log.info("JWT 토큰 생성 완료: userId={}, tokenLength={}",
-                user.getUserId(), token.length());
-
-        return token;
+        return jwtTokenProvider.generateToken(user);
     }
 
     /**
@@ -106,17 +94,6 @@ public class AuthService {
      * @return String 로그아웃 완료 메시지
      */
     public String logoutUser(String userId) {
-        log.info("로그아웃 처리 시작: userId={}", userId);
-
-        // 현재는 서버 측에서 특별한 처리 없음
-        // JWT는 Stateless하므로 쿠키 삭제만으로 로그아웃 처리
-        // 필요 시 향후 확장:
-        // - JWT 토큰 블랙리스트 추가
-        // - 리프레시 토큰 무효화
-        // - 로그아웃 이력 저장
-        // - 다중 디바이스 로그아웃 처리
-
-        log.info("로그아웃 처리 완료: userId={}", userId);
         return "로그아웃이 완료되었습니다.";
     }
 
@@ -128,8 +105,6 @@ public class AuthService {
      * @throws UserNotFoundException 사용자를 찾을 수 없는 경우
      */
     public UserResponse getUserInfo(String userId) {
-        log.debug("JWT 기반 사용자 정보 조회: userId={}", userId);
-
         // UserService를 통해 사용자 정보 조회
         return userService.findByUserId(userId);
     }
@@ -143,7 +118,6 @@ public class AuthService {
      */
     @Deprecated
     public UserResponse signIn(SigninReq request) {
-        log.warn("Deprecated method signIn() called. Use authenticateUser() instead.");
         return authenticateUser(request);
     }
 
@@ -154,7 +128,6 @@ public class AuthService {
      */
     @Deprecated
     public String logout(String userId) {
-        log.warn("Deprecated method logout() called. Use logoutUser() instead.");
         return logoutUser(userId);
     }
 
@@ -165,7 +138,6 @@ public class AuthService {
      */
     @Deprecated
     public UserResponse getAuthenticatedUser(String userId) {
-        log.warn("Deprecated method getAuthenticatedUser() called. Use getUserInfo() instead.");
         return getUserInfo(userId);
     }
 
@@ -181,10 +153,8 @@ public class AuthService {
      */
     private void validatePassword(String rawPassword, String encodedPassword, String userId) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            log.warn("비밀번호 불일치: userId={}", userId);
             throw new InvalidPasswordException("비밀번호가 일치하지 않습니다");
         }
-        log.debug("비밀번호 검증 성공: userId={}", userId);
     }
 
     /**

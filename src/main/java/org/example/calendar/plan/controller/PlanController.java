@@ -93,10 +93,6 @@ public class PlanController {
         }
         
         List<PlanResponse> plans = planService.getMonthlyPlans(userId, year, month);
-        
-        log.info("월별 계획 조회 완료: userId={}, year={}, month={}, count={}", 
-                userId, year, month, plans.size());
-        
         return ResponseEntity.ok(plans);
     }
 
@@ -126,12 +122,8 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("계획 추가 요청: userId={}, request={}", userId, request.toString());
-        
+
         PlanResponse createdPlan = planService.createPlan(request, userId);
-        
-        log.info("계획 추가 완료: userId={}, planId={}", userId, createdPlan.getId());
-        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPlan);
     }
 
@@ -172,12 +164,8 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("계획 수정 요청: userId={}, request={}", userId, request.toString());
 
         PlanResponse updatedPlan = planService.updatePlan(planId, request, userId);
-        
-        log.info("계획 수정 완료: userId={}, planId={}", userId, planId);
-        
         return ResponseEntity.ok(updatedPlan);
     }
 
@@ -209,12 +197,8 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         
         Long userId = userDetails.getUser().getId();
-        log.info("계획 삭제 요청: userId={}, planId={}", userId, planId);
-        
+
         planService.deletePlan(planId, userId);
-        
-        log.info("계획 삭제 완료: userId={}, planId={}", userId, planId);
-        
         return ResponseEntity.ok().build();
 }
 }

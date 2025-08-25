@@ -61,8 +61,7 @@ public class MonthlyRecurringGenerator implements RecurringGenerator {
         else {
             log.warn("월간 반복 설정이 올바르지 않습니다. planId: {}", plan.getId());
         }
-        
-        log.info("🏁 월간 반복 인스턴스 생성 완료: 총 {}개 인스턴스 생성 (planId: {})", instances.size(), plan.getId());
+
         return instances;
     }
 
@@ -92,7 +91,6 @@ public class MonthlyRecurringGenerator implements RecurringGenerator {
             if (RecurringGeneratorUtils.isValidInstance(plan, instanceDate, monthStart, monthEnd)) {
                 PlanResponse instance = RecurringGeneratorUtils.createPlanInstance(plan, instanceDate, planMapper);
                 instances.add(instance);
-                log.debug("월간 반복 인스턴스 생성 (날짜 방식): {} (목표: {}일)", instanceDate, targetDay);
             }
             
             currentMonth = currentMonth.plusMonths(recurring.getRepeatInterval());
@@ -127,8 +125,6 @@ public class MonthlyRecurringGenerator implements RecurringGenerator {
                     if (instanceDate != null && RecurringGeneratorUtils.isValidInstance(plan, instanceDate, monthStart, monthEnd)) {
                         PlanResponse instance = RecurringGeneratorUtils.createPlanInstance(plan, instanceDate, planMapper);
                         instances.add(instance);
-                        log.debug("월간 반복 인스턴스 생성 (주차 방식): {} ({}째주 {})", 
-                                instanceDate, weekOfMonth, dayOfWeek);
                     }
                 }
             }

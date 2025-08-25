@@ -105,7 +105,6 @@ public class PlanUpdateHelper {
      * 기본 필드 업데이트
      */
     private void updateBasicFields(Plan plan, PlanUpdateReq request) {
-        log.info("기본 필드 업데이트 실행");
         if (request.getPlanName() != null) plan.setPlanName(request.getPlanName());
         if (request.getPlanContent() != null) plan.setPlanContent(request.getPlanContent());
         if (request.getStartDate() != null) {
@@ -133,15 +132,10 @@ public class PlanUpdateHelper {
      * 반복 필드 업데이트
      */
     private void updateRecurringFields(Plan plan, PlanUpdateReq request, boolean originalIsRecurring) {
-        log.info("반복 필드 업데이트 실행");
-        
-        // 전환 타입 결정 (원본 상태 기준)
+
         RecurringTransitionType transitionType = determineTransitionType(originalIsRecurring, request);
-        log.info("반복 설정 전환 타입: {}", transitionType);
-        
         switch (transitionType) {
             case SINGLE_TO_SINGLE:
-                log.info("단일 계획 유지 (반복 관련 처리 없음)");
                 break;
             case SINGLE_TO_RECURRING:
                 handleSingleToRecurring(plan, request);
@@ -153,7 +147,6 @@ public class PlanUpdateHelper {
                 handleRecurringUpdate(plan, request);
                 break;
             case NO_CHANGE:
-                log.info("반복 설정 변경 없음");
                 break;
         }
     }
@@ -162,7 +155,6 @@ public class PlanUpdateHelper {
      * 알람 필드 업데이트
      */
     private void updateAlarmFields(Plan plan, PlanUpdateReq request) {
-        log.info("알람 필드 업데이트 실행");
         Set<PlanAlarm> newAlarms = planMapper.toPlanAlarms(plan, request.getAlarms());
         plan.updateAlarms(newAlarms);
     }
@@ -174,9 +166,6 @@ public class PlanUpdateHelper {
      */
     private RecurringTransitionType determineTransitionType(boolean originalIsRecurring, PlanUpdateReq request) {
         Boolean newRecurringStatus = request.getIsRecurring();
-        
-        log.info("전환 타입 결정 - 원본 상태: {}, 요청 상태: {}", originalIsRecurring, newRecurringStatus);
-        
         // isRecurring 필드 변경이 없으면 현재 상태 유지
         if (newRecurringStatus == null) {
             return RecurringTransitionType.NO_CHANGE;
@@ -197,10 +186,8 @@ public class PlanUpdateHelper {
      * 단일 → 반복 전환 처리
      */
     private void handleSingleToRecurring(Plan plan, PlanUpdateReq request) {
-        log.info("단일 → 반복 전환 처리");
         if (request.getRecurringPlan() != null) {
             plan.setRecurringInfo(planMapper.toRecurringInfo(request.getRecurringPlan(), plan.getStartDate(), plan.getEndDate()));
-            log.info("새로운 반복정보 생성 완료");
         } else {
             log.warn("반복 설정 요청이지만 recurringPlan 데이터가 없음");
         }
@@ -210,31 +197,23 @@ public class PlanUpdateHelper {
      * 반복 → 단일 전환 처리
      */
     private void handleRecurringToSingle(Plan plan) {
-        log.info("반복 → 단일 전환 처리");
-        
         if (plan.getRecurringInfo() != null) {
             Long recurringInfoId = plan.getRecurringInfo().getId();
-            log.info("RecurringInfo ID: {} 관련 데이터 완전 삭제 시작", recurringInfoId);
-            
+
             // 1. @ElementCollection 데이터 명시적 삭제 (FK 참조 제거)
             deleteAllElementCollectionData(recurringInfoId);
-            
             // 2. Plan의 recurringInfo 참조 제거 (orphanRemoval 동작)
             plan.setRecurringInfo(null);
-            
-            log.info("RecurringInfo ID: {} 완전 삭제 완료", recurringInfoId);
+
         } else {
             log.info("RecurringInfo가 이미 null - 삭제할 데이터 없음");
         }
-        
-        log.info("반복 → 단일 전환 처리 완료");
     }
     
     /**
      * 반복 → 반복 수정 처리
      */
     private void handleRecurringUpdate(Plan plan, PlanUpdateReq request) {
-        log.info("반복 → 반복 수정 처리");
         if (request.getRecurringPlan() != null) {
             // 기존 반복정보와 비교하여 실제 변경사항이 있는지 확인
             if (isRecurringInfoChanged(plan.getRecurringInfo(), request.getRecurringPlan())) {
@@ -251,7 +230,7 @@ public class PlanUpdateHelper {
      * 기존 반복정보 업데이트
      */
     private void updateExistingRecurringInfo(Plan plan, PlanUpdateReq request) {
-        log.info("기존 반복정보 업데이트");
+
         var existing = plan.getRecurringInfo();
         var requestInfo = request.getRecurringPlan();
         
@@ -259,12 +238,10 @@ public class PlanUpdateHelper {
         boolean repeatUnitChanged = !existing.getRepeatUnit().equals(requestInfo.getRepeatUnit());
         
         if (repeatUnitChanged) {
-            log.info("RepeatUnit 변경: {} -> {}", existing.getRepeatUnit(), requestInfo.getRepeatUnit());
             // 기존 RepeatUnit의 데이터 삭제 후 새로운 RepeatUnit으로 재생성
             deleteExistingRecurringData(existing.getId(), existing.getRepeatUnit());
             recreateCollectionInPersistenceContext(existing, requestInfo.getRepeatUnit());
         } else {
-            log.info("RepeatUnit 동일 - {} 타입 내에서 데이터 변경", existing.getRepeatUnit());
             // 같은 RepeatUnit 내에서 데이터만 변경
             deleteExistingRecurringData(existing.getId(), existing.getRepeatUnit());
             recreateCollectionInPersistenceContext(existing, existing.getRepeatUnit());
@@ -280,11 +257,9 @@ public class PlanUpdateHelper {
     private void deleteExistingRecurringData(Long recurringInfoId, org.example.calendar.plan.enums.RepeatUnit repeatUnit) {
         switch (repeatUnit) {
             case WEEKLY:
-                log.info("기존 요일 데이터 삭제");
                 recurringInfoRepository.deleteWeekdaysByRecurringInfoId(recurringInfoId);
                 break;
             case MONTHLY:
-                log.info("기존 월간 반복 데이터 삭제");
                 recurringInfoRepository.deleteWeeksOfMonthByRecurringInfoId(recurringInfoId);
                 break;
             // DAILY, YEARLY는 ElementCollection 사용 안함
@@ -301,12 +276,10 @@ public class PlanUpdateHelper {
             case WEEKLY:
                 // 기존 컬렉션 참조를 끊고 새로운 HashSet으로 교체
                 existing.setRepeatWeekdays(new HashSet<>());
-                log.info("새로운 weekdays 컬렉션으로 교체");
                 break;
             case MONTHLY:
                 // 기존 컬렉션 참조를 끊고 새로운 HashSet으로 교체
                 existing.setRepeatWeeksOfMonth(new HashSet<>());
-                log.info("새로운 weeksOfMonth 컬렉션으로 교체");
                 break;
         }
     }
@@ -317,19 +290,11 @@ public class PlanUpdateHelper {
      * 모든 @ElementCollection 데이터 삭제
      */
     private void deleteAllElementCollectionData(Long recurringInfoId) {
-        log.info("@ElementCollection 데이터 전체 삭제 시작");
-        
         // 각 삭제 쿼리 후 즉시 flush
         recurringInfoRepository.deleteWeekdaysByRecurringInfoId(recurringInfoId);
-        log.info("weekdays 삭제 완료 - recurringInfoId: {}", recurringInfoId);
-        
         recurringInfoRepository.deleteWeeksOfMonthByRecurringInfoId(recurringInfoId);
-        log.info("weeksOfMonth 삭제 완료 - recurringInfoId: {}", recurringInfoId);
-        
         recurringInfoRepository.deleteExceptionsByRecurringInfoId(recurringInfoId);
-        log.info("exceptions 삭제 완료 - recurringInfoId: {}", recurringInfoId);
-        
-        log.info("@ElementCollection 데이터 전체 삭제 완료");
+
     }
 
     /**
@@ -339,13 +304,11 @@ public class PlanUpdateHelper {
                                          org.example.calendar.plan.dto.common.RecurringReqInfo request) {
         // 반복 단위 변경 확인
         if (!existing.getRepeatUnit().equals(request.getRepeatUnit())) {
-            log.info("반복 단위 변경: {} -> {}", existing.getRepeatUnit(), request.getRepeatUnit());
             return true;
         }
         
         // 반복 간격 변경 확인
         if (!existing.getRepeatInterval().equals(request.getRepeatInterval())) {
-            log.info("반복 간격 변경: {} -> {}", existing.getRepeatInterval(), request.getRepeatInterval());
             return true;
         }
         
@@ -362,9 +325,6 @@ public class PlanUpdateHelper {
             case WEEKLY:
                 if (request.getRepeatWeekdays() != null) {
                     boolean changed = !existing.getRepeatWeekdays().equals(request.getRepeatWeekdays());
-                    if (changed) {
-                        log.info("주간 요일 변경: {} -> {}", existing.getRepeatWeekdays(), request.getRepeatWeekdays());
-                    }
                     return changed;
                 }
                 break;
@@ -372,28 +332,18 @@ public class PlanUpdateHelper {
                 // 특정 날짜 방식
                 if (request.getRepeatDayOfMonth() != null) {
                     boolean changed = !Objects.equals(existing.getRepeatDayOfMonth(), request.getRepeatDayOfMonth());
-                    if (changed) {
-                        log.info("월간 날짜 변경: {} -> {}", existing.getRepeatDayOfMonth(), request.getRepeatDayOfMonth());
-                    }
                     return changed;
                 }
                 // 주차 방식
                 if (request.getRepeatWeeksOfMonth() != null) {
                     boolean changed = !existing.getRepeatWeeksOfMonth().equals(request.getRepeatWeeksOfMonth());
-                    if (changed) {
-                        log.info("월간 주차 변경: {} -> {}", existing.getRepeatWeeksOfMonth(), request.getRepeatWeeksOfMonth());
-                    }
                     return changed;
                 }
                 break;
             case YEARLY:
                 boolean monthChanged = !Objects.equals(existing.getRepeatMonth(), request.getRepeatMonth());
                 boolean dayChanged = !Objects.equals(existing.getRepeatDayOfYear(), request.getRepeatDayOfYear());
-                if (monthChanged || dayChanged) {
-                    log.info("연간 설정 변경 - 월: {} -> {}, 일: {} -> {}", 
-                            existing.getRepeatMonth(), request.getRepeatMonth(),
-                            existing.getRepeatDayOfYear(), request.getRepeatDayOfYear());
-                }
+
                 return monthChanged || dayChanged;
         }
         

@@ -51,8 +51,7 @@ public class YearlyRecurringGenerator implements RecurringGenerator {
             
             generateYearlyInstance(plan, monthStart, monthEnd, instances);
         }
-        
-        log.info("🏁 연간 반복 인스턴스 생성 완료: 총 {}개 인스턴스 생성 (planId: {})", instances.size(), plan.getId());
+
         return instances;
     }
 
@@ -82,7 +81,6 @@ public class YearlyRecurringGenerator implements RecurringGenerator {
             if (instanceDate != null && RecurringGeneratorUtils.isValidInstance(plan, instanceDate, monthStart, monthEnd)) {
                 PlanResponse instance = RecurringGeneratorUtils.createPlanInstance(plan, instanceDate, planMapper);
                 instances.add(instance);
-                log.debug("연간 반복 인스턴스 생성: {} ({}월 {}일)", instanceDate, targetMonth, targetDay);
             }
         }
     }

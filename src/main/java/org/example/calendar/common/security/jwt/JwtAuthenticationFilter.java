@@ -44,12 +44,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = getTokenFromCookie(request);
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-                log.info("토큰 검증 성공 - 인증 설정 시작");
-
                 // JWT에서 사용자 정보 추출
                 String userId = jwtTokenProvider.getUserIdFromToken(token);
-                log.info("토큰에서 추출된 사용자 ID: {}", userId);
-
                 // UserDetails 로드
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
 
@@ -63,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("인증 설정 완료: {}", userId);
             }
 
         } catch (Exception e) {
@@ -111,13 +106,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/actuator");
-
-
-        if (shouldNotFilter) {
-            log.info("JWT 필터를 건너뜀: {}", path);
-        } else {
-            log.info("JWT 필터를 실행함: {}", path);
-        }
 
         return shouldNotFilter;
     }

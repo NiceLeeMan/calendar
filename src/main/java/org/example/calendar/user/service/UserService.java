@@ -62,15 +62,11 @@ public class UserService {
      * @throws DuplicateEmailException 이메일 중복 시
      */
     public String sendVerificationCode(String email) {
-        logger.info("이메일 인증번호 발송 요청: email={}", email);
-
         // 1. 이메일 중복 검증
         validateEmailNotDuplicate(email);
 
         // 2. 인증번호 발송
         emailVerificationService.sendVerificationCode(email);
-
-        logger.info("이메일 인증번호 발송 완료: email={}", email);
         return "인증번호가 이메일로 발송되었습니다. 5분 이내에 입력해주세요.";
     }
 
@@ -82,12 +78,8 @@ public class UserService {
      * @return String 성공 메시지
      */
     public String verifyEmailCode(String email, String verificationCode) {
-        logger.info("이메일 인증번호 확인 요청: email={}", email);
-
         // 인증번호 검증 (성공 시 Redis에서 자동 삭제)
         emailVerificationService.verifyCode(email, verificationCode);
-
-        logger.info("이메일 인증 완료: email={}", email);
         return "이메일 인증이 완료되었습니다. 이제 회원가입을 진행해주세요.";
     }
 
@@ -101,7 +93,6 @@ public class UserService {
      */
     @Transactional
     public UserResponse signup(SignupReq req) {
-        logger.info("회원가입 처리 시작: userId={}, email={}", req.getUserId(), req.getUserEmail());
 
         // 1. 중복 검증 (이중 체크)
         validateUserIdNotDuplicate(req.getUserId());
@@ -116,9 +107,6 @@ public class UserService {
 
         // 4. 데이터베이스 저장
         User savedUser = userRepository.save(user);
-
-        logger.info("회원가입 완료: userId={}, id={}", savedUser.getUserId(), savedUser.getId());
-
         // 5. 응답 DTO 변환
         return convertToUserResponse(savedUser);
     }
@@ -157,7 +145,6 @@ public class UserService {
      */
     private void validateUserIdNotDuplicate(String userId) {
         if (userRepository.existsByUserId(userId)) {
-            logger.warn("사용자 ID 중복: {}", userId);
             throw new DuplicateUserIdException("이미 사용 중인 아이디입니다: " + userId);
         }
     }
@@ -170,7 +157,6 @@ public class UserService {
      */
     private void validateEmailNotDuplicate(String email) {
         if (userRepository.existsByEmail(email)) {
-            logger.warn("이메일 중복: {}", email);
             throw new DuplicateEmailException("이미 사용 중인 이메일입니다: " + email);
         }
     }
@@ -183,7 +169,6 @@ public class UserService {
      */
     private void validatePhoneNotDuplicate(String phoneNumber) {
         if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            logger.warn("전화번호 중복: {}", phoneNumber);
             throw new DuplicatePhoneException("이미 사용 중인 전화번호입니다: " + phoneNumber);
         }
     }
