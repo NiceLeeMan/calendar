@@ -2,9 +2,11 @@ package org.example.calendar.plan.service.helper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.calendar.plan.dto.common.RecurringReqInfo;
 import org.example.calendar.plan.dto.request.PlanUpdateReq;
 import org.example.calendar.plan.entity.Plan;
 import org.example.calendar.plan.entity.PlanAlarm;
+import org.example.calendar.plan.entity.RecurringInfo;
 import org.example.calendar.plan.mapper.PlanMapper;
 import org.example.calendar.plan.repository.RecurringInfoRepository;
 import org.springframework.stereotype.Component;
@@ -300,8 +302,8 @@ public class PlanUpdateHelper {
     /**
      * 반복정보가 실제로 변경되었는지 확인
      */
-    private boolean isRecurringInfoChanged(org.example.calendar.plan.entity.RecurringInfo existing, 
-                                         org.example.calendar.plan.dto.common.RecurringReqInfo request) {
+    private boolean isRecurringInfoChanged(RecurringInfo existing,
+                                           RecurringReqInfo request) {
         // 반복 단위 변경 확인
         if (!existing.getRepeatUnit().equals(request.getRepeatUnit())) {
             return true;
@@ -309,6 +311,11 @@ public class PlanUpdateHelper {
         
         // 반복 간격 변경 확인
         if (!existing.getRepeatInterval().equals(request.getRepeatInterval())) {
+            return true;
+        }
+
+        //반복 요일 변경 확인
+        if(!existing.getRepeatWeekdays().equals(request.getRepeatWeekdays())) {
             return true;
         }
         
@@ -319,8 +326,8 @@ public class PlanUpdateHelper {
     /**
      * 반복 타입별 세부 설정 변경 확인
      */
-    private boolean isDetailedSettingsChanged(org.example.calendar.plan.entity.RecurringInfo existing, 
-                                            org.example.calendar.plan.dto.common.RecurringReqInfo request) {
+    private boolean isDetailedSettingsChanged(RecurringInfo existing,
+                                            RecurringReqInfo request) {
         switch (request.getRepeatUnit()) {
             case WEEKLY:
                 if (request.getRepeatWeekdays() != null) {
