@@ -22,15 +22,13 @@ export interface SigninRequest {
   userPassword: string   // 비밀번호
 }
 
-// 사용자 응답 - UserResponse.java와 매칭 (백엔드에서 확인 필요)
+// 사용자 응답 - UserResponse.java와 매칭
 export interface UserResponse {
-  id: number             // 사용자 고유 ID
-  userName: string       // 사용자 실명
   userId: string         // 사용자 아이디
+  userName: string       // 사용자 실명
   userEmail: string      // 이메일 주소
   userPhoneNumber: string // 휴대폰 번호
   createdAt: string      // 생성일시 (ISO 8601)
-  updatedAt: string      // 수정일시 (ISO 8601)
 }
 
 // 이메일 인증 관련
