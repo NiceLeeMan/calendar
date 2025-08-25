@@ -7,6 +7,10 @@ interface AlarmSectionProps {
 }
 
 const AlarmSection = ({ formData, addAlarm, removeAlarm, updateAlarm }: AlarmSectionProps) => {
+  // 현재 날짜 확인
+  const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD 형태
+  const isPastDate = formData.startDate && formData.startDate < today
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -14,7 +18,12 @@ const AlarmSection = ({ formData, addAlarm, removeAlarm, updateAlarm }: AlarmSec
         <button
           type="button"
           onClick={addAlarm}
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+          disabled={isPastDate}
+          className={`text-sm font-medium flex items-center ${
+            isPastDate 
+              ? 'text-gray-400 cursor-not-allowed' 
+              : 'text-blue-600 hover:text-blue-800'
+          }`}
         >
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -23,7 +32,18 @@ const AlarmSection = ({ formData, addAlarm, removeAlarm, updateAlarm }: AlarmSec
         </button>
       </div>
 
-      {formData.alarms.length > 0 && (
+      {isPastDate && (
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800 flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            과거 날짜 계획에는 알람을 설정할 수 없습니다.
+          </p>
+        </div>
+      )}
+
+      {!isPastDate && formData.alarms.length > 0 && (
         <div className="space-y-3">
           {formData.alarms.map((alarm: any, index: number) => (
             <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center gap-3">

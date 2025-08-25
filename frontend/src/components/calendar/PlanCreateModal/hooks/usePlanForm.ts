@@ -101,7 +101,19 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
 
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => {
+      const newFormData = { ...prev, [field]: value }
+      
+      // 시작 날짜가 과거 날짜로 변경되면 알람을 제거
+      if (field === 'startDate') {
+        const today = new Date().toISOString().split('T')[0]
+        if (value && value < today) {
+          newFormData.alarms = []
+        }
+      }
+      
+      return newFormData
+    })
   }
 
   const handleRecurringChange = (field: string, value: any) => {
@@ -112,6 +124,12 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
   }
 
   const addAlarm = () => {
+    // 과거 날짜인 경우 알람 추가 불가
+    const today = new Date().toISOString().split('T')[0]
+    if (formData.startDate && formData.startDate < today) {
+      return
+    }
+    
     setFormData(prev => ({
       ...prev,
       alarms: [...prev.alarms, { alarmDate: '', alarmTime: '09:00' }]
@@ -119,6 +137,12 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
   }
 
   const removeAlarm = (index: number) => {
+    // 과거 날짜인 경우 알람 제거 불가
+    const today = new Date().toISOString().split('T')[0]
+    if (formData.startDate && formData.startDate < today) {
+      return
+    }
+    
     setFormData(prev => ({
       ...prev,
       alarms: prev.alarms.filter((_, i) => i !== index)
@@ -126,6 +150,12 @@ export const usePlanForm = (selectedDate?: Date, editPlan?: PlanResponse | null)
   }
 
   const updateAlarm = (index: number, field: string, value: string) => {
+    // 과거 날짜인 경우 알람 업데이트 불가
+    const today = new Date().toISOString().split('T')[0]
+    if (formData.startDate && formData.startDate < today) {
+      return
+    }
+    
     setFormData(prev => ({
       ...prev,
       alarms: prev.alarms.map((alarm, i) => 
