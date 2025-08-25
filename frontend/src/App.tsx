@@ -4,6 +4,8 @@ import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import MainPage from './pages/MainPage'
 import CalendarPage from './pages/CalendarPage'
+import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
 import { getMyInfo } from './api'
 
 // 인증 상태를 확인하는 컴포넌트
@@ -81,6 +83,12 @@ function AppRoutes() {
           </AuthWrapper>
         } 
       />
+      
+      {/* 약관 페이지 (인증 불필요) */}
+      <Route path="/terms" element={<TermsPage />} />
+      
+      {/* 개인정보 처리방침 페이지 (인증 불필요) */}
+      <Route path="/privacy" element={<PrivacyPage />} />
       
       {/* 잘못된 경로는 메인 페이지로 리다이렉트 */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -258,8 +258,7 @@ const MainPage = () => {
                 {/* 이용약관 */}
                 <button
                   onClick={() => {
-                    // TODO: 이용약관 페이지로 이동
-                    console.log('이용약관 페이지로 이동')
+                    navigate('/terms')
                     setIsSidebarOpen(false)
                   }}
                   className="w-full flex items-center p-2 sm:p-3 rounded-lg text-left hover:bg-gray-50/80 transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-gray-400"
@@ -302,8 +301,7 @@ const MainPage = () => {
                 {/* 개인정보 처리방침 */}
                 <button
                   onClick={() => {
-                    // TODO: 개인정보 처리방침 페이지로 이동
-                    console.log('개인정보 처리방침 페이지로 이동')
+                    navigate('/privacy')
                     setIsSidebarOpen(false)
                   }}
                   className="w-full flex items-center p-2 sm:p-3 rounded-lg text-left hover:bg-gray-50/80 transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-gray-400"
