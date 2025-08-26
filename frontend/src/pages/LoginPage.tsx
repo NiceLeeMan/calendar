@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import LoginForm from '../components/auth/LoginForm'
+import LoginForm from '../components/auth/LoginForm/LoginForm.tsx'
 
 const LoginPage = () => {
   const navigate = useNavigate()

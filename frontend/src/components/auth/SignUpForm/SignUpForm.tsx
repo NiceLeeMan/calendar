@@ -49,7 +49,7 @@ const SignUpForm = ({ onNavigateToLogin }: SignUpFormProps) => {
       clearFieldError(field)
     }
     
-    // 이메일 변경 시 인증 상태 초기화
+    // 이메일 변경 시 인증 상태 초기화 (유효성 검증은 EmailVerificationSection에서 처리)
     if (field === 'email' && emailState.verificationSent) {
       resetEmailVerification()
     }
