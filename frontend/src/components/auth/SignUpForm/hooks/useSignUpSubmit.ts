@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { signup } from '../../../../api'
-import { getErrorMessage, getFieldErrors } from '../../../../utils/errorMessages'
+import { useAuthError} from '../../../../errors'
 import type { SignupFormData, SignupRequest } from '../../../../types'
 
 export const useSignUpSubmit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  
+  const { handleSignupError, isEmailDuplicate, isUserIdDuplicate, isPhoneDuplicate } = useAuthError()
 
   const handleSubmit = async (
     formData: SignupFormData,
@@ -45,8 +47,8 @@ export const useSignUpSubmit = () => {
       }, 1500)
 
     } catch (error) {
-      // 필드별 에러 처리
-      const fieldErrorsFromResponse = getFieldErrors(error)
+      // 새로운 에러 시스템으로 처리
+      const fieldErrorsFromResponse = handleSignupError(error)
       
       if (Object.keys(fieldErrorsFromResponse).length > 0) {
         // 필드 매핑 (백엔드 필드명 -> 프론트엔드 필드명)
@@ -55,17 +57,29 @@ export const useSignUpSubmit = () => {
         if (fieldErrorsFromResponse['userId']) {
           mappedErrors['username'] = fieldErrorsFromResponse['userId']
         }
-        if (fieldErrorsFromResponse['email']) {
-          mappedErrors['email'] = fieldErrorsFromResponse['email']
+        if (fieldErrorsFromResponse['userEmail']) {
+          mappedErrors['email'] = fieldErrorsFromResponse['userEmail']
         }
-        if (fieldErrorsFromResponse['phoneNumber']) {
-          mappedErrors['phone'] = fieldErrorsFromResponse['phoneNumber']
+        if (fieldErrorsFromResponse['userPhoneNumber']) {
+          mappedErrors['phone'] = fieldErrorsFromResponse['userPhoneNumber']
+        }
+        if (fieldErrorsFromResponse['userName']) {
+          mappedErrors['name'] = fieldErrorsFromResponse['userName']
+        }
+        if (fieldErrorsFromResponse['userPassword']) {
+          mappedErrors['password'] = fieldErrorsFromResponse['userPassword']
         }
 
         onFieldErrors(mappedErrors)
       } else {
-        // 필드별 에러가 없으면 전체 에러 메시지 표시
-        setError(getErrorMessage(error))
+        // 필드별 에러가 없으면 error state에 메시지 설정 (이미 토스트로 표시됨)
+        if (isEmailDuplicate(error)) {
+          onFieldErrors({ email: '이미 가입된 이메일 주소입니다.' })
+        } else if (isUserIdDuplicate(error)) {
+          onFieldErrors({ username: '이미 사용중인 아이디입니다.' })
+        } else if (isPhoneDuplicate(error)) {
+          onFieldErrors({ phone: '이미 등록된 전화번호입니다.' })
+        }
       }
     } finally {
       setIsSubmitting(false)
