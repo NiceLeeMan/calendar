@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { login } from '../../../../api'
+import { useAuthError} from '../../../../errors'
 import type { LoginFormData, SigninRequest } from '../../../../types'
 
 export const useLoginSubmit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  
+  const { handleLoginError } = useAuthError()
 
   const handleSubmit = async (
     formData: LoginFormData,
@@ -26,6 +29,9 @@ export const useLoginSubmit = () => {
       setSuccess(true)
       console.log('로그인 성공:', userResponse)
       
+      // 성공 토스트 표시
+      // 성공은 에러 시스템이 아닌 별도로 처리하거나 토스트 라이브러리 사용
+      
       // 메인 페이지로 이동
       setTimeout(() => {
         onNavigateToMain()
@@ -33,7 +39,8 @@ export const useLoginSubmit = () => {
       }, 1000)
       
     } catch (error) {
-      setError(error instanceof Error ? error.message : '로그인에 실패했습니다')
+      const errorInfo = handleLoginError(error)
+      setError(errorInfo.message)
     } finally {
       setIsSubmitting(false)
     }
