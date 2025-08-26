@@ -189,35 +189,14 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * InvalidPasswordException 처리 - 비밀번호 불일치
-     */
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidPasswordException(
-            InvalidPasswordException ex, HttpServletRequest request) {
-
-        logger.warn("Invalid password attempt for request: {}", request.getRequestURI());
-
-        ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                request.getRequestURI(),
-                "INVALID_PASSWORD"
-        );
-
-        if ("local".equals(activeProfile)) {
-            errorResponse.setDebugMessage(ex.getMessage());
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-    }
-
-    /**
      * UserNotFoundException 처리 - 사용자 없음
+     * HTTP 401 Unauthorized 반환
      */
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(
             UserNotFoundException ex, HttpServletRequest request) {
 
-        logger.warn("User not found for request: {}", request.getRequestURI());
+        logger.warn("401 Unauthorized - User not found: {}", request.getRequestURI());
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
