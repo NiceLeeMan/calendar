@@ -4,6 +4,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios'
+import { getErrorMessage, ERROR_CODES } from '../errors'
 
 // API 기본 설정
 const API_BASE_URL = 'http://localhost:8080/api'
@@ -46,10 +47,28 @@ apiClient.interceptors.response.use(
       console.error('[API Network Error]', error.message)
     }
     
-    // 인증 에러 처리
+    // 401 인증 에러 처리
     if (error.response?.status === 401) {
-      // TODO: 로그아웃 처리 또는 로그인 페이지로 리다이렉트
-      console.warn('인증이 필요합니다')
+      // 로그인 관련 페이지나 API 호출인 경우 처리 안 함
+      const isAuthPage = window.location.pathname === '/signIn' || 
+                        window.location.pathname === '/signup' ||
+                        error.config?.url?.includes('/login') ||
+                        error.config?.url?.includes('/users/me')
+      
+      if (!isAuthPage) {
+        // 인증 만료 메시지 표시 (간단한 alert 사용)
+        const message = getErrorMessage(ERROR_CODES.USER_NOT_FOUND, 'login')
+        alert(`세션이 만료되었습니다! 다시 로그인해주세요.\n\n${message}`)
+        
+        // localStorage 클리어
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        
+        // 로그인 페이지로 리다이렉트
+        setTimeout(() => {
+          window.location.href = '/signIn'
+        }, 1000)
+      }
     }
     
     return Promise.reject(error)
