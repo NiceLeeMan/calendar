@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuthError } from '../../../../errors'
+import { useSignupError } from '../../../../errors'
 
 export const useFieldValidation = () => {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({
@@ -9,7 +9,7 @@ export const useFieldValidation = () => {
     verificationCode: null
   })
 
-  const { isUserIdDuplicate, isPhoneDuplicate, handleError } = useAuthError()
+  const { isDuplicateFieldError } = useSignupError()
 
   const handleUserIdCheck = async (userId: string) => {
     if (!userId.trim()) return
@@ -19,7 +19,7 @@ export const useFieldValidation = () => {
       // 현재는 중복 체크 API가 없는 것 같으므로 성공 시 에러 메시지만 제거
       setFieldErrors(prev => ({ ...prev, username: null }))
     } catch (error) {
-      if (isUserIdDuplicate(error)) {
+      if (isDuplicateFieldError(error, 'userId')) {
         setFieldErrors(prev => ({
           ...prev,
           username: '이미 사용중인 아이디입니다.'
@@ -36,7 +36,7 @@ export const useFieldValidation = () => {
       // 현재는 중복 체크 API가 없는 것 같으므로 성공 시 에러 메시지만 제거
       setFieldErrors(prev => ({ ...prev, phone: null }))
     } catch (error) {
-      if (isPhoneDuplicate(error)) {
+      if (isDuplicateFieldError(error, 'userPhoneNumber')) {
         setFieldErrors(prev => ({
           ...prev,
           phone: '이미 등록된 전화번호입니다.'

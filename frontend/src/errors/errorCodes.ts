@@ -1,0 +1,25 @@
+/**
+ * 백엔드 에러코드 상수
+ * GlobalExceptionHandler와 정확히 매칭
+ */
+
+// 백엔드에서 정의된 에러코드들
+export const ERROR_CODES = {
+  // User 도메인 에러
+  DUPLICATE_EMAIL: 'DUPLICATE_EMAIL',
+  DUPLICATE_USER_ID: 'DUPLICATE_USER_ID', 
+  DUPLICATE_PHONE: 'DUPLICATE_PHONE',
+  INVALID_PASSWORD: 'INVALID_PASSWORD',
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  
+  // Common 도메인 에러
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  NOT_FOUND: 'NOT_FOUND',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  
+  // Network 에러
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  TIMEOUT_ERROR: 'TIMEOUT_ERROR'
+} as const
+
+export type ErrorCode = typeof ERROR_CODES[keyof typeof ERROR_CODES]

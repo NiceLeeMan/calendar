@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { login } from '../../../../api'
-import { useAuthError} from '../../../../errors'
+import { useAuthError } from '../../../../errors'
 import type { LoginFormData, SigninRequest } from '../../../../types'
 
 export const useLoginSubmit = () => {
@@ -8,7 +8,7 @@ export const useLoginSubmit = () => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   
-  const { handleLoginError } = useAuthError()
+  const { handleError } = useAuthError()
 
   const handleSubmit = async (
     formData: LoginFormData,
@@ -39,7 +39,7 @@ export const useLoginSubmit = () => {
       }, 1000)
       
     } catch (error) {
-      const errorInfo = handleLoginError(error)
+      const errorInfo = handleError(error)
       setError(errorInfo.message)
     } finally {
       setIsSubmitting(false)

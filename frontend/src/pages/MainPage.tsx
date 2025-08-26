@@ -11,7 +11,7 @@ const MainPage = () => {
   const [userInfo, setUserInfo] = useState<UserResponse | null>(null)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
 
-  const { handleError} = useErrorHandler()
+  const { handleError } = useErrorHandler()
 
   // 사용자 정보 로드
   useEffect(() => {
@@ -21,10 +21,8 @@ const MainPage = () => {
         setUserInfo(info)
       } catch (error) {
         console.error('사용자 정보 로드 실패:', error)
-        handleError(error, {
-          showToast: false, // 메인 페이지에서는 조용히 처리
-          logToConsole: true
-        })
+        // 메인 페이지에서는 조용히 처리 (토스트 없이)
+        handleError(error)
       } finally {
         setIsLoadingUser(false)
       }
@@ -48,11 +46,7 @@ const MainPage = () => {
     } catch (error) {
       console.error('로그아웃 실패:', error)
       // 로그아웃 실패해도 보안상 로그인 페이지로 이동
-      const errorInfo = handleError(error, {
-        showToast: false,
-        showModal: false,
-        logToConsole: true
-      })
+      const errorInfo = handleError(error)
       alert(`로그아웃 처리 중 문제가 발생했어요. 보안을 위해 로그인 페이지로 이동합니다!\n\n${errorInfo.message}`)
       navigate('/signIn')
     } finally {

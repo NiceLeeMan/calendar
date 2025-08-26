@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { sendEmailVerification, verifyEmailCode } from '../../../../api'
-import { useAuthError} from '../../../../errors'
+import { useSignupError } from '../../../../errors'
 import type { EmailVerificationState } from '../../../../types'
 
 export const useEmailVerification = () => {
@@ -15,7 +15,7 @@ export const useEmailVerification = () => {
 
   const [showResendModal, setShowResendModal] = useState(false)
   
-  const { handleError, isEmailDuplicate } = useAuthError()
+  const { handleError, isDuplicateFieldError } = useSignupError()
 
   const sendVerificationCode = async (email: string) => {
     setEmailState(prev => ({ ...prev, isLoading: true, error: null }))
@@ -35,23 +35,19 @@ export const useEmailVerification = () => {
       // 성공 메시지는 별도 토스트나 알림으로 표시
       return { success: true, error: null }
     } catch (error) {
-      // 새로운 에러 시스템으로 처리
-      const errorInfo = handleError(error, {
-        showToast: false, // 필드 에러는 토스트 대신 인라인으로
-        showModal: false,
-        logToConsole: true
-      })
-
       // 중복 체크 에러 처리
-      if (isEmailDuplicate(error)) {
+      if (isDuplicateFieldError(error, 'userEmail')) {
+        const errorMessage = '이미 가입된 이메일 주소입니다.'
         setEmailState(prev => ({
           ...prev,
           isLoading: false,
           error: null
         }))
-        return { success: false, error: errorInfo.message, isDuplicate: true }
+        return { success: false, error: errorMessage, isDuplicate: true }
       }
 
+      // 기타 에러 처리
+      const errorInfo = handleError(error)
       setEmailState(prev => ({
         ...prev,
         isLoading: false,
@@ -91,11 +87,7 @@ export const useEmailVerification = () => {
       console.log('이메일 인증 확인 성공:', message)
       return { success: true, error: null }
     } catch (error) {
-      const errorInfo = handleError(error, {
-        showToast: false, // 필드 에러는 인라인으로
-        showModal: false,
-        logToConsole: true
-      })
+      const errorInfo = handleError(error)
       
       setEmailState(prev => ({
         ...prev,
