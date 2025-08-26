@@ -29,3 +29,5 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'ILLEGAL_ARGUMENT'
   | 'INTERNAL_SERVER_ERROR'
+  | 'INVALID_PASSWORD'
+  | 'USER_NOT_FOUND'

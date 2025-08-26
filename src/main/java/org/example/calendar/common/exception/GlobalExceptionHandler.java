@@ -4,6 +4,8 @@ import org.example.calendar.common.dto.ErrorResponse;
 import org.example.calendar.user.exception.DuplicateEmailException;
 import org.example.calendar.user.exception.DuplicateUserIdException;
 import org.example.calendar.user.exception.DuplicatePhoneException;
+import org.example.calendar.user.exception.InvalidPasswordException;
+import org.example.calendar.user.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -184,6 +186,50 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    /**
+     * InvalidPasswordException 처리 - 비밀번호 불일치
+     */
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPasswordException(
+            InvalidPasswordException ex, HttpServletRequest request) {
+
+        logger.warn("Invalid password attempt for request: {}", request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                request.getRequestURI(),
+                "INVALID_PASSWORD"
+        );
+
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * UserNotFoundException 처리 - 사용자 없음
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(
+            UserNotFoundException ex, HttpServletRequest request) {
+
+        logger.warn("User not found for request: {}", request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                request.getRequestURI(),
+                "USER_NOT_FOUND"
+        );
+
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     /**
