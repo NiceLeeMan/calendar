@@ -12,6 +12,7 @@ export const ERROR_MESSAGES = {
     [ERROR_CODES.DUPLICATE_EMAIL]: '이미 가입된 이메일 입니다',
     [ERROR_CODES.DUPLICATE_USER_ID]: '이미 사용중인 아이디 입니다. ',
     [ERROR_CODES.DUPLICATE_PHONE]: '이미 등록된 전화번호 입니다.',
+    [ERROR_CODES.EMAIL_VERIFICATION_FAILED]: '잘못된 인증번호입니다',
     [ERROR_CODES.VALIDATION_FAILED]: '입력 정보를 다시 확인해주세요!'
   },
   

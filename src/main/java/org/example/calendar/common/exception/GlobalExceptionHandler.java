@@ -4,6 +4,7 @@ import org.example.calendar.common.dto.ErrorResponse;
 import org.example.calendar.user.exception.DuplicateEmailException;
 import org.example.calendar.user.exception.DuplicateUserIdException;
 import org.example.calendar.user.exception.DuplicatePhoneException;
+import org.example.calendar.user.exception.EmailVerificationException;
 import org.example.calendar.user.exception.InvalidPasswordException;
 import org.example.calendar.user.exception.UserNotFoundException;
 import org.slf4j.Logger;
@@ -188,6 +189,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
+    /**
+     * EmailVerificationException 처리 - 이메일 인증 실패
+     * HTTP 400 Bad Request 반환
+     */
+    @ExceptionHandler(EmailVerificationException.class)
+    public ResponseEntity<ErrorResponse> handleEmailVerificationException(
+            EmailVerificationException ex, HttpServletRequest request) {
+
+        logger.warn("400 Bad Request - Email verification failed: {}", request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                request.getRequestURI(),
+                "EMAIL_VERIFICATION_FAILED"
+        );
+
+        // 개발환경에서는 추가 디버그 정보 제공
+        if ("local".equals(activeProfile)) {
+            errorResponse.setDebugMessage(ex.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
     /**
      * UserNotFoundException 처리 - 사용자 없음
      * HTTP 401 Unauthorized 반환
