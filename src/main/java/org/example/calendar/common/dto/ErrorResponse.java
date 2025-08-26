@@ -83,6 +83,12 @@ public class ErrorResponse {
     }
 
     // 에러 코드만 포함 생성자
+    public ErrorResponse(int status, String path, String errorCode) {
+        this();
+        this.status = status;
+        this.path = path;
+        this.errorCode = errorCode;
+    }
 
     // 기본 에러 응답 생성자
     public ErrorResponse(int status, String path) {
@@ -97,9 +103,5 @@ public class ErrorResponse {
         this.errors = errors;
     }
 
-    // 개발용 디버그 정보 포함 생성자
-    public ErrorResponse(int status, String path, String debugMessage) {
-        this(status, path);
-        this.debugMessage = debugMessage;
-    }
+
 }
