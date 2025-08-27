@@ -35,7 +35,9 @@ function AuthWrapper({ children, requireAuth = true }: { children: React.ReactNo
       }
     }
 
-    checkAuth()
+    if (requireAuth) {
+      checkAuth()
+    }
   }, [navigate, location, requireAuth])
 
   return <>{children}</>
