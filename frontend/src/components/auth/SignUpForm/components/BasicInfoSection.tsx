@@ -1,5 +1,4 @@
 import Input from '../../../ui/Input'
-import { FieldError } from '../../Common/components'
 import type { SignupFormData } from '../../../../types'
 
 interface BasicInfoSectionProps {
@@ -27,7 +26,6 @@ const BasicInfoSection = ({
           error={fieldErrors.username || undefined}
           required
         />
-        <FieldError error={fieldErrors.username} />
       </div>
       
       <div className="mb-6">

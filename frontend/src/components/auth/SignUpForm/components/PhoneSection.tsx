@@ -1,5 +1,4 @@
 import Input from '../../../ui/Input'
-import { FieldError } from '../../Common/components'
 import type { SignupFormData } from '../../../../types'
 
 interface PhoneSectionProps {
