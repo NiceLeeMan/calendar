@@ -29,14 +29,14 @@ services:
   redis:
     image: redis:7-alpine
     container_name: calendar-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
-      # Redis 설정 파일 (옵션)
-      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
+      # 데이터 영속성을 위한 볼륨
+      - redis_data:/data
     networks:
       - calendar-network
     healthcheck:
@@ -107,3 +107,5 @@ networks:
 volumes:
   postgres_data:
     name: calendar-postgres-data
+  redis_data:
+    name: calendar-redis-data

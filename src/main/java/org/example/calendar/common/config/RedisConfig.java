@@ -57,7 +57,7 @@ public class RedisConfig {
         redisConfig.setDatabase(database);
 
         // 비밀번호가 설정된 경우에만 적용
-        if (password != null && !password.trim().isEmpty()) {
+        if (password != null && !password.trim().isEmpty() && !password.equals("")) {
             redisConfig.setPassword(password);
         }
 
