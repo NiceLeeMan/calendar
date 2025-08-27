@@ -26,7 +26,6 @@ const PhoneSection = ({
         error={fieldErrors.phone || undefined}
         required
       />
-      <FieldError error={fieldErrors.phone} />
     </div>
   )
 }

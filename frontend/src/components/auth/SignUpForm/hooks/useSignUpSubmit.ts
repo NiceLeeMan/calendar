@@ -60,8 +60,8 @@ export const useSignUpSubmit = () => {
         if (fieldErrors['userEmail']) {
           mappedErrors['email'] = fieldErrors['userEmail']
         }
-        if (fieldErrors['userPhoneNumber']) {
-          mappedErrors['phone'] = fieldErrors['userPhoneNumber']
+        if (fieldErrors['phoneNumber']) {
+          mappedErrors['phone'] = fieldErrors['phoneNumber']
         }
         if (fieldErrors['userName']) {
           mappedErrors['name'] = fieldErrors['userName']
@@ -77,7 +77,7 @@ export const useSignUpSubmit = () => {
           onFieldErrors({ email: '이미 가입된 이메일 주소입니다.' })
         } else if (isDuplicateFieldError(error, 'userId')) {
           onFieldErrors({ username: '이미 사용중인 아이디입니다.' })
-        } else if (isDuplicateFieldError(error, 'userPhoneNumber')) {
+        } else if (isDuplicateFieldError(error, 'phoneNumber')) {
           onFieldErrors({ phone: '이미 등록된 전화번호입니다.' })
         } else {
           // 기타 에러 처리 (토스트로 표시)

@@ -36,7 +36,7 @@ export const useFieldValidation = () => {
       // 현재는 중복 체크 API가 없는 것 같으므로 성공 시 에러 메시지만 제거
       setFieldErrors(prev => ({ ...prev, phone: null }))
     } catch (error) {
-      if (isDuplicateFieldError(error, 'userPhoneNumber')) {
+      if (isDuplicateFieldError(error, 'phoneNumber')) {
         setFieldErrors(prev => ({
           ...prev,
           phone: '이미 등록된 전화번호입니다.'
