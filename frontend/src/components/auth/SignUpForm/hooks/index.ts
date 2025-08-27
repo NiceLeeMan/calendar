@@ -1,4 +1,5 @@
 export { useSignUpForm } from './useSignUpForm'
 export { useFieldValidation } from './useFieldValidation'
 export { useEmailVerification } from './useEmailVerification'
+export { useEmailValidation } from './useEmailValidation'
 export { useSignUpSubmit } from './useSignUpSubmit'
