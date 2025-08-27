@@ -24,6 +24,11 @@ FROM openjdk:21-jdk-slim
 LABEL maintainer="Calendar Team"
 LABEL description="Spring Boot Calendar Application"
 
+# 필수 패키지 설치 (헬스체크용)
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
