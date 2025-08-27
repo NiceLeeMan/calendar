@@ -116,8 +116,12 @@ public class SecurityConfig {
                         // Swagger/OpenAPI 문서
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                        // Spring Boot Actuator (모니터링)
-                        .requestMatchers("/actuator/**").permitAll()
+                        // Spring Boot Actuator (환경별 접근 제어)
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()  // 헬스체크는 공개 (Docker, K8s용)
+                        .requestMatchers("/actuator/info").permitAll()    // 기본 앱 정보는 공개
+                        .requestMatchers("/admin/actuator/health", "/admin/actuator/health/**").permitAll()  // 운영환경 헬스체크
+                        .requestMatchers("/admin/actuator/**").hasRole("ADMIN") // 운영환경 관리자 전용
+                        .requestMatchers("/actuator/**").hasRole("ADMIN") // 기타 actuator는 관리자만
 
                         // 정적 리소스
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
