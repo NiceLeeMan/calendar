@@ -6,9 +6,9 @@ services:
     image: postgres:16
     container_name: calendar-postgres
     environment:
-      POSTGRES_DB: calendar_dev
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: dlrlqor256
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       - "5432:5432"
@@ -29,8 +29,11 @@ services:
   redis:
     image: redis:7-alpine
     container_name: calendar-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - "6379:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       # Redis 설정 파일 (옵션)
       - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
@@ -57,24 +60,25 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       
       # 데이터베이스 연결 (Docker 네트워크 사용)
-      DB_URL: jdbc:postgresql://postgres:5432/calendar_dev
-      DB_USERNAME: postgres
-      DB_PASSWORD: dlrlqor256
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
       
       # Redis 연결
-      REDIS_HOST: postgres
+      REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       
       # JWT 설정
-      JWT_SECRET: calendar-project-jwt-secret-key-2025-spring-boot-very-secure-and-long-docker
-      JWT_EXPIRATION: 86400000
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
       
-      # 이메일 설정 (기존 값 사용)
-      MAIL_USERNAME: leegeebark@gmail.com
-      MAIL_PASSWORD: "etet iwwp tgis wjla"
+      # 이메일 설정
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
       
       # JVM 옵션
-      JAVA_OPTS: "-Xmx512m -Xms256m"
+      JAVA_OPTS: ${JAVA_OPTS}
     depends_on:
       postgres:
         condition: service_healthy
