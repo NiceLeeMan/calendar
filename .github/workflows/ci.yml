@@ -21,7 +21,7 @@ jobs:
         env:
           POSTGRES_DB: calendar_test
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: dlrlqor256
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'test_password_123' }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -63,16 +63,17 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 테스트용 환경변수 설정
+      # 테스트용 환경변수 설정 (GitHub Secrets 사용)
       - name: Run tests
         env:
           SPRING_PROFILES_ACTIVE: test
           DB_URL: jdbc:postgresql://localhost:5432/calendar_test
           DB_USERNAME: postgres
-          DB_PASSWORD: dlrlqor256
-          JWT_SECRET: test-jwt-secret-for-ci
+          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'test_password_123' }}
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET || 'test-jwt-secret-for-ci-minimum-256-bits-length-required' }}
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          REDIS_PASSWORD: test_redis_password
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
           SPRING_FLYWAY_ENABLED: false
         run: ./gradlew test
@@ -136,14 +137,17 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # 환경변수 설정
+            # 환경변수 설정 (GitHub Secrets 사용)
             export SPRING_PROFILES_ACTIVE=prod
             export DB_URL=jdbc:postgresql://localhost:5432/calendar_prod
             export DB_USERNAME=calendar_user
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export JWT_SECRET=${{ secrets.JWT_SECRET }}
-            export SPRINGDOC_SWAGGER_UI_ENABLED=true
-            export SPRINGDOC_API_DOCS_ENABLED=true
+            export DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+            export JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
+            export REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD }}
+            export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            export SPRINGDOC_SWAGGER_UI_ENABLED=false
+            export SPRINGDOC_API_DOCS_ENABLED=false
             
             # 로그 디렉토리 생성
             mkdir -p /home/github-actions/logs
