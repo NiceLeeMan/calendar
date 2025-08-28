@@ -130,16 +130,17 @@ jobs:
             
             # Spring Boot Configuration
             SPRING_PROFILES_ACTIVE=prod
-            SPRINGDOC_SWAGGER_UI_ENABLED=false
-            SPRINGDOC_API_DOCS_ENABLED=false
+            
+            # JWT Configuration (additional)
+            JWT_EXPIRATION=86400000
+            
+            # JVM Configuration
+            JAVA_OPTS=-Xmx512m -Xms256m -Djava.awt.headless=true
             
             # PostgreSQL Configuration for Docker
             POSTGRES_DB=calendar_prod
             POSTGRES_USER=calendar_user
             POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD || 'calendar_prod_password_123' }}
-            
-            # Redis Configuration for Docker
-            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD || 'calendar_redis_prod_123' }}
             EOF
             
             # Docker 이미지 빌드 및 컨테이너 시작
