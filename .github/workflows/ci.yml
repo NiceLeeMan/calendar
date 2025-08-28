@@ -167,7 +167,7 @@ jobs:
             
               if [ $i -eq 10 ]; then
                 echo "Backend health check failed after 10 attempts"
-                docker-compose logs backend
+                docker-compose logs calendar-app
                 exit 1
               fi
             done
@@ -178,7 +178,7 @@ jobs:
               echo "Frontend is running!"
             else
               echo "Frontend check failed, but continuing..."
-              docker-compose logs frontend
+              # docker-compose logs frontend
             fi
             
             echo "Deployment completed successfully!"
