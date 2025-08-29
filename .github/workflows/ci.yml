@@ -125,36 +125,24 @@ jobs:
             # 환경설정 파일 생성
             echo "Creating production environment file..."
             cat > .env.production << EOF
-            # Database Configuration
-            DB_URL=jdbc:postgresql://postgres:5432/calendar_prod
-            DB_USERNAME=calendar_user
-            DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD || 'calendar_prod_password_123' }}
-            
-            # JWT Configuration
-            JWT_SECRET=${{ secrets.PROD_JWT_SECRET || 'prod-jwt-secret-for-calendar-minimum-256-bits-length-required' }}
+            # PostgreSQL Configuration for Docker
+            POSTGRES_DB=calendar_prod
+            POSTGRES_USER=calendar_user  
+            POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
             
             # Redis Configuration
-            REDIS_HOST=redis
-            REDIS_PORT=6379
-            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD || 'calendar_redis_prod_123' }}
+            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD }}
             
-            # Mail Configuration
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME || '' }}
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD || '' }}
-            
-            # Spring Boot Configuration
-            SPRING_PROFILES_ACTIVE=prod
-            
-            # JWT Configuration (additional)
+            # JWT Configuration
+            JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
             JWT_EXPIRATION=86400000
+            
+            # Mail Configuration  
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
             
             # JVM Configuration
             JAVA_OPTS=-Xmx512m -Xms256m -Djava.awt.headless=true
-            
-            # PostgreSQL Configuration for Docker
-            POSTGRES_DB=calendar_prod
-            POSTGRES_USER=calendar_user
-            POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD || 'calendar_prod_password_123' }}
             EOF
             
             # Docker 이미지 빌드 및 컨테이너 시작
@@ -197,5 +185,5 @@ jobs:
             fi
             
             echo "Deployment completed successfully!"
-            echo "Backend: http://43.201.22.192:8080"
-            echo "Frontend: http://43.201.22.192:3000"
+            echo "Backend: http://52.78.129.63:8080"
+            echo "Frontend: http://52.78.129.63:3000"
