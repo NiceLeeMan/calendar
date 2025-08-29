@@ -85,8 +85,8 @@ services:
     networks:
       - calendar-network
     volumes:
-      # 로그 파일 외부 저장
-      - ./logs:/app/logs
+      # 로그 파일 외부 저장 (권한 문제 해결)
+      - app-logs:/app/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
@@ -122,3 +122,5 @@ volumes:
     name: calendar-postgres-data
   redis_data:
     name: calendar-redis-data
+  app-logs:
+    name: calendar-app-logs
