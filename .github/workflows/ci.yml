@@ -124,30 +124,25 @@ jobs:
             
             # 환경설정 파일 생성
             echo "Creating production environment file..."
-            cat > .env.production << EOF
-            # PostgreSQL Configuration for Docker
+            cat > .env << EOF
             POSTGRES_DB=calendar_prod
-            POSTGRES_USER=calendar_user  
+            POSTGRES_USER=calendar_user
             POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
-            
-            # Redis Configuration
             REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD }}
-            
-            # JWT Configuration
             JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
             JWT_EXPIRATION=86400000
-            
-            # Mail Configuration  
             MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
             MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-            
-            # JVM Configuration
             JAVA_OPTS=-Xmx512m -Xms256m -Djava.awt.headless=true
             EOF
             
+            # 환경변수 파일 내용 확인 (디버깅용)
+            echo "Environment file created:"
+            cat .env
+            
             # Docker 이미지 빌드 및 컨테이너 시작
             echo "Building and starting containers..."
-            docker-compose --env-file .env.production up -d --build
+            docker-compose up -d --build
             
             # 컨테이너 시작 대기
             echo "Waiting for services to start..."
