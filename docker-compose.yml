@@ -97,6 +97,21 @@ services:
       retries: 3
       start_period: 40s
 
+  # 프론트엔드 서비스 (Nginx로 React 빌드 파일 서빙)
+  frontend:
+    image: nginx:alpine
+    container_name: calendar-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - calendar-app
+    networks:
+      - calendar-network
+    restart: unless-stopped
+
 # 네트워크 정의
 networks:
   calendar-network:

@@ -102,6 +102,22 @@ jobs:
               git clone https://github.com/NiceLeeMan/calendar.git .
             fi
             
+            # 프론트엔드 빌드
+            echo "Building frontend..."
+            cd frontend
+            
+            # Node.js와 npm이 없다면 설치
+            if ! command -v node &> /dev/null; then
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            
+            # 의존성 설치 및 빌드
+            npm ci
+            npm run build
+            
+            cd ..
+            
             # 기존 컨테이너 중단 및 제거
             echo "Stopping existing containers..."
             docker-compose down || true
