@@ -318,3 +318,4 @@ feat: Add recurring plan generation logic
   <p><strong>Calendar Project</strong> - 현대적인 웹 캘린더 솔루션</p>
   <p>Made with ❤️ using Spring Boot + React</p>
 </div>
+# Updated for new EC2 IP
