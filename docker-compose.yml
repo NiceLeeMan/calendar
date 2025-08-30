@@ -104,6 +104,7 @@ services:
     volumes:
       - ./frontend/dist:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - /dev/null:/etc/nginx/conf.d/default.conf
     depends_on:
       - calendar-app
     networks:
