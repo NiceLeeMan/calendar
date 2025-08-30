@@ -37,7 +37,7 @@ COPY --from=builder /app/build/libs/calendar-0.0.1-SNAPSHOT.jar app.jar
 
 # 애플리케이션 실행을 위한 사용자 생성 (보안)
 RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
-RUN chown -R appuser:appgroup /app
+RUN mkdir -p /app/logs && chown -R appuser:appgroup /app /app/logs
 USER appuser
 
 # 포트 노출
