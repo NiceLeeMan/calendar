@@ -180,5 +180,5 @@ jobs:
             fi
             
             echo "Deployment completed successfully!"
-            echo "Backend: http://52.78.129.63:8080"
-            echo "Frontend: http://52.78.129.63:3000"
+            echo "Backend: http://13.125.58.77:8080"
+            echo "Frontend: http://13.125.58.77:3000"
