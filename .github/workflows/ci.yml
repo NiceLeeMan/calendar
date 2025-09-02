@@ -3,8 +3,6 @@ name: Calendar CI/CD Pipeline
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
 
 jobs:
   test:
@@ -104,47 +102,47 @@ jobs:
               git clone https://github.com/NiceLeeMan/calendar.git .
             fi
             
+            # 프론트엔드 빌드
+            echo "Building frontend..."
+            cd frontend
+            
+            # Node.js와 npm이 없다면 설치
+            if ! command -v node &> /dev/null; then
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+            
+            # 의존성 설치 및 빌드
+            npm ci
+            npm run build
+            
+            cd ..
+            
             # 기존 컨테이너 중단 및 제거
             echo "Stopping existing containers..."
             docker-compose down || true
             
             # 환경설정 파일 생성
             echo "Creating production environment file..."
-            cat > .env.production << EOF
-            # Database Configuration
-            DB_URL=jdbc:postgresql://postgres:5432/calendar_prod
-            DB_USERNAME=calendar_user
-            DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD || 'calendar_prod_password_123' }}
-            
-            # JWT Configuration
-            JWT_SECRET=${{ secrets.PROD_JWT_SECRET || 'prod-jwt-secret-for-calendar-minimum-256-bits-length-required' }}
-            
-            # Redis Configuration
-            REDIS_HOST=redis
-            REDIS_PORT=6379
-            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD || 'calendar_redis_prod_123' }}
-            
-            # Mail Configuration
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME || '' }}
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD || '' }}
-            
-            # Spring Boot Configuration
-            SPRING_PROFILES_ACTIVE=prod
-            SPRINGDOC_SWAGGER_UI_ENABLED=false
-            SPRINGDOC_API_DOCS_ENABLED=false
-            
-            # PostgreSQL Configuration for Docker
+            cat > .env << EOF
             POSTGRES_DB=calendar_prod
             POSTGRES_USER=calendar_user
-            POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD || 'calendar_prod_password_123' }}
-            
-            # Redis Configuration for Docker
-            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD || 'calendar_redis_prod_123' }}
+            POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+            REDIS_PASSWORD=${{ secrets.PROD_REDIS_PASSWORD }}
+            JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
+            JWT_EXPIRATION=86400000
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            JAVA_OPTS=-Xmx512m -Xms256m -Djava.awt.headless=true
             EOF
+            
+            # 환경변수 파일 내용 확인 (디버깅용)
+            echo "Environment file created:"
+            cat .env
             
             # Docker 이미지 빌드 및 컨테이너 시작
             echo "Building and starting containers..."
-            docker-compose --env-file .env.production up -d --build
+            docker-compose up -d --build
             
             # 컨테이너 시작 대기
             echo "Waiting for services to start..."
@@ -167,7 +165,7 @@ jobs:
             
               if [ $i -eq 10 ]; then
                 echo "Backend health check failed after 10 attempts"
-                docker-compose logs backend
+                docker-compose logs calendar-app
                 exit 1
               fi
             done
@@ -178,9 +176,10 @@ jobs:
               echo "Frontend is running!"
             else
               echo "Frontend check failed, but continuing..."
-              docker-compose logs frontend
+              # docker-compose logs frontend
             fi
             
             echo "Deployment completed successfully!"
-            echo "Backend: http://43.201.22.192:8080"
-            echo "Frontend: http://43.201.22.192:3000"
+            echo "Backend: http://${{ secrets.AWS_EC2_HOST }}:8080"
+            echo "Frontend: http://${{ secrets.AWS_EC2_HOST }}:3000"
+            echo "Domain: http://littlecalendar.com (after DNS setup)"

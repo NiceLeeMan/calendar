@@ -7,8 +7,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 import { getErrorMessage, ERROR_CODES } from '../errors'
 
 // API 기본 설정
-const API_BASE_URL = 'http://localhost:8080/api'
-
+const API_BASE_URL = '/api' // nginx 프록시로 항상 처리
 // axios 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

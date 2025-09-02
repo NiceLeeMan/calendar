@@ -175,7 +175,11 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 허용할 origins (프론트엔드 URL)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",              // 개발환경
+                "http://43.203.78.26:3000",          // IP 직접 접속 (하위호환)
+                "https://littlecalendar.com"         // HTTPS 도메인 (포트 없음) ⭐
+        ));
         
         // 허용할 HTTP 메소드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
