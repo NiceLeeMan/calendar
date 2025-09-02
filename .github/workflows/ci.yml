@@ -180,5 +180,6 @@ jobs:
             fi
             
             echo "Deployment completed successfully!"
-            echo "Backend: http://13.125.58.77:8080"
-            echo "Frontend: http://13.125.58.77:3000"
+            echo "Backend: http://${{ secrets.AWS_EC2_HOST }}:8080"
+            echo "Frontend: http://${{ secrets.AWS_EC2_HOST }}:3000"
+            echo "Domain: http://littlecalendar.com (after DNS setup)"
