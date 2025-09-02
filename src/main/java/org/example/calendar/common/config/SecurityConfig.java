@@ -177,7 +177,7 @@ public class SecurityConfig {
         // 허용할 origins (프론트엔드 URL)
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
-            "http://13.125.58.77:3000"
+            "http://3.35.10.254:3000"
         ));
         
         // 허용할 HTTP 메소드
