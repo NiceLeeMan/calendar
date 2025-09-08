@@ -293,7 +293,7 @@ feat: Add recurring plan generation logic
 ### 코드 스타일
 - **Backend**: Google Java Style Guide
 - **Frontend**: Prettier + ESLint 설정
-- **커밋 전 자동 포매팅**: (향후 Husky 도입 예정)
+- **커밋 전 자동 포매팅**: 
 
 ## 📞 지원 및 문의
 
@@ -308,13 +308,3 @@ feat: Add recurring plan generation logic
 - [🚀 배포 가이드](DEPLOYMENT.md) - GitHub Secrets, CI/CD 설정
 - [🐳 Docker 가이드](Docker_실행가이드.md) - 컨테이너 실행 방법
 
-## 📜 라이선스
-
-이 프로젝트는 [MIT License](LICENSE)를 따릅니다.
-
----
-
-<div align="center">
-  <p><strong>Calendar Project</strong> - 현대적인 웹 캘린더 솔루션</p>
-  <p>Made with ❤️ using Spring Boot + React</p>
-</div>
