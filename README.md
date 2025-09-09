@@ -253,7 +253,7 @@ open build/reports/tests/test/index.html
 ### 프론트엔드 테스트
 ```bash
 cd frontend
-# (향후 Jest + Testing Library 도입 예정)
+npm run dev
 ```
 
 ## 📈 성능 최적화
@@ -261,7 +261,7 @@ cd frontend
 ### 백엔드 최적화
 - **데이터베이스 인덱스**: 자주 조회되는 컬럼에 인덱스 적용
 - **Redis 캐싱**: 월별 일정 데이터 캐싱으로 DB 부하 감소
-- **JPA 최적화**: 지연 로딩, N+1 문제 방지
+- **JPA 최적화**: 지연 로딩
 
 ### 프론트엔드 최적화  
 - **코드 분할**: 페이지별 청크 분리로 초기 로딩 시간 단축
